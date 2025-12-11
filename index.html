@@ -192,7 +192,7 @@
             line-height: 1.2;
         }
 
-        /* Animated silver text for "new reality" */
+        /* Animated silver text for "New Reality" */
         .silver-text {
             background: linear-gradient(
                 90deg,
@@ -798,7 +798,7 @@
         </button>
 
         <div class="header">
-            <h1>Visualise your <span class="silver-text">new reality</span></h1>
+            <h1>Visualise your <span class="silver-text">New Reality</span></h1>
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
         </div>
 
@@ -892,9 +892,9 @@
     let selectedFiles = [];
     let isTextOnlyMode = false;
     
-    // Set capture attribute only on mobile
+    // Set capture attribute to "user" for front-facing camera on mobile
     if (isMobile) {
-        cameraInput.setAttribute('capture', 'environment');
+        cameraInput.setAttribute('capture', 'user');
     }
     
     // Logo click to reset
@@ -993,6 +993,7 @@
     
     textOnlyLink.addEventListener('touchend', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         isTextOnlyMode = true;
         showPromptSection(true);
     });
@@ -1029,7 +1030,11 @@
     function handleFileSelect(e) {
         const files = Array.from(e.target.files);
         
-        if (files.length === 0) return;
+        if (files.length === 0) {
+            // Reset input value to allow re-selection
+            e.target.value = '';
+            return;
+        }
         
         if (selectedFiles.length + files.length > MAX_IMAGES) {
             statusDiv.className = 'status error';
@@ -1048,19 +1053,21 @@
             return;
         }
         
+        // Add new files to selectedFiles array
         files.forEach(file => {
             if (file.type.startsWith('image/')) {
                 selectedFiles.push(file);
             }
         });
         
+        // Reset input value to allow re-selection of same file
+        e.target.value = '';
+        
         if (selectedFiles.length > 0) {
             isTextOnlyMode = false;
             showPromptSection(false);
+            updatePreviews();
         }
-        
-        updatePreviews();
-        e.target.value = '';
     }
     
     function showPromptSection(textOnly) {
@@ -1076,14 +1083,13 @@
             backButton.classList.add('active');
         }
         
-        // Show photo preview section regardless (even if empty)
-        photoPreviewSection.classList.add('active');
+        // Only show photo preview section if NOT text-only mode
+        if (!textOnly) {
+            photoPreviewSection.classList.add('active');
+        }
         
         // Show prompt
         promptSection.classList.add('active');
-        
-        // Update previews
-        updatePreviews();
         
         // Start placeholder rotation
         startPlaceholderRotation();
@@ -1125,7 +1131,7 @@
             reader.readAsDataURL(file);
         });
         
-        // Always show "+" button if less than max (even when no images)
+        // Always show "+" button if less than max
         if (selectedFiles.length < MAX_IMAGES) {
             const addMoreBtn = document.createElement('div');
             addMoreBtn.className = 'add-more-btn';
