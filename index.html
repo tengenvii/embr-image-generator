@@ -262,58 +262,149 @@
     </div>
     
     <script>
-        // REPLACE THIS WITH YOUR N8N WEBHOOK URL
-        const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
+    // ⚠️ REPLACE WITH YOUR WEBHOOK URL
+    const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
+    
+    const form = document.getElementById('imageForm');
+    const fileInput = document.getElementById('image');
+    const fileName = document.getElementById('fileName');
+    const statusDiv = document.getElementById('status');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // File name display
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            fileName.textContent = e.target.files[0].name;
+        } else {
+            fileName.textContent = 'No file chosen';
+        }
+    });
+    
+    // Form submission with image display
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        const form = document.getElementById('imageForm');
-        const fileInput = document.getElementById('image');
-        const fileName = document.getElementById('fileName');
-        const statusDiv = document.getElementById('status');
-        const submitBtn = form.querySelector('.submit-btn');
+        console.log('Form submitted');
         
-        // File name display
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                fileName.textContent = e.target.files[0].name;
-            } else {
-                fileName.textContent = 'No file chosen';
-            }
-        });
+        // Check if webhook URL was updated
+        if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
+            statusDiv.style.display = 'block';
+            return;
+        }
         
-        // Form submission
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Generating... (15-30s)';
+        statusDiv.style.display = 'none';
+        
+        // Remove any existing result image
+        const existingResult = document.getElementById('resultContainer');
+        if (existingResult) existingResult.remove();
+        
+        const formData = new FormData(form);
+        
+        try {
+            console.log('Sending request to:', WEBHOOK_URL);
             
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Generating...';
-            statusDiv.style.display = 'none';
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                body: formData
+            });
             
-            const formData = new FormData(form);
+            console.log('Response status:', response.status);
             
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (response.ok) {
-                    statusDiv.className = 'status success';
-                    statusDiv.textContent = '✓ Image generation started!';
-                    statusDiv.style.display = 'block';
-                    form.reset();
-                    fileName.textContent = 'No file chosen';
-                } else {
-                    throw new Error('Generation failed');
-                }
-            } catch (error) {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = '✗ Something went wrong. Please try again.';
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            if (response.ok && data.success && data.imageUrl) {
+                // Show success message
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✓ Image generated successfully!';
                 statusDiv.style.display = 'block';
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Generate Image';
+                
+                // Create result container
+                const resultContainer = document.createElement('div');
+                resultContainer.id = 'resultContainer';
+                resultContainer.style.cssText = `
+                    margin-top: 32px;
+                    padding: 24px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                `;
+                
+                // Add title
+                const title = document.createElement('h3');
+                title.textContent = 'Generated Image';
+                title.style.cssText = `
+                    color: rgba(255, 255, 255, 0.9);
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                `;
+                resultContainer.appendChild(title);
+                
+                // Add image
+                const img = document.createElement('img');
+                img.src = data.imageUrl;
+                img.alt = 'Generated image';
+                img.style.cssText = `
+                    width: 100%;
+                    border-radius: 8px;
+                    display: block;
+                    margin-bottom: 16px;
+                `;
+                resultContainer.appendChild(img);
+                
+                // Add download button
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = data.imageUrl;
+                downloadBtn.download = 'embr-generated-image.png';
+                downloadBtn.textContent = 'Download Image';
+                downloadBtn.style.cssText = `
+                    display: inline-block;
+                    padding: 12px 24px;
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #ffffff;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                `;
+                downloadBtn.onmouseover = () => {
+                    downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+                };
+                downloadBtn.onmouseout = () => {
+                    downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                };
+                resultContainer.appendChild(downloadBtn);
+                
+                // Insert result after form
+                form.parentElement.appendChild(resultContainer);
+                
+                // Reset form
+                form.reset();
+                fileName.textContent = 'No file chosen';
+                
+            } else {
+                throw new Error(data.error || 'Image generation failed');
             }
-        });
-    </script>
+        } catch (error) {
+            console.error('Detailed error:', error);
+            statusDiv.className = 'status error';
+            statusDiv.textContent = `✗ Error: ${error.message}`;
+            statusDiv.style.display = 'block';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate Image';
+        }
+    });
+    
+    // Log when page loads
+    console.log('Page loaded. Webhook URL:', WEBHOOK_URL);
+</script>
 </body>
 </html>
