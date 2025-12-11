@@ -1240,12 +1240,14 @@ window.addEventListener('load', () => {
         showPromptSection(true);
     });
     
-    // Back Button
-    backButton.addEventListener('click', resetToInitialState);
-    backButton.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        resetToInitialState();
-    });
+    // Back Button - Goes to home
+backButton.addEventListener('click', () => {
+    location.reload();
+});
+backButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    location.reload();
+});
     
     function resetToInitialState() {
     isTextOnlyMode = false;
@@ -1430,7 +1432,7 @@ async function editImage(imageUrl) {
         isTextOnlyMode = false;
         
         uploadSection.style.display = 'none';
-        backButton.style.display = 'flex'; // Force show back button
+        backButton.style.display = 'flex';
         backButton.classList.add('active');
         photoPreviewSection.classList.add('active');
         photoPreviewSection.style.display = 'block';
@@ -1442,8 +1444,11 @@ async function editImage(imageUrl) {
         subtitle.textContent = 'Refine your vision and generate again';
         subtitle.classList.add('screen-2');
 
-        updatePreviews();
-        document.querySelector('.container').scrollTop = 0;
+        // Desktop needs delay for blob processing
+        setTimeout(() => {
+            updatePreviews();
+            document.querySelector('.container').scrollTop = 0;
+        }, 100);
         
     } catch (e) {
         console.error('Edit failed - using fallback:', e);
@@ -1453,7 +1458,7 @@ async function editImage(imageUrl) {
         isTextOnlyMode = false;
         
         uploadSection.style.display = 'none';
-        backButton.style.display = 'flex'; // Critical: show back button
+        backButton.style.display = 'flex';
         backButton.classList.add('active');
         photoPreviewSection.classList.add('active');
         photoPreviewSection.style.display = 'block';
@@ -1465,7 +1470,10 @@ async function editImage(imageUrl) {
         subtitle.textContent = 'Add images and describe your vision';
         subtitle.classList.add('screen-2');
 
-        updatePreviews();
+        // Desktop needs delay here too
+        setTimeout(() => {
+            updatePreviews();
+        }, 100);
         
         statusDiv.className = 'status';
         statusDiv.style.background = 'rgba(59,130,246,0.12)';
