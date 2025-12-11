@@ -81,28 +81,29 @@
         }
         
         .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 12px;
-            letter-spacing: -0.8px;
-        }
-        
-        .subtitle {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 16px;
-            line-height: 1.5;
-        }
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    margin: 0 auto 20px;
+    display: block;
+    filter: brightness(1);
+    transition: filter 0.3s ease;
+}
+
+.logo:hover {
+    filter: brightness(1.1);
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+    line-height: 1.5;
+}
         
         .form-group {
             margin-bottom: 24px;
@@ -460,6 +461,18 @@
 
             .preview-grid {
                 grid-template-columns: repeat(3, 1fr);
+
+            }
+
+            .logo {
+        max-width: 220px;
+        margin-bottom: 16px;
+            
+            }
+    
+    .subtitle {
+        font-size: 15px;
+        
             }
         }
     </style>
@@ -467,21 +480,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="icon">✨</div>
-            <h1>EMBR Image Generator</h1>
-            <p class="subtitle">Transform your ideas into stunning AI-generated images</p>
-        </div>
-        
-        <form id="imageForm">
-            <div class="form-group" id="promptGroup">
-                <label for="prompt">Image Prompt *</label>
-                <textarea 
-                    id="prompt" 
-                    name="Image Prompt" 
-                    placeholder="Describe your image in detail..."
-                    required
-                ></textarea>
-            </div>
+    <img src="https://media.discordapp.net/attachments/1394024573183332396/1448541231033487541/embrwhitelogo_1765429510-trimmy-Untitled_design_-_2025-12-11T050457.267.png?ex=693ba2a6&is=693a5126&hm=74b3ce9acd6ea68fead9a771f4a52500d310c2e4928ae903420a30cdad32e9b5&=&format=webp&quality=lossless&width=700&height=196" 
+         alt="EMBR Logo" 
+         class="logo">
+    <p class="subtitle">Transform your ideas into stunning AI-generated images</p>
+</div>
             
             <div class="form-group" id="imageGroup">
     <label>Reference Images (Optional - Max 8)</label>
