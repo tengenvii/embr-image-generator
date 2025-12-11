@@ -700,7 +700,7 @@
         /* Result Action Buttons */
 .result-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     margin-top: 16px;
 }
 
@@ -709,7 +709,7 @@
 .btn-new {
     flex: 1;
     text-align: center;
-    padding: 14px 24px;
+    padding: 12px 16px;
     border-radius: 12px;
     text-decoration: none;
     font-weight: 600;
@@ -718,6 +718,11 @@
     cursor: pointer;
     border: none;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
 .btn-edit {
@@ -744,6 +749,18 @@
     border-color: rgba(255, 255, 255, 0.25);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.btn-new {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+    color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.btn-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .btn-new {
@@ -1317,43 +1334,33 @@ window.addEventListener('load', () => {
         }
     });
     
-    // Edit Image Function - Fixed to work with CORS
+    // Edit Image Function - Fixed
 async function editImage(imageUrl) {
     try {
-        // Show loading state
-        statusDiv.className = 'status';
-        statusDiv.textContent = 'Loading image for editing...';
-        statusDiv.style.display = 'block';
-        
-        // Fetch the image with CORS mode
-        const response = await fetch(imageUrl, {
-            mode: 'cors',
-            credentials: 'omit'
-        });
+        // Create a proxy URL to avoid CORS issues
+        const response = await fetch(imageUrl);
         
         if (!response.ok) {
             throw new Error('Failed to fetch image');
         }
         
         const blob = await response.blob();
-        
-        // Create a File object from the blob
         const file = new File([blob], 'generated-image.png', { 
-            type: blob.type || 'image/png',
+            type: 'image/png',
             lastModified: Date.now()
         });
         
-        // Clear existing state
+        // Clear result container
         const existingResult = document.getElementById('resultContainer');
         if (existingResult) {
             existingResult.remove();
         }
         
-        // Reset to editing mode
+        // Reset files and add the generated image
         selectedFiles = [file];
         isTextOnlyMode = false;
         
-        // Update UI
+        // Show all necessary sections
         uploadSection.style.display = 'none';
         backButton.classList.remove('active');
         photoPreviewSection.classList.add('active');
@@ -1364,13 +1371,11 @@ async function editImage(imageUrl) {
         subtitle.textContent = 'Refine your vision and generate again';
         subtitle.classList.add('screen-2');
         
-        // Update previews
-        updatePreviews();
+        // Clear status
+        statusDiv.style.display = 'none';
         
-        // Hide status after success
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 1000);
+        // Update previews with the loaded image
+        updatePreviews();
         
         // Scroll to top
         document.querySelector('.container').scrollTop = 0;
@@ -1378,28 +1383,44 @@ async function editImage(imageUrl) {
     } catch (error) {
         console.error('Edit error:', error);
         
-        // Fallback: Just reset to screen 2 without the image
+        // If CORS fails, just go to blank screen 2
         const existingResult = document.getElementById('resultContainer');
         if (existingResult) {
             existingResult.remove();
         }
         
+        // Reset to blank
+        selectedFiles = [];
+        isTextOnlyMode = false;
+        
+        // Show sections
         uploadSection.style.display = 'none';
         backButton.classList.remove('active');
         photoPreviewSection.classList.add('active');
         promptSection.classList.add('active');
-        generateSection.classList.add('active');
+        generateSection.classList.remove('active'); // Hide generate until prompt entered
         
-        subtitle.textContent = 'Describe your next vision';
+        // Update subtitle
+        subtitle.textContent = 'Add images and describe your vision';
         subtitle.classList.add('screen-2');
         
-        statusDiv.className = 'status error';
-        statusDiv.textContent = '⚠️ Could not load image. Starting fresh generation instead.';
+        // Update empty previews
+        updatePreviews();
+        
+        // Show user-friendly message
+        statusDiv.className = 'status';
+        statusDiv.style.background = 'rgba(59, 130, 246, 0.12)';
+        statusDiv.style.color = '#60a5fa';
+        statusDiv.style.border = '1px solid rgba(59, 130, 246, 0.25)';
+        statusDiv.textContent = 'ℹ️ Ready for your next creation. Upload images or describe your vision.';
         statusDiv.style.display = 'block';
         
         setTimeout(() => {
             statusDiv.style.display = 'none';
         }, 3000);
+        
+        // Scroll to top
+        document.querySelector('.container').scrollTop = 0;
     }
 }
     
@@ -1423,7 +1444,7 @@ async function editImage(imageUrl) {
         generateSection.style.display = 'none';
         
         // Update subtitle during generation
-        subtitle.textContent = 'Please wait, your reality is being generated...';
+        subtitle.textContent = 'Please wait, it will be done shortly...';
         subtitle.classList.add('screen-2');
         
         // Create progress indicator
