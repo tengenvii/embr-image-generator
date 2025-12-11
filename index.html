@@ -273,9 +273,54 @@
 
         /* Screen 2 subtitle with margins */
         .subtitle.screen-2 {
-            max-width: 380px;
-            margin: 0 auto;
-        }
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+/* Credit Display */
+.credit-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  animation: slideDown 0.5s ease;
+}
+
+.credit-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.credit-badge svg {
+  color: #4ade80;
+}
+
+.btn-buy-credits {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(34, 197, 94, 0.12) 100%);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-buy-credits:hover {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.4);
+  transform: translateY(-1px);
+}
 
         /* Back Button */
         .back-button {
@@ -883,8 +928,107 @@
         }
 
         .modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Credit Purchase Modal */
+.credit-modal-content {
+  background: linear-gradient(135deg, rgba(15, 15, 15, 0.98) 0%, rgba(5, 5, 5, 0.95) 100%);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(192, 192, 192, 0.15);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.credit-modal-content h2 {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.credit-modal-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.credit-packs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.credit-pack {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.credit-pack:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(74, 222, 128, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(74, 222, 128, 0.15);
+}
+
+.credit-pack.popular {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #000000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.pack-credits {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.pack-price {
+  font-size: 32px;
+  font-weight: 700;
+  color: #4ade80;
+  margin-bottom: 8px;
+}
+
+.pack-per-image {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .credit-modal-content {
+    padding: 32px 24px;
+  }
+  
+  .credit-packs {
+    grid-template-columns: 1fr;
+  }
+}
 
         /* Hidden file inputs */
         #cameraInput,
@@ -1005,7 +1149,19 @@
         <div class="header">
             <h1>Visualise your <span class="silver-text">New Reality</span></h1>
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
+        
+        <!-- Credit Display -->
+        <div class="credit-display" id="creditDisplay" style="display: none;">
+          <div class="credit-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              ircle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            <span id="creditCount">-</span> credits
+          </div>
+          <button class="btn-buy-credits" id="btnBuyCredits">Buy Credits</button>
         </div>
+      </div>
 
         <!-- Initial Upload Buttons -->
         <div class="upload-section" id="uploadSection">
@@ -1062,15 +1218,101 @@
         Powered by EMBR Consulting
     </div>
 
-    <!-- Modal for enlarged image -->
-    <div class="modal" id="imageModal">
-        <div class="modal-close" id="modalClose">×</div>
-        <img class="modal-content" id="modalImage" src="" alt="Enlarged preview">
+      <!-- Modal for enlarged image -->
+  <div class="modal" id="imageModal">
+    <div class="modal-close" id="modalClose">×</div>
+    <img class="modal-content" id="modalImage" src="" alt="Enlarged preview">
+  </div>
+
+  <!-- Credit Purchase Modal -->
+  <div class="modal" id="creditModal">
+    <div class="modal-close" id="creditModalClose">×</div>
+    <div class="credit-modal-content">
+      <h2>Buy Credits</h2>
+      <p class="credit-modal-subtitle">Choose a credit pack to continue creating</p>
+      
+      <div class="credit-packs">
+        <div class="credit-pack" data-price="5" data-credits="10">
+          <div class="pack-credits">10 Credits</div>
+          <div class="pack-price">$5</div>
+          <div class="pack-per-image">$0.50 per image</div>
+        </div>
+        
+        <div class="credit-pack popular" data-price="15" data-credits="35">
+          <div class="popular-badge">⭐ Best Value</div>
+          <div class="pack-credits">35 Credits</div>
+          <div class="pack-price">$15</div>
+          <div class="pack-per-image">$0.43 per image</div>
+        </div>
+        
+        <div class="credit-pack" data-price="40" data-credits="100">
+          <div class="pack-credits">100 Credits</div>
+          <div class="pack-price">$40</div>
+          <div class="pack-per-image">$0.40 per image</div>
+        </div>
+      </div>
     </div>
+  </div>
     
     <script>
-    const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
+    const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/check-credits-generate';
+    const GET_CREDITS_URL = 'https://embrsol.app.n8n.cloud/webhook/get-credits';
     const MAX_IMAGES = 3;
+
+    // Email Storage Functions
+function getStoredEmail() {
+  return localStorage.getItem('userEmail') || '';
+}
+
+function setStoredEmail(email) {
+  localStorage.setItem('userEmail', email);
+}
+
+function clearStoredEmail() {
+  localStorage.removeItem('userEmail');
+}
+
+// Get or prompt for user email
+async function getUserEmail() {
+  let email = getStoredEmail();
+  
+  if (!email) {
+    email = prompt('Enter your email to get started with 3 free credits:');
+    
+    if (!email) {
+      throw new Error('Email is required');
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address');
+      return getUserEmail(); // Retry
+    }
+    
+    setStoredEmail(email);
+  }
+  
+  return email;
+}
+
+// Fetch and display credits
+async function fetchAndDisplayCredits() {
+  try {
+    const email = getStoredEmail();
+    if (!email) return;
+    
+    const response = await fetch(`${GET_CREDITS_URL}?email=${encodeURIComponent(email)}`);
+    const data = await response.json();
+    
+    if (data.credits !== undefined) {
+      document.getElementById('creditCount').textContent = data.credits;
+      document.getElementById('creditDisplay').style.display = 'flex';
+    }
+  } catch (error) {
+    console.error('Failed to fetch credits:', error);
+  }
+}
     
     // Detect if mobile
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -1495,10 +1737,61 @@ btnClearAll.addEventListener('click', () => {
     });
     
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-        }
-    });
+  if (e.target === modal) {
+    modal.classList.remove('active');
+  }
+});
+
+// Credit Modal Handlers
+const creditModal = document.getElementById('creditModal');
+const creditModalClose = document.getElementById('creditModalClose');
+const btnBuyCredits = document.getElementById('btnBuyCredits');
+
+btnBuyCredits.addEventListener('click', () => {
+  creditModal.classList.add('active');
+});
+
+creditModalClose.addEventListener('click', () => {
+  creditModal.classList.remove('active');
+});
+
+creditModal.addEventListener('click', (e) => {
+  if (e.target === creditModal) {
+    creditModal.classList.remove('active');
+  }
+});
+
+// Credit Pack Selection
+document.querySelectorAll('.credit-pack').forEach(pack => {
+  pack.addEventListener('click', async () => {
+    const price = pack.dataset.price;
+    const credits = pack.dataset.credits;
+    const email = getStoredEmail();
+    
+    if (!email) {
+      alert('Please provide your email first');
+      return;
+    }
+    
+    // TODO: Replace with your actual Stripe Payment Link URLs
+    const paymentLinks = {
+      '5': 'https://buy.stripe.com/test_XXXXX', // $5 for 10 credits
+      '15': 'https://buy.stripe.com/test_XXXXX', // $15 for 35 credits
+      '40': 'https://buy.stripe.com/test_XXXXX'  // $40 for 100 credits
+    };
+    
+    // Open Stripe payment link with email pre-filled
+    const paymentUrl = `${paymentLinks[price]}?prefilled_email=${encodeURIComponent(email)}`;
+    window.open(paymentUrl, '_blank');
+    
+    creditModal.classList.remove('active');
+  });
+});
+
+// Initialize credits on page load
+window.addEventListener('load', () => {
+  fetchAndDisplayCredits();
+});
     
     // Edit Image Function - Fixed
 async function editImage(imageUrl) {
@@ -1589,8 +1882,16 @@ async function editImage(imageUrl) {
 }
     
     // Generate Image
-    btnGenerate.addEventListener('click', async () => {
-        if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
+btnGenerate.addEventListener('click', async () => {
+  // Get user email
+  let userEmail;
+  try {
+    userEmail = await getUserEmail();
+  } catch (error) {
+    return; // User cancelled
+  }
+  
+  if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
             statusDiv.className = 'status error';
             statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
             statusDiv.style.display = 'block';
@@ -1615,13 +1916,13 @@ async function editImage(imageUrl) {
         const progressContainer = createProgressIndicator();
         document.querySelector('.container').appendChild(progressContainer);
         
-        // Build FormData
-        const formData = new FormData();
-        formData.append('Image Prompt', promptTextarea.value);
-        
-        selectedFiles.forEach((file) => {
-            formData.append('Image', file);
-        });
+          // Build FormData
+  const formData = new FormData();
+  formData.append('email', userEmail);
+  formData.append('Image Prompt', promptTextarea.value);
+  selectedFiles.forEach(file => {
+    formData.append('Image', file);
+  });
         
         let progress = 0;
 let progressInterval;
@@ -1712,9 +2013,12 @@ let isComplete = false;
                 throw new Error('No image URL in response');
             }
             
-            generatedImageUrl = responseData.imageUrl; // Store for edit function
-            
-            finishProgress();
+                  generatedImageUrl = responseData.imageUrl; // Store for edit function
+      
+      // Refresh credit display
+      await fetchAndDisplayCredits();
+      
+      finishProgress();
             
             setTimeout(() => {
     statusDiv.className = 'status success';
