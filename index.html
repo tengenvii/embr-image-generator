@@ -62,13 +62,24 @@
                 transform: translateY(0);
             }
         }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                max-height: 500px;
+            }
+            to {
+                opacity: 0;
+                max-height: 0;
+            }
+        }
         
         .container {
             background: #0f0f0f;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 56px 48px;
-            max-width: 540px;
+            max-width: 480px; /* Reduced from 540px */
             width: 100%;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
             position: relative;
@@ -101,6 +112,14 @@
         
         .form-group {
             margin-bottom: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group.hidden {
+            opacity: 0;
+            max-height: 0;
+            margin: 0;
+            overflow: hidden;
         }
         
         label {
@@ -184,6 +203,141 @@
             font-size: 13px;
             margin-top: 4px;
         }
+
+        /* Image Preview Grid */
+        .preview-container {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .preview-count {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .clear-all-btn {
+            color: rgba(239, 68, 68, 0.9);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .clear-all-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(239, 68, 68, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+
+        .preview-remove:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.1);
+        }
+
+        /* Modal for enlarged image */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
         
         .submit-btn {
             width: 100%;
@@ -213,6 +367,7 @@
         .submit-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
         
         .status {
@@ -239,10 +394,15 @@
         @media (max-width: 640px) {
             .container {
                 padding: 40px 28px;
+                max-width: 100%;
             }
             
             h1 {
                 font-size: 28px;
+            }
+
+            .preview-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -256,7 +416,7 @@
         </div>
         
         <form id="imageForm">
-            <div class="form-group">
+            <div class="form-group" id="promptGroup">
                 <label for="prompt">Image Prompt *</label>
                 <textarea 
                     id="prompt" 
@@ -266,13 +426,22 @@
                 ></textarea>
             </div>
             
-            <div class="form-group">
-                <label>Reference Image (Optional)</label>
+            <div class="form-group" id="imageGroup">
+                <label>Reference Images (Optional - Max 8)</label>
                 <div class="file-upload">
-                    <input type="file" id="image" name="Image" accept="image/*">
+                    <input type="file" id="image" name="Image" accept="image/*" multiple>
                     <div class="file-icon">📁</div>
-                    <div class="file-text" id="fileName">No file chosen</div>
-                    <div class="file-hint">Click to upload or drag and drop</div>
+                    <div class="file-text">Click to upload or drag and drop</div>
+                    <div class="file-hint">Select up to 8 images</div>
+                </div>
+                
+                <!-- Preview Container -->
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-header">
+                        <span class="preview-count" id="previewCount">0/8 images</span>
+                        <span class="clear-all-btn" id="clearAll">Clear all</span>
+                    </div>
+                    <div class="preview-grid" id="previewGrid"></div>
                 </div>
             </div>
             
@@ -281,221 +450,337 @@
             <div class="status" id="status"></div>
         </form>
     </div>
+
+    <!-- Modal for enlarged image -->
+    <div class="modal" id="imageModal">
+        <div class="modal-close" id="modalClose">×</div>
+        <img class="modal-content" id="modalImage" src="" alt="Enlarged preview">
+    </div>
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
+    const MAX_IMAGES = 8;
     
     const form = document.getElementById('imageForm');
     const fileInput = document.getElementById('image');
-    const fileName = document.getElementById('fileName');
     const statusDiv = document.getElementById('status');
     const submitBtn = document.querySelector('button[type="submit"]');
+    const promptGroup = document.getElementById('promptGroup');
+    const imageGroup = document.getElementById('imageGroup');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewGrid = document.getElementById('previewGrid');
+    const previewCount = document.getElementById('previewCount');
+    const clearAllBtn = document.getElementById('clearAll');
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalClose = document.getElementById('modalClose');
     
+    let selectedFiles = [];
+    
+    // File input handler
     fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            fileName.textContent = e.target.files[0].name;
-        } else {
-            fileName.textContent = 'No file chosen';
+        const files = Array.from(e.target.files);
+        
+        // Check if adding these files exceeds limit
+        if (selectedFiles.length + files.length > MAX_IMAGES) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed. You tried to add ${files.length} more to ${selectedFiles.length} existing.`;
+            statusDiv.style.display = 'block';
+            fileInput.value = ''; // Reset input
+            return;
+        }
+        
+        // Add files to selected array
+        files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+            }
+        });
+        
+        updatePreviews();
+        fileInput.value = ''; // Reset input for next selection
+    });
+    
+    // Update preview grid
+    function updatePreviews() {
+        previewGrid.innerHTML = '';
+        
+        if (selectedFiles.length === 0) {
+            previewContainer.classList.remove('active');
+            return;
+        }
+        
+        previewContainer.classList.add('active');
+        previewCount.textContent = `${selectedFiles.length}/${MAX_IMAGES} images`;
+        
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                
+                // Click to enlarge
+                img.addEventListener('click', () => {
+                    modalImage.src = e.target.result;
+                    modal.classList.add('active');
+                });
+                
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'preview-remove';
+                removeBtn.innerHTML = '×';
+                removeBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    removeImage(index);
+                });
+                
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                previewGrid.appendChild(previewItem);
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // Remove single image
+    function removeImage(index) {
+        selectedFiles.splice(index, 1);
+        updatePreviews();
+        statusDiv.style.display = 'none'; // Clear any error messages
+    }
+    
+    // Clear all images
+    clearAllBtn.addEventListener('click', () => {
+        selectedFiles = [];
+        updatePreviews();
+        statusDiv.style.display = 'none';
+    });
+    
+    // Modal close
+    modalClose.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
         }
     });
     
+    // Form submission
     form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
-        statusDiv.className = 'status error';
-        statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
-        statusDiv.style.display = 'block';
-        return;
-    }
-    
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Generating...';
-    }
-    
-    statusDiv.style.display = 'none';
-    
-    const existingResult = document.getElementById('resultContainer');
-    if (existingResult) existingResult.remove();
-    
-    // Create and show progress indicator
-    const progressContainer = createProgressIndicator();
-    document.querySelector('.container').appendChild(progressContainer);
-    
-    const formData = new FormData(form);
-    
-    let progress = 0;
-    let progressInterval;
-    let estimatedTime = 45; // 45 seconds
-    let elapsedTime = 0;
-    let isComplete = false;
-    
-    const startProgress = () => {
-        progressInterval = setInterval(() => {
-            if (isComplete) return; // Stop updating if complete
-            
-            elapsedTime += 0.1;
-            
-            // Progress from 0-90% over 45 seconds
-            if (progress < 90) {
-                progress += (90 / (estimatedTime * 10)); // 90% / (45 seconds * 10 ticks per second)
-            } 
-            // After 90%, slow down to max 95%
-            else if (progress < 95) {
-                progress += 0.02; // Very slow crawl
-            }
-            // Cap at 95% until image is ready
-            
-            // Never exceed 95% until finishProgress is called
-            progress = Math.min(progress, 95);
-            
-            updateProgress(progress, elapsedTime, estimatedTime);
-        }, 100);
-    };
-    
-    const finishProgress = () => {
-        isComplete = true;
-        clearInterval(progressInterval);
+        e.preventDefault();
         
-        // Speed up to 100%
-        let finalProgress = progress;
-        const speedUp = setInterval(() => {
-            finalProgress += 3;
-            if (finalProgress >= 100) {
-                finalProgress = 100;
-                clearInterval(speedUp);
-                updateProgress(100, elapsedTime, estimatedTime);
-                setTimeout(() => {
-                    progressContainer.style.opacity = '0';
-                    setTimeout(() => progressContainer.remove(), 300);
-                }, 500);
-            } else {
-                updateProgress(finalProgress, elapsedTime, estimatedTime);
-            }
-        }, 30);
-    };
-    
-    startProgress();
-    
-    try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            body: formData
+        if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
+            statusDiv.style.display = 'block';
+            return;
+        }
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Generating...';
+        }
+        
+        statusDiv.style.display = 'none';
+        
+        // Hide form fields
+        promptGroup.classList.add('hidden');
+        imageGroup.classList.add('hidden');
+        
+        const existingResult = document.getElementById('resultContainer');
+        if (existingResult) existingResult.remove();
+        
+        // Create and show progress indicator
+        const progressContainer = createProgressIndicator();
+        document.querySelector('.container').appendChild(progressContainer);
+        
+        // Build FormData with selected files
+        const formData = new FormData();
+        formData.append('Image Prompt', document.getElementById('prompt').value);
+        
+        selectedFiles.forEach((file, index) => {
+            formData.append('Image', file);
         });
         
-        const responseText = await response.text();
-        let data;
+        let progress = 0;
+        let progressInterval;
+        let estimatedTime = 45;
+        let elapsedTime = 0;
+        let isComplete = false;
+        
+        const startProgress = () => {
+            progressInterval = setInterval(() => {
+                if (isComplete) return;
+                
+                elapsedTime += 0.1;
+                
+                if (progress < 90) {
+                    progress += (90 / (estimatedTime * 10));
+                } else if (progress < 95) {
+                    progress += 0.02;
+                }
+                
+                progress = Math.min(progress, 95);
+                updateProgress(progress, elapsedTime, estimatedTime);
+            }, 100);
+        };
+        
+        const finishProgress = () => {
+            isComplete = true;
+            clearInterval(progressInterval);
+            
+            let finalProgress = progress;
+            const speedUp = setInterval(() => {
+                finalProgress += 3;
+                if (finalProgress >= 100) {
+                    finalProgress = 100;
+                    clearInterval(speedUp);
+                    updateProgress(100, elapsedTime, estimatedTime);
+                    setTimeout(() => {
+                        progressContainer.style.opacity = '0';
+                        setTimeout(() => progressContainer.remove(), 300);
+                    }, 500);
+                } else {
+                    updateProgress(finalProgress, elapsedTime, estimatedTime);
+                }
+            }, 30);
+        };
+        
+        startProgress();
         
         try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            throw new Error('Invalid response from server');
-        }
-        
-        const responseData = Array.isArray(data) ? data[0] : data;
-        
-        if (!response.ok) {
-            throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
-        }
-        
-        if (!responseData || !responseData.imageUrl) {
-            throw new Error('No image URL in response');
-        }
-        
-        // Image is ready - now finish progress
-        finishProgress();
-        
-        setTimeout(() => {
-            statusDiv.className = 'status success';
-            statusDiv.textContent = '✓ Image generated successfully!';
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const responseText = await response.text();
+            let data;
+            
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error('Invalid response from server');
+            }
+            
+            const responseData = Array.isArray(data) ? data[0] : data;
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
+            }
+            
+            if (!responseData || !responseData.imageUrl) {
+                throw new Error('No image URL in response');
+            }
+            
+            finishProgress();
+            
+            setTimeout(() => {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✓ Image generated successfully!';
+                statusDiv.style.display = 'block';
+                
+                const resultContainer = document.createElement('div');
+                resultContainer.id = 'resultContainer';
+                resultContainer.style.cssText = `
+                    margin-top: 32px;
+                    padding: 24px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    opacity: 0;
+                    animation: fadeIn 0.4s ease forwards;
+                `;
+                
+                const title = document.createElement('h3');
+                title.textContent = 'Generated Image';
+                title.style.cssText = `
+                    color: rgba(255, 255, 255, 0.9);
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                `;
+                resultContainer.appendChild(title);
+                
+                const img = document.createElement('img');
+                img.src = responseData.imageUrl;
+                img.alt = 'Generated image';
+                img.style.cssText = `
+                    width: 100%;
+                    border-radius: 8px;
+                    display: block;
+                    margin-bottom: 16px;
+                `;
+                
+                img.onerror = () => {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
+                };
+                
+                resultContainer.appendChild(img);
+                
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = responseData.imageUrl;
+                downloadBtn.download = 'embr-generated-image.png';
+                downloadBtn.target = '_blank';
+                downloadBtn.textContent = 'Download Image';
+                downloadBtn.style.cssText = `
+                    display: inline-block;
+                    padding: 12px 24px;
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #ffffff;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                `;
+                downloadBtn.onmouseover = () => {
+                    downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+                };
+                downloadBtn.onmouseout = () => {
+                    downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                };
+                resultContainer.appendChild(downloadBtn);
+                
+                document.querySelector('.container').appendChild(resultContainer);
+                
+                // Show form fields again
+                promptGroup.classList.remove('hidden');
+                imageGroup.classList.remove('hidden');
+                
+                form.reset();
+                selectedFiles = [];
+                updatePreviews();
+            }, 800);
+            
+        } catch (error) {
+            isComplete = true;
+            clearInterval(progressInterval);
+            progressContainer.remove();
+            
+            // Show form fields again on error
+            promptGroup.classList.remove('hidden');
+            imageGroup.classList.remove('hidden');
+            
+            statusDiv.className = 'status error';
+            statusDiv.textContent = `✗ ${error.message}`;
             statusDiv.style.display = 'block';
-            
-            const resultContainer = document.createElement('div');
-            resultContainer.id = 'resultContainer';
-            resultContainer.style.cssText = `
-                margin-top: 32px;
-                padding: 24px;
-                background: rgba(0, 0, 0, 0.3);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
-                opacity: 0;
-                animation: fadeIn 0.4s ease forwards;
-            `;
-            
-            const title = document.createElement('h3');
-            title.textContent = 'Generated Image';
-            title.style.cssText = `
-                color: rgba(255, 255, 255, 0.9);
-                font-size: 18px;
-                font-weight: 600;
-                margin-bottom: 16px;
-            `;
-            resultContainer.appendChild(title);
-            
-            const img = document.createElement('img');
-            img.src = responseData.imageUrl;
-            img.alt = 'Generated image';
-            img.style.cssText = `
-                width: 100%;
-                border-radius: 8px;
-                display: block;
-                margin-bottom: 16px;
-            `;
-            
-            img.onerror = () => {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
-            };
-            
-            resultContainer.appendChild(img);
-            
-            const downloadBtn = document.createElement('a');
-            downloadBtn.href = responseData.imageUrl;
-            downloadBtn.download = 'embr-generated-image.png';
-            downloadBtn.target = '_blank';
-            downloadBtn.textContent = 'Download Image';
-            downloadBtn.style.cssText = `
-                display: inline-block;
-                padding: 12px 24px;
-                background: rgba(255, 255, 255, 0.1);
-                color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 14px;
-                transition: all 0.2s ease;
-            `;
-            downloadBtn.onmouseover = () => {
-                downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
-            };
-            downloadBtn.onmouseout = () => {
-                downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-            };
-            resultContainer.appendChild(downloadBtn);
-            
-            document.querySelector('.container').appendChild(resultContainer);
-            
-            form.reset();
-            fileName.textContent = 'No file chosen';
-        }, 800);
-        
-    } catch (error) {
-        isComplete = true;
-        clearInterval(progressInterval);
-        progressContainer.remove();
-        
-        statusDiv.className = 'status error';
-        statusDiv.textContent = `✗ ${error.message}`;
-        statusDiv.style.display = 'block';
-    } finally {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Generate Image';
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Generate Image';
+            }
         }
-    }
-});
+    });
     
     function createProgressIndicator() {
         const container = document.createElement('div');
