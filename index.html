@@ -20,7 +20,7 @@
         }
         
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', 'Inter', sans-serif;
             background: #000000;
             min-height: 100vh;
             display: flex;
@@ -103,8 +103,8 @@
             background: rgba(15, 15, 15, 0.8);
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
+            border: 1px solid rgba(192, 192, 192, 0.15);
+            border-radius: 16px;
             padding: 40px 36px;
             max-width: 500px;
             width: 100%;
@@ -129,13 +129,6 @@
             height: auto;
             margin: 0 auto 24px;
             display: block;
-            filter: brightness(1) drop-shadow(0 2px 8px rgba(255,255,255,0.1));
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .logo:hover {
-            filter: brightness(1.05) drop-shadow(0 4px 16px rgba(255,255,255,0.15));
-            transform: scale(1.01);
         }
 
         .subtitle {
@@ -172,12 +165,12 @@
         textarea {
             width: 100%;
             padding: 16px 18px;
-            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(192, 192, 192, 0.12);
             border-radius: 14px;
             font-size: 15px;
             line-height: 1.5;
-            font-family: 'Inter', sans-serif;
-            background: rgba(0, 0, 0, 0.4);
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 100%);
             backdrop-filter: blur(10px);
             color: #ffffff;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -189,8 +182,8 @@
         
         input:focus,
         textarea:focus {
-            border-color: rgba(255, 255, 255, 0.25);
-            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(192, 192, 192, 0.25);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.45) 100%);
             box-shadow: 
                 0 1px 2px rgba(0, 0, 0, 0.1) inset,
                 0 0 0 4px rgba(255, 255, 255, 0.04),
@@ -213,9 +206,9 @@
             position: relative;
             min-height: 130px;
             padding: 20px;
-            border: 1.5px dashed rgba(255, 255, 255, 0.12);
+            border: 1.5px dashed rgba(192, 192, 192, 0.12);
             border-radius: 14px;
-            background: rgba(0, 0, 0, 0.25);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.25) 100%);
             backdrop-filter: blur(10px);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -223,8 +216,8 @@
         }
 
         .file-upload:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.35);
+            border-color: rgba(192, 192, 192, 0.2);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.35) 100%);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             transform: translateY(-1px);
         }
@@ -570,7 +563,6 @@
                 padding: 32px 24px;
                 max-width: 100%;
                 margin: 0 auto;
-                border-radius: 16px;
             }
 
             .logo {
@@ -625,17 +617,17 @@
 
         <form id="imageForm">
             <div class="form-group" id="promptGroup">
-                <label for="prompt">Image Prompt *</label>
+                <label for="prompt">Describe what you want to create *</label>
                 <textarea 
                     id="prompt" 
                     name="Image Prompt" 
-                    placeholder="Describe your image in detail..."
+                    placeholder="A futuristic cityscape at sunset, neon lights reflecting off wet streets..."
                     required
                 ></textarea>
             </div>
             
             <div class="form-group" id="imageGroup">
-                <label>Reference Images (Optional - Max 8)</label>
+                <label>Reference Images (Optional)</label>
                 <div class="file-upload" id="fileUploadBox">
                     <input type="file" id="image" name="Image" accept="image/*" multiple>
                     
