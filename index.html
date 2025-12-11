@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>EMBR Image Generator</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -13,6 +13,12 @@
             box-sizing: border-box;
         }
         
+        html {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
             background: #000000;
@@ -20,8 +26,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 60px 20px; /* Equal top/bottom padding */
+            padding: 48px 20px;
             -webkit-font-smoothing: antialiased;
+            touch-action: pan-y pinch-zoom;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+            position: relative;
         }
         
         body::before {
@@ -32,9 +45,11 @@
             transform: translate(-50%, -50%);
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, rgba(200, 200, 200, 0.05) 0%, transparent 70%);
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
             pointer-events: none;
-            animation: pulse 10s ease-in-out infinite;
+            animation: pulse 15s ease-in-out infinite;
         }
         
         @keyframes pulse {
@@ -67,48 +82,78 @@
             from { opacity: 1; }
             to { opacity: 0; }
         }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes buttonPress {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.97); }
+        }
         
         .container {
-            background: #0f0f0f;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
-            padding: 48px 40px; /* Balanced padding */
-            max-width: 500px; /* Slightly wider */
+            padding: 40px 36px;
+            max-width: 500px;
             width: 100%;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 1px 3px rgba(255, 255, 255, 0.05) inset,
+                0 50px 100px rgba(0, 0, 0, 0.3);
             position: relative;
             z-index: 1;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
         }
         
         .header {
-    text-align: center;
-    margin-bottom: 40px;
-}
+            text-align: center;
+            margin-bottom: 32px;
+        }
 
-.logo {
-    width: 100%;
-    max-width: 280px;
-    height: auto;
-    margin: 0 auto 20px;
-    display: block;
-    filter: brightness(1);
-    transition: filter 0.3s ease;
-}
+        .logo {
+            width: 100%;
+            max-width: 260px;
+            height: auto;
+            margin: 0 auto 24px;
+            display: block;
+            filter: brightness(1) drop-shadow(0 2px 8px rgba(255,255,255,0.1));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-.logo:hover {
-    filter: brightness(1.1);
-}
+        .logo:hover {
+            filter: brightness(1.05) drop-shadow(0 4px 16px rgba(255,255,255,0.15));
+            transform: scale(1.01);
+        }
 
-.subtitle {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 16px;
-    line-height: 1.5;
-}
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
+        }
         
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             transition: all 0.3s ease;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
         }
+
+        .form-group:nth-child(1) { animation-delay: 0.05s; }
+        .form-group:nth-child(2) { animation-delay: 0.1s; }
 
         .form-group.hidden {
             display: none;
@@ -116,210 +161,243 @@
         
         label {
             display: block;
+            font-size: 13px;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 10px;
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
         }
         
         input[type="text"],
         textarea {
             width: 100%;
-            padding: 14px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 12px;
+            padding: 16px 18px;
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
             font-size: 15px;
+            line-height: 1.5;
             font-family: 'Inter', sans-serif;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
             color: #ffffff;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
+            box-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.1) inset,
+                0 0 0 0 rgba(255, 255, 255, 0);
         }
         
         input:focus,
         textarea:focus {
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.6);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.1) inset,
+                0 0 0 4px rgba(255, 255, 255, 0.04),
+                0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
         }
         
         input::placeholder,
         textarea::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 400;
         }
         
         textarea {
-            min-height: 110px;
+            min-height: 100px;
             resize: vertical;
         }
         
         .file-upload {
-    position: relative;
-    min-height: 140px;
-    padding: 24px;
-    border: 2px dashed rgba(255, 255, 255, 0.18);
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-}
+            position: relative;
+            min-height: 130px;
+            padding: 20px;
+            border: 1.5px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+        }
 
-.file-upload:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.45);
-}
+        .file-upload:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.35);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
 
-.file-upload input[type="file"] {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 10;
-}
+        .file-upload:active {
+            transform: scale(0.995);
+        }
 
-/* Empty State */
-.upload-empty {
-    pointer-events: none;
-}
+        .file-upload input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
 
-.upload-empty.hidden {
-    display: none;
-}
+        /* Empty State */
+        .upload-empty {
+            pointer-events: none;
+        }
 
-.file-icon {
-    font-size: 36px;
-    margin-bottom: 10px;
-}
+        .upload-empty.hidden {
+            display: none;
+        }
 
-.file-text {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 14px;
-    font-weight: 500;
-}
+        .file-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
 
-.file-hint {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 12px;
-    margin-top: 4px;
-}
+        .file-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            font-weight: 500;
+        }
 
-/* Preview Container (inside upload box) */
-.upload-preview-container {
-    display: none;
-    pointer-events: none;
-}
+        .file-hint {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            margin-top: 4px;
+        }
 
-.upload-preview-container.active {
-    display: block;
-}
+        /* Preview Container (inside upload box) */
+        .upload-preview-container {
+            display: none;
+            pointer-events: none;
+        }
 
-.upload-preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
+        .upload-preview-container.active {
+            display: block;
+        }
 
-.upload-preview-count {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 14px;
-    font-weight: 600;
-}
+        .upload-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
 
-.clear-all-btn {
-    color: rgba(239, 68, 68, 0.9);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    pointer-events: all;
-    z-index: 20;
-    position: relative;
-}
+        .upload-preview-count {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 600;
+        }
 
-.clear-all-btn:hover {
-    background: rgba(239, 68, 68, 0.15);
-}
+        .clear-all-btn {
+            color: rgba(239, 68, 68, 0.9);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 12px;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            pointer-events: all;
+            z-index: 20;
+            position: relative;
+        }
 
-.upload-preview-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-}
+        .clear-all-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
 
-.preview-item {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    pointer-events: all;
-}
+        .upload-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
 
-.preview-item:hover {
-    transform: scale(1.05);
-    border-color: rgba(255, 255, 255, 0.3);
-    z-index: 15;
-}
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            pointer-events: all;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.2),
+                0 1px 2px rgba(0, 0, 0, 0.1);
+        }
 
-.preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+        .preview-item:hover {
+            transform: scale(1.03) translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+            z-index: 15;
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.2);
+        }
 
-.preview-remove {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 22px;
-    height: 22px;
-    background: rgba(239, 68, 68, 0.95);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    color: white;
-    font-weight: bold;
-    transition: all 0.2s ease;
-    z-index: 25;
-}
+        .preview-item:active {
+            transform: scale(0.98);
+        }
 
-.preview-remove:hover {
-    background: rgba(239, 68, 68, 1);
-    transform: scale(1.15);
-}
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-.add-more-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 1;
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.03);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 32px;
-    color: rgba(255, 255, 255, 0.5);
-    pointer-events: all;
-}
+        .preview-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 28px;
+            height: 28px;
+            background: rgba(239, 68, 68, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            z-index: 25;
+        }
 
-.add-more-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: rgba(255, 255, 255, 0.8);
-}
+        .preview-remove:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.15);
+        }
+
+        .add-more-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+            min-width: 44px;
+            min-height: 44px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: all;
+        }
+
+        .add-more-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.8);
+        }
 
         /* Modal for enlarged image */
         .modal {
@@ -370,27 +448,55 @@
         
         .submit-btn, .new-image-btn {
             width: 100%;
-            padding: 15px 32px;
-            background: #ffffff;
+            padding: 16px 32px;
+            background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
             color: #000000;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
+            letter-spacing: -0.01em;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 16px;
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.12),
+                0 8px 24px rgba(0, 0, 0, 0.15),
+                0 1px 0 rgba(255, 255, 255, 0.8) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before, .new-image-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn:hover::before, .new-image-btn:hover::before {
+            opacity: 1;
         }
         
         .submit-btn:hover, .new-image-btn:hover {
-            background: #f5f5f5;
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.12),
+                0 12px 32px rgba(0, 0, 0, 0.2),
+                0 1px 0 rgba(255, 255, 255, 0.9) inset;
         }
         
         .submit-btn:active, .new-image-btn:active {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.99);
+            box-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.12),
+                0 4px 16px rgba(0, 0, 0, 0.15);
+            animation: buttonPress 0.2s ease;
         }
         
         .submit-btn:disabled {
@@ -410,24 +516,29 @@
         
         .status {
             margin-top: 16px;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 14px 18px;
+            border-radius: 12px;
             text-align: center;
-            font-size: 13px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
             display: none;
-            animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .status.success {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.08);
         }
         
         .status.error {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.08);
         }
 
         .status.error.fade-out {
@@ -438,41 +549,67 @@
         #progressContainer {
             margin-top: 24px;
             padding: 24px;
-            background: linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
-            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.2),
+                0 1px 2px rgba(255, 255, 255, 0.05) inset;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             transition: opacity 0.3s ease;
         }
         
         @media (max-width: 640px) {
             body {
-                padding: 40px 20px;
+                padding: 32px 16px;
+                align-items: flex-start;
             }
 
             .container {
-                padding: 40px 28px;
+                padding: 32px 24px;
                 max-width: 100%;
-            }
-            
-            h1 {
-                font-size: 28px;
-            }
-
-            .preview-grid {
-                grid-template-columns: repeat(3, 1fr);
-
+                margin: 0 auto;
+                border-radius: 16px;
             }
 
             .logo {
-        max-width: 220px;
-        margin-bottom: 16px;
-            
+                max-width: 200px;
+                margin-bottom: 20px;
             }
-    
-    .subtitle {
-        font-size: 15px;
-        
+
+            .subtitle {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            textarea {
+                min-height: 90px;
+                font-size: 16px;
+            }
+
+            .upload-preview-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .submit-btn, .new-image-btn {
+                padding: 14px 28px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                padding: 28px 20px;
+            }
+
+            .logo {
+                max-width: 180px;
             }
         }
     </style>
@@ -480,48 +617,48 @@
 <body>
     <div class="container">
         <div class="header">
-    <img src="https://media.discordapp.net/attachments/1394024573183332396/1448541231033487541/embrwhitelogo_1765429510-trimmy-Untitled_design_-_2025-12-11T050457.267.png?ex=693ba2a6&is=693a5126&hm=74b3ce9acd6ea68fead9a771f4a52500d310c2e4928ae903420a30cdad32e9b5&=&format=webp&quality=lossless&width=700&height=196" 
-         alt="EMBR Logo" 
-         class="logo">
-    <p class="subtitle">Transform your ideas into stunning AI-generated images</p>
-</div>
+            <img src="https://media.discordapp.net/attachments/1394024573183332396/1448541231033487541/embrwhitelogo_1765429510-trimmy-Untitled_design_-_2025-12-11T050457.267.png?ex=693ba2a6&is=693a5126&hm=74b3ce9acd6ea68fead9a771f4a52500d310c2e4928ae903420a30cdad32e9b5&=&format=webp&quality=lossless&width=700&height=196" 
+                 alt="EMBR Logo" 
+                 class="logo">
+            <p class="subtitle">Transform your ideas into stunning AI-generated images</p>
+        </div>
 
-<form id="imageForm">
-    <div class="form-group" id="promptGroup">
-        <label for="prompt">Image Prompt *</label>
-        <textarea 
-            id="prompt" 
-            name="Image Prompt" 
-            placeholder="Describe your image in detail..."
-            required
-        ></textarea>
-    </div>
-    
-    <div class="form-group" id="imageGroup">
-    <label>Reference Images (Optional - Max 8)</label>
-    <div class="file-upload" id="fileUploadBox">
-        <input type="file" id="image" name="Image" accept="image/*" multiple>
-        
-        <!-- Empty State -->
-        <div class="upload-empty" id="uploadEmpty">
-            <div class="file-icon">📁</div>
-            <div class="file-text">Click to upload or drag and drop</div>
-            <div class="file-hint">Select up to 8 images</div>
-        </div>
-        
-        <!-- Preview Grid (hidden initially) -->
-        <div class="upload-preview-container" id="uploadPreviewContainer">
-            <div class="upload-preview-header">
-                <span class="upload-preview-count" id="uploadPreviewCount">0/8</span>
-                <span class="clear-all-btn" id="clearAll">Clear all</span>
+        <form id="imageForm">
+            <div class="form-group" id="promptGroup">
+                <label for="prompt">Image Prompt *</label>
+                <textarea 
+                    id="prompt" 
+                    name="Image Prompt" 
+                    placeholder="Describe your image in detail..."
+                    required
+                ></textarea>
             </div>
-            <div class="upload-preview-grid" id="uploadPreviewGrid">
-                <!-- Thumbnails will be inserted here -->
-            </div>
-        </div>
-    </div>
-</div>
             
+            <div class="form-group" id="imageGroup">
+                <label>Reference Images (Optional - Max 8)</label>
+                <div class="file-upload" id="fileUploadBox">
+                    <input type="file" id="image" name="Image" accept="image/*" multiple>
+                    
+                    <!-- Empty State -->
+                    <div class="upload-empty" id="uploadEmpty">
+                        <div class="file-icon">📁</div>
+                        <div class="file-text">Click to upload or drag and drop</div>
+                        <div class="file-hint">Select up to 8 images</div>
+                    </div>
+                    
+                    <!-- Preview Grid (hidden initially) -->
+                    <div class="upload-preview-container" id="uploadPreviewContainer">
+                        <div class="upload-preview-header">
+                            <span class="upload-preview-count" id="uploadPreviewCount">0/8</span>
+                            <span class="clear-all-btn" id="clearAll">Clear all</span>
+                        </div>
+                        <div class="upload-preview-grid" id="uploadPreviewGrid">
+                            <!-- Thumbnails will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
             <button type="submit" class="submit-btn" id="submitBtn">Generate Image</button>
             
             <div class="status" id="status"></div>
@@ -548,9 +685,6 @@
     const newImageBtn = document.getElementById('newImageBtn');
     const promptGroup = document.getElementById('promptGroup');
     const imageGroup = document.getElementById('imageGroup');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewGrid = document.getElementById('previewGrid');
-    const previewCount = document.getElementById('previewCount');
     const clearAllBtn = document.getElementById('clearAll');
     const modal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
@@ -593,73 +727,73 @@
     });
     
     // Update preview grid
-function updatePreviews() {
-    const uploadEmpty = document.getElementById('uploadEmpty');
-    const uploadPreviewContainer = document.getElementById('uploadPreviewContainer');
-    const uploadPreviewGrid = document.getElementById('uploadPreviewGrid');
-    const uploadPreviewCount = document.getElementById('uploadPreviewCount');
-    
-    uploadPreviewGrid.innerHTML = '';
-    
-    if (selectedFiles.length === 0) {
-        uploadEmpty.classList.remove('hidden');
-        uploadPreviewContainer.classList.remove('active');
-        return;
-    }
-    
-    // Hide empty state, show previews
-    uploadEmpty.classList.add('hidden');
-    uploadPreviewContainer.classList.add('active');
-    uploadPreviewCount.textContent = `${selectedFiles.length}/${MAX_IMAGES}`;
-    
-    // Add preview items
-    selectedFiles.forEach((file, index) => {
-        const reader = new FileReader();
+    function updatePreviews() {
+        const uploadEmpty = document.getElementById('uploadEmpty');
+        const uploadPreviewContainer = document.getElementById('uploadPreviewContainer');
+        const uploadPreviewGrid = document.getElementById('uploadPreviewGrid');
+        const uploadPreviewCount = document.getElementById('uploadPreviewCount');
         
-        reader.onload = (e) => {
-            const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
-            
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = file.name;
-            
-            // Click to enlarge
-            img.addEventListener('click', (event) => {
-                event.stopPropagation();
-                modalImage.src = e.target.result;
-                modal.classList.add('active');
-            });
-            
-            const removeBtn = document.createElement('div');
-            removeBtn.className = 'preview-remove';
-            removeBtn.innerHTML = '×';
-            removeBtn.addEventListener('click', (event) => {
-                event.stopPropagation();
-                removeImage(index);
-            });
-            
-            previewItem.appendChild(img);
-            previewItem.appendChild(removeBtn);
-            uploadPreviewGrid.appendChild(previewItem);
-        };
+        uploadPreviewGrid.innerHTML = '';
         
-        reader.readAsDataURL(file);
-    });
-    
-    // Add "+" button if less than max
-    if (selectedFiles.length < MAX_IMAGES) {
-        const addMoreBtn = document.createElement('div');
-        addMoreBtn.className = 'add-more-btn';
-        addMoreBtn.innerHTML = '+';
-        addMoreBtn.title = 'Add more images';
-        addMoreBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            fileInput.click();
+        if (selectedFiles.length === 0) {
+            uploadEmpty.classList.remove('hidden');
+            uploadPreviewContainer.classList.remove('active');
+            return;
+        }
+        
+        // Hide empty state, show previews
+        uploadEmpty.classList.add('hidden');
+        uploadPreviewContainer.classList.add('active');
+        uploadPreviewCount.textContent = `${selectedFiles.length}/${MAX_IMAGES}`;
+        
+        // Add preview items
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                
+                // Click to enlarge
+                img.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    modalImage.src = e.target.result;
+                    modal.classList.add('active');
+                });
+                
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'preview-remove';
+                removeBtn.innerHTML = '×';
+                removeBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    removeImage(index);
+                });
+                
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                uploadPreviewGrid.appendChild(previewItem);
+            };
+            
+            reader.readAsDataURL(file);
         });
-        uploadPreviewGrid.appendChild(addMoreBtn);
+        
+        // Add "+" button if less than max
+        if (selectedFiles.length < MAX_IMAGES) {
+            const addMoreBtn = document.createElement('div');
+            addMoreBtn.className = 'add-more-btn';
+            addMoreBtn.innerHTML = '+';
+            addMoreBtn.title = 'Add more images';
+            addMoreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.click();
+            });
+            uploadPreviewGrid.appendChild(addMoreBtn);
+        }
     }
-}
     
     // Remove single image
     function removeImage(index) {
@@ -716,7 +850,7 @@ function updatePreviews() {
         }
         
         submitBtn.disabled = true;
-        submitBtn.style.display = 'none'; // ← Hide the button completely
+        submitBtn.style.display = 'none';
         statusDiv.style.display = 'none';
         
         // Hide form fields and submit button
@@ -821,11 +955,15 @@ function updatePreviews() {
                 resultContainer.style.cssText = `
                     margin-top: 32px;
                     padding: 24px;
-                    background: rgba(0, 0, 0, 0.3);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 12px;
+                    background: rgba(0, 0, 0, 0.25);
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 16px;
+                    box-shadow: 
+                        0 8px 24px rgba(0, 0, 0, 0.2),
+                        0 1px 2px rgba(255, 255, 255, 0.05) inset;
                     opacity: 0;
-                    animation: fadeIn 0.4s ease forwards;
+                    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
                 `;
                 
                 const title = document.createElement('h3');
@@ -843,9 +981,10 @@ function updatePreviews() {
                 img.alt = 'Generated image';
                 img.style.cssText = `
                     width: 100%;
-                    border-radius: 8px;
+                    border-radius: 12px;
                     display: block;
                     margin-bottom: 16px;
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
                 `;
                 
                 img.onerror = () => {
@@ -866,17 +1005,19 @@ function updatePreviews() {
                     background: rgba(255, 255, 255, 0.1);
                     color: #ffffff;
                     border: 1px solid rgba(255, 255, 255, 0.2);
-                    border-radius: 8px;
+                    border-radius: 10px;
                     text-decoration: none;
                     font-weight: 600;
                     font-size: 14px;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 `;
                 downloadBtn.onmouseover = () => {
                     downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+                    downloadBtn.style.transform = 'translateY(-1px)';
                 };
                 downloadBtn.onmouseout = () => {
                     downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                    downloadBtn.style.transform = 'translateY(0)';
                 };
                 resultContainer.appendChild(downloadBtn);
                 
@@ -895,16 +1036,15 @@ function updatePreviews() {
             // Show form fields again on error
             promptGroup.classList.remove('hidden');
             imageGroup.classList.remove('hidden');
-            submitBtn.style.display = 'block'; //
+            submitBtn.style.display = 'block';
             
             statusDiv.className = 'status error';
             statusDiv.textContent = `✗ ${error.message}`;
             statusDiv.style.display = 'block';
         } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Generate Image';
-    // Don't show button here - it's controlled by success/error/newImageBtn
-}
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate Image';
+        }
     });
     
     function createProgressIndicator() {
@@ -994,6 +1134,6 @@ function updatePreviews() {
         if (percentText) percentText.textContent = Math.floor(percent) + '%';
         if (timeText) timeText.textContent = `${elapsed.toFixed(1)}s / ~${estimated}s`;
     }
-</script>
+    </script>
 </body>
 </html>
