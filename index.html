@@ -11,31 +11,36 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         html {
-            overflow-x: hidden;
+            overflow: hidden;
             width: 100%;
             height: 100%;
+            position: fixed;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', 'Inter', sans-serif;
             background: #000000;
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
             -webkit-font-smoothing: antialiased;
-            touch-action: pan-y pinch-zoom;
+            touch-action: manipulation;
             overscroll-behavior: none;
-            -webkit-overflow-scrolling: touch;
-            overflow-x: hidden;
+            overflow: hidden;
             width: 100%;
-            max-width: 100vw;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
         body::before {
@@ -140,8 +145,22 @@
                 0 50px 100px rgba(0, 0, 0, 0.3);
             position: relative;
             z-index: 1;
-            touch-action: pan-y;
-            overscroll-behavior: contain;
+            max-height: 90vh;
+            max-height: 90dvh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .container::-webkit-scrollbar {
+            width: 0;
+            display: none;
+        }
+
+        .container {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         
         .header {
@@ -186,6 +205,7 @@
             border: none;
             background: none;
             padding: 8px 0;
+            touch-action: manipulation;
         }
 
         .back-button.active {
@@ -233,6 +253,9 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .btn-photo {
@@ -310,6 +333,7 @@
             text-decoration: none;
             transition: all 0.2s ease;
             cursor: pointer;
+            touch-action: manipulation;
         }
 
         .text-only-link a:hover {
@@ -509,6 +533,7 @@
                 0 1px 0 rgba(255, 255, 255, 0.8) inset;
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         .btn-generate::before {
@@ -658,6 +683,11 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                padding: 16px;
+                overflow: hidden;
+            }
+
             .logo-fixed {
                 top: 20px;
                 left: 20px;
@@ -669,7 +699,9 @@
 
             .container {
                 padding: 32px 24px;
-                margin-top: 80px;
+                margin: 0;
+                max-height: calc(100vh - 100px);
+                max-height: calc(100dvh - 100px);
             }
 
             .header h1 {
@@ -752,7 +784,7 @@
         </div>
 
         <!-- Hidden File Inputs -->
-        <input type="file" id="cameraInput" accept="image/*" capture="user" multiple>
+        <input type="file" id="cameraInput" accept="image/*" multiple>
         <input type="file" id="galleryInput" accept="image/*" multiple>
 
         <!-- Photo Preview Section (Shows after upload) -->
@@ -798,6 +830,9 @@
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
     const MAX_IMAGES = 8;
     
+    // Detect if mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
     // Elements
     const btnTakePhoto = document.getElementById('btnTakePhoto');
     const btnUploadGallery = document.getElementById('btnUploadGallery');
@@ -821,6 +856,11 @@
     
     let selectedFiles = [];
     let isTextOnlyMode = false;
+    
+    // Set capture attribute only on mobile
+    if (isMobile) {
+        cameraInput.setAttribute('capture', 'environment');
+    }
     
     // Rotating placeholder suggestions
     const placeholders = [
@@ -884,24 +924,47 @@
     
     promptTextarea.addEventListener('blur', updatePlaceholderVisibility);
     
-    // Button Click Handlers
-    btnTakePhoto.addEventListener('click', () => {
+    // Enhanced button click handlers with multiple event types
+    function triggerCameraInput(e) {
+        e.preventDefault();
+        e.stopPropagation();
         cameraInput.click();
-    });
+    }
     
-    btnUploadGallery.addEventListener('click', () => {
+    function triggerGalleryInput(e) {
+        e.preventDefault();
+        e.stopPropagation();
         galleryInput.click();
-    });
+    }
+    
+    // Add both click and touchend events for better mobile reliability
+    btnTakePhoto.addEventListener('click', triggerCameraInput, { passive: false });
+    btnTakePhoto.addEventListener('touchend', triggerCameraInput, { passive: false });
+    
+    btnUploadGallery.addEventListener('click', triggerGalleryInput, { passive: false });
+    btnUploadGallery.addEventListener('touchend', triggerGalleryInput, { passive: false });
     
     // Text Only Link
-    textOnlyLink.addEventListener('click', () => {
+    textOnlyLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        isTextOnlyMode = true;
+        showPromptSection(true);
+    });
+    
+    textOnlyLink.addEventListener('touchend', (e) => {
+        e.preventDefault();
         isTextOnlyMode = true;
         showPromptSection(true);
     });
     
     // Back Button
-    backButton.addEventListener('click', () => {
-        // Reset to initial state
+    backButton.addEventListener('click', resetToInitialState);
+    backButton.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        resetToInitialState();
+    });
+    
+    function resetToInitialState() {
         isTextOnlyMode = false;
         selectedFiles = [];
         promptTextarea.value = '';
@@ -917,7 +980,7 @@
         
         statusDiv.style.display = 'none';
         stopPlaceholderRotation();
-    });
+    }
     
     // File Input Handlers
     cameraInput.addEventListener('change', handleFileSelect);
@@ -925,6 +988,8 @@
     
     function handleFileSelect(e) {
         const files = Array.from(e.target.files);
+        
+        if (files.length === 0) return;
         
         if (selectedFiles.length + files.length > MAX_IMAGES) {
             statusDiv.className = 'status error';
