@@ -20,7 +20,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 60px 20px; /* Equal top/bottom padding */
             -webkit-font-smoothing: antialiased;
         }
         
@@ -64,22 +64,16 @@
         }
 
         @keyframes fadeOut {
-            from {
-                opacity: 1;
-                max-height: 500px;
-            }
-            to {
-                opacity: 0;
-                max-height: 0;
-            }
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
         
         .container {
             background: #0f0f0f;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 56px 48px;
-            max-width: 480px; /* Reduced from 540px */
+            padding: 48px 40px; /* Balanced padding */
+            max-width: 500px; /* Slightly wider */
             width: 100%;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
             position: relative;
@@ -88,7 +82,7 @@
         
         .header {
             text-align: center;
-            margin-bottom: 48px;
+            margin-bottom: 40px;
         }
         
         .icon {
@@ -111,15 +105,12 @@
         }
         
         .form-group {
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             transition: all 0.3s ease;
         }
 
         .form-group.hidden {
-            opacity: 0;
-            max-height: 0;
-            margin: 0;
-            overflow: hidden;
+            display: none;
         }
         
         label {
@@ -157,13 +148,13 @@
         }
         
         textarea {
-            min-height: 120px;
+            min-height: 110px;
             resize: vertical;
         }
         
         .file-upload {
             position: relative;
-            padding: 48px 24px;
+            padding: 40px 24px;
             border: 2px dashed rgba(255, 255, 255, 0.18);
             border-radius: 12px;
             background: rgba(0, 0, 0, 0.35);
@@ -188,19 +179,19 @@
         }
         
         .file-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
+            font-size: 36px;
+            margin-bottom: 10px;
         }
         
         .file-text {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
         }
         
         .file-hint {
             color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
+            font-size: 12px;
             margin-top: 4px;
         }
 
@@ -339,28 +330,28 @@
             background: rgba(255, 255, 255, 0.2);
         }
         
-        .submit-btn {
+        .submit-btn, .new-image-btn {
             width: 100%;
-            padding: 16px 32px;
+            padding: 15px 32px;
             background: #ffffff;
             color: #000000;
             border: none;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin-top: 16px;
+            margin-top: 12px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
         
-        .submit-btn:hover {
+        .submit-btn:hover, .new-image-btn:hover {
             background: #f5f5f5;
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
         }
         
-        .submit-btn:active {
+        .submit-btn:active, .new-image-btn:active {
             transform: translateY(0);
         }
         
@@ -369,14 +360,24 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        .new-image-btn {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .new-image-btn.visible {
+            display: block;
+        }
         
         .status {
             margin-top: 16px;
             padding: 12px;
             border-radius: 8px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             display: none;
+            animation: fadeIn 0.3s ease;
         }
         
         .status.success {
@@ -390,8 +391,27 @@
             color: #ef4444;
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
+
+        .status.error.fade-out {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        /* Progress Container Styling */
+        #progressContainer {
+            margin-top: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.3s ease;
+        }
         
         @media (max-width: 640px) {
+            body {
+                padding: 40px 20px;
+            }
+
             .container {
                 padding: 40px 28px;
                 max-width: 100%;
@@ -445,10 +465,13 @@
                 </div>
             </div>
             
-            <button type="submit" class="submit-btn">Generate Image</button>
+            <button type="submit" class="submit-btn" id="submitBtn">Generate Image</button>
             
             <div class="status" id="status"></div>
         </form>
+
+        <!-- New Image Button (appears after generation) -->
+        <button class="new-image-btn" id="newImageBtn">Generate New Image</button>
     </div>
 
     <!-- Modal for enlarged image -->
@@ -464,7 +487,8 @@
     const form = document.getElementById('imageForm');
     const fileInput = document.getElementById('image');
     const statusDiv = document.getElementById('status');
-    const submitBtn = document.querySelector('button[type="submit"]');
+    const submitBtn = document.getElementById('submitBtn');
+    const newImageBtn = document.getElementById('newImageBtn');
     const promptGroup = document.getElementById('promptGroup');
     const imageGroup = document.getElementById('imageGroup');
     const previewContainer = document.getElementById('previewContainer');
@@ -484,9 +508,19 @@
         // Check if adding these files exceeds limit
         if (selectedFiles.length + files.length > MAX_IMAGES) {
             statusDiv.className = 'status error';
-            statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed. You tried to add ${files.length} more to ${selectedFiles.length} existing.`;
+            statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed`;
             statusDiv.style.display = 'block';
-            fileInput.value = ''; // Reset input
+            
+            // Auto-fade after 3 seconds
+            setTimeout(() => {
+                statusDiv.classList.add('fade-out');
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    statusDiv.classList.remove('fade-out');
+                }, 300);
+            }, 3000);
+            
+            fileInput.value = '';
             return;
         }
         
@@ -498,7 +532,7 @@
         });
         
         updatePreviews();
-        fileInput.value = ''; // Reset input for next selection
+        fileInput.value = '';
     });
     
     // Update preview grid
@@ -551,7 +585,7 @@
     function removeImage(index) {
         selectedFiles.splice(index, 1);
         updatePreviews();
-        statusDiv.style.display = 'none'; // Clear any error messages
+        statusDiv.style.display = 'none';
     }
     
     // Clear all images
@@ -571,6 +605,24 @@
             modal.classList.remove('active');
         }
     });
+
+    // New Image Button - Shows form again
+    newImageBtn.addEventListener('click', () => {
+        // Remove result container
+        const resultContainer = document.getElementById('resultContainer');
+        if (resultContainer) resultContainer.remove();
+        
+        // Hide new image button
+        newImageBtn.classList.remove('visible');
+        
+        // Show form fields
+        promptGroup.classList.remove('hidden');
+        imageGroup.classList.remove('hidden');
+        submitBtn.style.display = 'block';
+        
+        // Clear status
+        statusDiv.style.display = 'none';
+    });
     
     // Form submission
     form.addEventListener('submit', async (e) => {
@@ -583,14 +635,11 @@
             return;
         }
         
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Generating...';
-        }
-        
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Generating...';
         statusDiv.style.display = 'none';
         
-        // Hide form fields
+        // Hide form fields and submit button
         promptGroup.classList.add('hidden');
         imageGroup.classList.add('hidden');
         
@@ -605,7 +654,7 @@
         const formData = new FormData();
         formData.append('Image Prompt', document.getElementById('prompt').value);
         
-        selectedFiles.forEach((file, index) => {
+        selectedFiles.forEach((file) => {
             formData.append('Image', file);
         });
         
@@ -753,13 +802,9 @@
                 
                 document.querySelector('.container').appendChild(resultContainer);
                 
-                // Show form fields again
-                promptGroup.classList.remove('hidden');
-                imageGroup.classList.remove('hidden');
-                
-                form.reset();
-                selectedFiles = [];
-                updatePreviews();
+                // Show "Generate New Image" button instead of form
+                submitBtn.style.display = 'none';
+                newImageBtn.classList.add('visible');
             }, 800);
             
         } catch (error) {
@@ -775,25 +820,14 @@
             statusDiv.textContent = `✗ ${error.message}`;
             statusDiv.style.display = 'block';
         } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Generate Image';
-            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate Image';
         }
     });
     
     function createProgressIndicator() {
         const container = document.createElement('div');
         container.id = 'progressContainer';
-        container.style.cssText = `
-            margin-top: 24px;
-            padding: 24px;
-            background: linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            transition: opacity 0.3s ease;
-        `;
         
         const title = document.createElement('div');
         title.style.cssText = `
