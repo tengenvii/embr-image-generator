@@ -1572,18 +1572,11 @@ async function editImage(imageUrl) {
         promptTextarea.value = '';
         checkGenerateButton(); // Update generate button state
 
-        // Delay for blob processing (desktop only)
-        if (isMobile) {
-            // Mobile: instant update
+        // Small delay for smooth transition (shorter on mobile)
+        setTimeout(() => {
             updatePreviews();
             document.querySelector('.container').scrollTop = 0;
-        } else {
-            // Desktop: small delay for blob processing
-            setTimeout(() => {
-                updatePreviews();
-                document.querySelector('.container').scrollTop = 0;
-            }, 150);
-        }
+        }, isMobile ? 50 : 150);
         
     } catch (e) {
         console.error('Edit failed - using fallback:', e);
@@ -1609,14 +1602,10 @@ async function editImage(imageUrl) {
         promptTextarea.value = '';
         checkGenerateButton();
 
-        // Conditional delay
-        if (isMobile) {
+                // Small delay for consistency
+        setTimeout(() => {
             updatePreviews();
-        } else {
-            setTimeout(() => {
-                updatePreviews();
-            }, 150);
-        }
+        }, isMobile ? 50 : 150);
         
         statusDiv.className = 'status';
         statusDiv.style.background = 'rgba(59,130,246,0.12)';
