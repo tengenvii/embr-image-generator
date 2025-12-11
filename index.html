@@ -269,7 +269,7 @@
     const fileInput = document.getElementById('image');
     const fileName = document.getElementById('fileName');
     const statusDiv = document.getElementById('status');
-    const submitBtn = document.getElementById('submitBtn');
+    const submitBtn = document.querySelector('button[type="submit"]') || document.querySelector('input[type="submit"]');
     
     // File name display
     fileInput.addEventListener('change', (e) => {
