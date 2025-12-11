@@ -862,7 +862,7 @@
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
-    const MAX_IMAGES = 8;
+    const MAX_IMAGES = 6;
     
     // Detect if mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -1204,11 +1204,11 @@ btnGenerate.addEventListener('click', async () => {
     });
     
     let progress = 0;
-    let progressInterval;
-    // Adjust estimated time based on number of images
-    let estimatedTime = 45 + (selectedFiles.length * 15); // ~15 seconds per image
-    let elapsedTime = 0;
-    let isComplete = false;
+let progressInterval;
+// Dynamic time: 30 base seconds + 25 seconds per image
+let estimatedTime = 30 + (selectedFiles.length * 25);
+let elapsedTime = 0;
+let isComplete = false;
     
     const startProgress = () => {
         progressInterval = setInterval(() => {
@@ -1506,13 +1506,16 @@ btnGenerate.addEventListener('click', async () => {
     }
     
     function updateProgress(percent, elapsed, estimated) {
-        const fill = document.getElementById('progressFill');
-        const percentText = document.getElementById('progressPercent');
-        const timeText = document.getElementById('progressTime');
-        
-        if (fill) fill.style.width = Math.min(percent, 100) + '%';
-        if (percentText) percentText.textContent = Math.floor(percent) + '%';
-        if (timeText) timeText.textContent = `${elapsed.toFixed(1)}s / ~45s`;
+    const fill = document.getElementById('progressFill');
+    const percentText = document.getElementById('progressPercent');
+    const timeText = document.getElementById('progressTime');
+    
+    if (fill) fill.style.width = Math.min(percent, 100) + '%';
+    if (percentText) percentText.textContent = Math.floor(percent) + '%';
+    if (timeText) {
+        const elapsedStr = elapsed < 60 ? `${elapsed.toFixed(0)}s` : `${(elapsed/60).toFixed(1)}m`;
+        const estStr = estimated < 60 ? `~${estimated}s` : `~${(estimated/60).toFixed(1)}m`;
+        timeText.textContent = `${elapsedStr} / ${estStr}`;
     }
     </script>
 </body>
