@@ -153,135 +153,172 @@
         }
         
         .file-upload {
-            position: relative;
-            padding: 40px 24px;
-            border: 2px dashed rgba(255, 255, 255, 0.18);
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.35);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-        
-        .file-upload:hover {
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.45);
-        }
-        
-        .file-upload input[type="file"] {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .file-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-        
-        .file-text {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .file-hint {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 12px;
-            margin-top: 4px;
-        }
+    position: relative;
+    min-height: 140px;
+    padding: 24px;
+    border: 2px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
 
-        /* Image Preview Grid */
-        .preview-container {
-            margin-top: 16px;
-            display: none;
-        }
+.file-upload:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.45);
+}
 
-        .preview-container.active {
-            display: block;
-        }
+.file-upload input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+}
 
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
+/* Empty State */
+.upload-empty {
+    pointer-events: none;
+}
 
-        .preview-count {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
-            font-weight: 600;
-        }
+.upload-empty.hidden {
+    display: none;
+}
 
-        .clear-all-btn {
-            color: rgba(239, 68, 68, 0.9);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
+.file-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
 
-        .clear-all-btn:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
+.file-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 500;
+}
 
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
+.file-hint {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    margin-top: 4px;
+}
 
-        .preview-item {
-            position: relative;
-            aspect-ratio: 1;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
+/* Preview Container (inside upload box) */
+.upload-preview-container {
+    display: none;
+    pointer-events: none;
+}
 
-        .preview-item:hover {
-            transform: scale(1.05);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
+.upload-preview-container.active {
+    display: block;
+}
 
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.upload-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
 
-        .preview-remove {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 20px;
-            height: 20px;
-            background: rgba(239, 68, 68, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-            color: white;
-            font-weight: bold;
-            transition: all 0.2s ease;
-            z-index: 2;
-        }
+.upload-preview-count {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 600;
+}
 
-        .preview-remove:hover {
-            background: rgba(239, 68, 68, 1);
-            transform: scale(1.1);
-        }
+.clear-all-btn {
+    color: rgba(239, 68, 68, 0.9);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    pointer-events: all;
+    z-index: 20;
+    position: relative;
+}
+
+.clear-all-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.upload-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    pointer-events: all;
+}
+
+.preview-item:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    z-index: 15;
+}
+
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    background: rgba(239, 68, 68, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    z-index: 25;
+}
+
+.preview-remove:hover {
+    background: rgba(239, 68, 68, 1);
+    transform: scale(1.15);
+}
+
+.add-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: all;
+}
+
+.add-more-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.8);
+}
 
         /* Modal for enlarged image */
         .modal {
@@ -447,23 +484,29 @@
             </div>
             
             <div class="form-group" id="imageGroup">
-                <label>Reference Images (Optional - Max 8)</label>
-                <div class="file-upload">
-                    <input type="file" id="image" name="Image" accept="image/*" multiple>
-                    <div class="file-icon">📁</div>
-                    <div class="file-text">Click to upload or drag and drop</div>
-                    <div class="file-hint">Select up to 8 images</div>
-                </div>
-                
-                <!-- Preview Container -->
-                <div class="preview-container" id="previewContainer">
-                    <div class="preview-header">
-                        <span class="preview-count" id="previewCount">0/8 images</span>
-                        <span class="clear-all-btn" id="clearAll">Clear all</span>
-                    </div>
-                    <div class="preview-grid" id="previewGrid"></div>
-                </div>
+    <label>Reference Images (Optional - Max 8)</label>
+    <div class="file-upload" id="fileUploadBox">
+        <input type="file" id="image" name="Image" accept="image/*" multiple>
+        
+        <!-- Empty State -->
+        <div class="upload-empty" id="uploadEmpty">
+            <div class="file-icon">📁</div>
+            <div class="file-text">Click to upload or drag and drop</div>
+            <div class="file-hint">Select up to 8 images</div>
+        </div>
+        
+        <!-- Preview Grid (hidden initially) -->
+        <div class="upload-preview-container" id="uploadPreviewContainer">
+            <div class="upload-preview-header">
+                <span class="upload-preview-count" id="uploadPreviewCount">0/8</span>
+                <span class="clear-all-btn" id="clearAll">Clear all</span>
             </div>
+            <div class="upload-preview-grid" id="uploadPreviewGrid">
+                <!-- Thumbnails will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
             
             <button type="submit" class="submit-btn" id="submitBtn">Generate Image</button>
             
@@ -536,50 +579,73 @@
     });
     
     // Update preview grid
-    function updatePreviews() {
-        previewGrid.innerHTML = '';
-        
-        if (selectedFiles.length === 0) {
-            previewContainer.classList.remove('active');
-            return;
-        }
-        
-        previewContainer.classList.add('active');
-        previewCount.textContent = `${selectedFiles.length}/${MAX_IMAGES} images`;
-        
-        selectedFiles.forEach((file, index) => {
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'preview-item';
-                
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = file.name;
-                
-                // Click to enlarge
-                img.addEventListener('click', () => {
-                    modalImage.src = e.target.result;
-                    modal.classList.add('active');
-                });
-                
-                const removeBtn = document.createElement('div');
-                removeBtn.className = 'preview-remove';
-                removeBtn.innerHTML = '×';
-                removeBtn.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    removeImage(index);
-                });
-                
-                previewItem.appendChild(img);
-                previewItem.appendChild(removeBtn);
-                previewGrid.appendChild(previewItem);
-            };
-            
-            reader.readAsDataURL(file);
-        });
+function updatePreviews() {
+    const uploadEmpty = document.getElementById('uploadEmpty');
+    const uploadPreviewContainer = document.getElementById('uploadPreviewContainer');
+    const uploadPreviewGrid = document.getElementById('uploadPreviewGrid');
+    const uploadPreviewCount = document.getElementById('uploadPreviewCount');
+    
+    uploadPreviewGrid.innerHTML = '';
+    
+    if (selectedFiles.length === 0) {
+        uploadEmpty.classList.remove('hidden');
+        uploadPreviewContainer.classList.remove('active');
+        return;
     }
+    
+    // Hide empty state, show previews
+    uploadEmpty.classList.add('hidden');
+    uploadPreviewContainer.classList.add('active');
+    uploadPreviewCount.textContent = `${selectedFiles.length}/${MAX_IMAGES}`;
+    
+    // Add preview items
+    selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = file.name;
+            
+            // Click to enlarge
+            img.addEventListener('click', (event) => {
+                event.stopPropagation();
+                modalImage.src = e.target.result;
+                modal.classList.add('active');
+            });
+            
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'preview-remove';
+            removeBtn.innerHTML = '×';
+            removeBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                removeImage(index);
+            });
+            
+            previewItem.appendChild(img);
+            previewItem.appendChild(removeBtn);
+            uploadPreviewGrid.appendChild(previewItem);
+        };
+        
+        reader.readAsDataURL(file);
+    });
+    
+    // Add "+" button if less than max
+    if (selectedFiles.length < MAX_IMAGES) {
+        const addMoreBtn = document.createElement('div');
+        addMoreBtn.className = 'add-more-btn';
+        addMoreBtn.innerHTML = '+';
+        addMoreBtn.title = 'Add more images';
+        addMoreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+        uploadPreviewGrid.appendChild(addMoreBtn);
+    }
+}
     
     // Remove single image
     function removeImage(index) {
