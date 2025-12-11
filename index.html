@@ -1420,10 +1420,42 @@ async function editImage(imageUrl) {
     statusDiv.style.display = 'none';
 
     try {
-        const res = await fetch(imageUrl);
-        const blob = await res.blob();
+        // For n8n images, we need to handle CORS differently
+        // Try to fetch, but if it fails, use proxy method
+        let blob;
+        
+        try {
+            const res = await fetch(imageUrl, { 
+                mode: 'cors',
+                cache: 'no-cache'
+            });
+            blob = await res.blob();
+        } catch (fetchError) {
+            // CORS failed - use alternative method
+            console.log('Direct fetch failed, using alternative method');
+            
+            // Create image element to load it
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = imageUrl;
+            });
+            
+            // Convert to blob via canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        }
+        
         const file = new File([blob], 'generated-image.png', { 
-            type: blob.type || 'image/png', 
+            type: 'image/png', 
             lastModified: Date.now() 
         });
 
@@ -1444,11 +1476,11 @@ async function editImage(imageUrl) {
         subtitle.textContent = 'Refine your vision and generate again';
         subtitle.classList.add('screen-2');
 
-        // Desktop needs delay for blob processing
+        // Delay for blob processing (important for desktop)
         setTimeout(() => {
             updatePreviews();
             document.querySelector('.container').scrollTop = 0;
-        }, 100);
+        }, 150);
         
     } catch (e) {
         console.error('Edit failed - using fallback:', e);
@@ -1470,10 +1502,9 @@ async function editImage(imageUrl) {
         subtitle.textContent = 'Add images and describe your vision';
         subtitle.classList.add('screen-2');
 
-        // Desktop needs delay here too
         setTimeout(() => {
             updatePreviews();
-        }, 100);
+        }, 150);
         
         statusDiv.className = 'status';
         statusDiv.style.background = 'rgba(59,130,246,0.12)';
