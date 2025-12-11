@@ -100,7 +100,7 @@
         }
         
         .container {
-            background: rgba(15, 15, 15, 0.8);
+            background: linear-gradient(135deg, rgba(15, 15, 15, 0.95) 0%, rgba(5, 5, 5, 0.9) 100%);
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid rgba(192, 192, 192, 0.15);
@@ -170,7 +170,7 @@
             font-size: 15px;
             line-height: 1.5;
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', 'Inter', sans-serif;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 100%);
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             color: #ffffff;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -183,7 +183,7 @@
         input:focus,
         textarea:focus {
             border-color: rgba(192, 192, 192, 0.25);
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.45) 100%);
+            background: rgba(0, 0, 0, 0.4);
             box-shadow: 
                 0 1px 2px rgba(0, 0, 0, 0.1) inset,
                 0 0 0 4px rgba(255, 255, 255, 0.04),
@@ -208,7 +208,7 @@
             padding: 20px;
             border: 1.5px dashed rgba(192, 192, 192, 0.12);
             border-radius: 14px;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.25) 100%);
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -217,7 +217,7 @@
 
         .file-upload:hover {
             border-color: rgba(192, 192, 192, 0.2);
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.35) 100%);
+            background: rgba(0, 0, 0, 0.4);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             transform: translateY(-1px);
         }
@@ -621,7 +621,7 @@
                 <textarea 
                     id="prompt" 
                     name="Image Prompt" 
-                    placeholder="A futuristic cityscape at sunset, neon lights reflecting off wet streets..."
+                    placeholder="A futuristic cityscape at sunset..."
                     required
                 ></textarea>
             </div>
@@ -681,8 +681,41 @@
     const modal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
     const modalClose = document.getElementById('modalClose');
+    const promptTextarea = document.getElementById('prompt');
     
     let selectedFiles = [];
+    
+    // Rotating placeholder suggestions
+    const placeholders = [
+        "A futuristic cityscape at sunset, neon lights reflecting off wet streets...",
+        "Selfie with 50 Cent at a luxury penthouse party...",
+        "Magical forest with glowing mushrooms and fairy lights...",
+        "Professional headshot in a modern office setting...",
+        "Vintage sports car on a desert highway at golden hour...",
+        "Cozy coffee shop interior with plants and warm lighting...",
+        "Portrait in the style of a Renaissance painting...",
+        "Cyberpunk street market with holographic vendors...",
+        "Luxury yacht sailing through crystal clear waters...",
+        "Mountain landscape with northern lights in the sky..."
+    ];
+    
+    let placeholderIndex = 0;
+    
+    function rotatePlaceholder() {
+        if (promptTextarea !== document.activeElement && promptTextarea.value === '') {
+            promptTextarea.style.transition = 'opacity 0.5s ease';
+            promptTextarea.style.opacity = '0';
+            
+            setTimeout(() => {
+                placeholderIndex = (placeholderIndex + 1) % placeholders.length;
+                promptTextarea.placeholder = placeholders[placeholderIndex];
+                promptTextarea.style.opacity = '1';
+            }, 500);
+        }
+    }
+    
+    // Rotate placeholder every 4 seconds
+    setInterval(rotatePlaceholder, 4000);
     
     // File input handler
     fileInput.addEventListener('change', (e) => {
