@@ -1003,7 +1003,7 @@ let cryptoInterval;
 
 function rotateCryptoSymbols() {
     let symbols = '';
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
         symbols += cryptoSymbols[Math.floor(Math.random() * cryptoSymbols.length)];
     }
     cryptoLoader.textContent = symbols;
@@ -1016,7 +1016,7 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         loadingScreen.classList.add('hidden');
         clearInterval(cryptoInterval);
-    }, 1800); // 1.8 seconds (1 second longer)
+    }, 1100); // 1.8 seconds (1 second longer)
 });
     
     // Elements
