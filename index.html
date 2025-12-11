@@ -155,7 +155,7 @@
 .loading-content {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
 }
 
 .loading-text {
@@ -1554,11 +1554,20 @@ async function editImage(imageUrl) {
         });
         
         let progress = 0;
-        let progressInterval;
-        // Dynamic time: 30 base seconds + 25 seconds per image
-        let estimatedTime = 30 + (selectedFiles.length * 25);
-        let elapsedTime = 0;
-        let isComplete = false;
+let progressInterval;
+// Dynamic time based on number of images
+// Text-only: 50s
+// With images: 72s for first image (1.2min) + 25s for each additional
+let estimatedTime;
+if (selectedFiles.length === 0) {
+    estimatedTime = 50; // Text-only: 50 seconds
+} else if (selectedFiles.length === 1) {
+    estimatedTime = 72; // 1 image: 1.2 minutes (72 seconds)
+} else {
+    estimatedTime = 72 + ((selectedFiles.length - 1) * 25); // First image 72s + 25s per additional
+}
+let elapsedTime = 0;
+let isComplete = false;
         
         const startProgress = () => {
             progressInterval = setInterval(() => {
