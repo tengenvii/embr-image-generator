@@ -160,10 +160,48 @@
 
         .subtitle {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 400;
             line-height: 1.6;
             letter-spacing: 0.01em;
+        }
+
+        /* Screen 2 subtitle with margins */
+        .subtitle.screen-2 {
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        /* Back Button */
+        .back-button {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            padding: 8px 0;
+        }
+
+        .back-button.active {
+            display: flex;
+        }
+
+        .back-button:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .back-button svg {
+            transition: transform 0.2s ease;
+        }
+
+        .back-button:hover svg {
+            transform: translateX(-3px);
         }
 
         /* Upload Section - Initial State */
@@ -218,20 +256,39 @@
         }
 
         .btn-gallery {
-            background: rgba(192, 192, 192, 0.15);
+            background: linear-gradient(135deg, rgba(220, 220, 220, 0.15) 0%, rgba(180, 180, 180, 0.12) 100%);
             color: #ffffff;
-            border: 1px solid rgba(192, 192, 192, 0.2);
+            border: 1px solid rgba(192, 192, 192, 0.25);
             box-shadow: 
                 0 1px 3px rgba(0, 0, 0, 0.12),
-                0 4px 16px rgba(0, 0, 0, 0.2);
+                0 4px 16px rgba(255, 255, 255, 0.05),
+                0 1px 0 rgba(255, 255, 255, 0.1) inset;
+        }
+
+        .btn-gallery::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-gallery:hover::before {
+            opacity: 1;
         }
 
         .btn-gallery:hover {
-            background: rgba(192, 192, 192, 0.2);
+            background: linear-gradient(135deg, rgba(220, 220, 220, 0.2) 0%, rgba(180, 180, 180, 0.15) 100%);
+            border-color: rgba(192, 192, 192, 0.35);
             transform: translateY(-2px);
             box-shadow: 
                 0 1px 3px rgba(0, 0, 0, 0.12),
-                0 8px 24px rgba(0, 0, 0, 0.3);
+                0 8px 24px rgba(255, 255, 255, 0.08),
+                0 1px 0 rgba(255, 255, 255, 0.15) inset;
         }
 
         .btn-photo:active,
@@ -620,7 +677,11 @@
             }
 
             .subtitle {
-                font-size: 16px;
+                font-size: 17px;
+            }
+
+            .subtitle.screen-2 {
+                max-width: 100%;
             }
 
             textarea {
@@ -662,6 +723,14 @@
     </div>
 
     <div class="container">
+        <!-- Back Button -->
+        <button class="back-button" id="backButton">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Back</span>
+        </button>
+
         <div class="header">
             <h1>Visualise your new reality</h1>
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
@@ -683,7 +752,7 @@
         </div>
 
         <!-- Hidden File Inputs -->
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple>
+        <input type="file" id="cameraInput" accept="image/*" capture="user" multiple>
         <input type="file" id="galleryInput" accept="image/*" multiple>
 
         <!-- Photo Preview Section (Shows after upload) -->
@@ -733,6 +802,7 @@
     const btnTakePhoto = document.getElementById('btnTakePhoto');
     const btnUploadGallery = document.getElementById('btnUploadGallery');
     const textOnlyLink = document.getElementById('textOnlyLink');
+    const backButton = document.getElementById('backButton');
     const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
     const uploadSection = document.getElementById('uploadSection');
@@ -750,6 +820,7 @@
     const subtitle = document.getElementById('subtitle');
     
     let selectedFiles = [];
+    let isTextOnlyMode = false;
     
     // Rotating placeholder suggestions
     const placeholders = [
@@ -824,7 +895,28 @@
     
     // Text Only Link
     textOnlyLink.addEventListener('click', () => {
+        isTextOnlyMode = true;
         showPromptSection(true);
+    });
+    
+    // Back Button
+    backButton.addEventListener('click', () => {
+        // Reset to initial state
+        isTextOnlyMode = false;
+        selectedFiles = [];
+        promptTextarea.value = '';
+        
+        uploadSection.style.display = 'block';
+        photoPreviewSection.classList.remove('active');
+        promptSection.classList.remove('active');
+        generateSection.classList.remove('active');
+        backButton.classList.remove('active');
+        
+        subtitle.textContent = 'First upload a photo or reference images';
+        subtitle.classList.remove('screen-2');
+        
+        statusDiv.style.display = 'none';
+        stopPlaceholderRotation();
     });
     
     // File Input Handlers
@@ -858,6 +950,7 @@
         });
         
         if (selectedFiles.length > 0) {
+            isTextOnlyMode = false;
             showPromptSection(false);
         }
         
@@ -867,10 +960,16 @@
     
     function showPromptSection(textOnly) {
         // Update subtitle
-        subtitle.textContent = 'Upload a photo or describe your vision to bring it to life';
+        subtitle.textContent = 'Next describe your vision to bring it to life';
+        subtitle.classList.add('screen-2');
         
         // Hide upload buttons
         uploadSection.style.display = 'none';
+        
+        // Show back button if text-only mode
+        if (textOnly) {
+            backButton.classList.add('active');
+        }
         
         // Show photo preview if not text-only
         if (!textOnly && selectedFiles.length > 0) {
@@ -978,6 +1077,7 @@
         statusDiv.style.display = 'none';
         
         // Hide sections
+        backButton.style.display = 'none';
         photoPreviewSection.style.display = 'none';
         promptSection.style.display = 'none';
         generateSection.style.display = 'none';
@@ -1187,6 +1287,7 @@
             clearInterval(progressInterval);
             progressContainer.remove();
             
+            backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
             photoPreviewSection.style.display = 'block';
             promptSection.style.display = 'block';
             generateSection.style.display = 'block';
@@ -1285,7 +1386,7 @@
         
         if (fill) fill.style.width = Math.min(percent, 100) + '%';
         if (percentText) percentText.textContent = Math.floor(percent) + '%';
-        if (timeText) timeText.textContent = `${elapsed.toFixed(1)}s / ~${estimated}s`;
+        if (timeText) timeText.textContent = `${elapsed.toFixed(1)}s / ~45s`;
     }
     </script>
 </body>
