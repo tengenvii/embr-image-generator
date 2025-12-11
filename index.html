@@ -112,26 +112,17 @@
             50% { transform: scale(0.97); }
         }
 
-        /* Desktop Logo - Top Left */
-        .logo-desktop {
+        /* Logo - Top Left (Always visible on all screens) */
+        .logo-fixed {
             position: fixed;
             top: 32px;
             left: 32px;
             z-index: 100;
-            display: block;
         }
 
-        .logo-desktop img {
+        .logo-fixed img {
             width: 180px;
             height: auto;
-        }
-
-        /* Mobile Logo - Hidden initially, shows in header after interaction */
-        .logo-mobile {
-            display: none;
-            width: 180px;
-            height: auto;
-            margin: 0 auto 24px;
         }
         
         .container {
@@ -169,7 +160,7 @@
 
         .subtitle {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 400;
             line-height: 1.6;
             letter-spacing: 0.01em;
@@ -184,6 +175,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-bottom: 20px;
         }
 
         .btn-photo,
@@ -206,33 +198,36 @@
         }
 
         .btn-photo {
-            background: linear-gradient(180deg, #FDB849 0%, #F59E0B 100%);
-            color: #000000;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid rgba(192, 192, 192, 0.3);
             box-shadow: 
                 0 1px 3px rgba(0, 0, 0, 0.12),
-                0 8px 24px rgba(253, 184, 73, 0.3),
-                0 1px 0 rgba(255, 255, 255, 0.4) inset;
+                0 4px 16px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
 
         .btn-photo:hover {
+            background: rgba(10, 10, 10, 1);
+            border-color: rgba(192, 192, 192, 0.4);
             transform: translateY(-2px);
             box-shadow: 
                 0 1px 3px rgba(0, 0, 0, 0.12),
-                0 12px 32px rgba(253, 184, 73, 0.4),
-                0 1px 0 rgba(255, 255, 255, 0.5) inset;
+                0 8px 24px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.08) inset;
         }
 
         .btn-gallery {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(192, 192, 192, 0.15);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(192, 192, 192, 0.2);
             box-shadow: 
                 0 1px 3px rgba(0, 0, 0, 0.12),
                 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .btn-gallery:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(192, 192, 192, 0.2);
             transform: translateY(-2px);
             box-shadow: 
                 0 1px 3px rgba(0, 0, 0, 0.12),
@@ -243,6 +238,26 @@
         .btn-gallery:active {
             transform: scale(0.98);
             animation: buttonPress 0.2s ease;
+        }
+
+        /* Text Only Link */
+        .text-only-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .text-only-link a {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .text-only-link a:hover {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: underline;
         }
 
         /* Photo Preview Section */
@@ -586,16 +601,18 @@
         }
         
         @media (max-width: 768px) {
-            .logo-desktop {
-                display: none;
+            .logo-fixed {
+                top: 20px;
+                left: 20px;
             }
 
-            .logo-mobile.active {
-                display: block;
+            .logo-fixed img {
+                width: 140px;
             }
 
             .container {
                 padding: 32px 24px;
+                margin-top: 80px;
             }
 
             .header h1 {
@@ -603,7 +620,7 @@
             }
 
             .subtitle {
-                font-size: 14px;
+                font-size: 16px;
             }
 
             textarea {
@@ -630,26 +647,24 @@
             .container {
                 padding: 28px 20px;
             }
+
+            .logo-fixed img {
+                width: 120px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Desktop Logo - Always visible -->
-    <div class="logo-desktop">
+    <!-- Logo - Always visible top left -->
+    <div class="logo-fixed">
         <img src="https://media.discordapp.net/attachments/1394024573183332396/1448541231033487541/embrwhitelogo_1765429510-trimmy-Untitled_design_-_2025-12-11T050457.267.png?ex=693ba2a6&is=693a5126&hm=74b3ce9acd6ea68fead9a771f4a52500d310c2e4928ae903420a30cdad32e9b5&=&format=webp&quality=lossless&width=700&height=196" 
              alt="EMBR Logo">
     </div>
 
     <div class="container">
-        <!-- Mobile Logo - Shows after photo upload -->
-        <img src="https://media.discordapp.net/attachments/1394024573183332396/1448541231033487541/embrwhitelogo_1765429510-trimmy-Untitled_design_-_2025-12-11T050457.267.png?ex=693ba2a6&is=693a5126&hm=74b3ce9acd6ea68fead9a771f4a52500d310c2e4928ae903420a30cdad32e9b5&=&format=webp&quality=lossless&width=700&height=196" 
-             alt="EMBR Logo" 
-             class="logo-mobile"
-             id="logoMobile">
-
         <div class="header">
             <h1>Visualise your new reality</h1>
-            <p class="subtitle">Upload a photo or describe your vision to bring it to life</p>
+            <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
         </div>
 
         <!-- Initial Upload Buttons -->
@@ -661,6 +676,9 @@
                 <button type="button" class="btn-gallery" id="btnUploadGallery">
                     📤 Upload from Gallery
                 </button>
+            </div>
+            <div class="text-only-link">
+                <a id="textOnlyLink">Skip photos - describe only</a>
             </div>
         </div>
 
@@ -675,7 +693,7 @@
             </div>
         </div>
 
-        <!-- Prompt Section (Shows after photo upload) -->
+        <!-- Prompt Section (Shows after photo upload or text-only) -->
         <div class="prompt-section" id="promptSection">
             <label for="prompt">Describe your vision *</label>
             <div class="textarea-wrapper">
@@ -714,6 +732,7 @@
     // Elements
     const btnTakePhoto = document.getElementById('btnTakePhoto');
     const btnUploadGallery = document.getElementById('btnUploadGallery');
+    const textOnlyLink = document.getElementById('textOnlyLink');
     const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
     const uploadSection = document.getElementById('uploadSection');
@@ -728,7 +747,7 @@
     const modal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
     const modalClose = document.getElementById('modalClose');
-    const logoMobile = document.getElementById('logoMobile');
+    const subtitle = document.getElementById('subtitle');
     
     let selectedFiles = [];
     
@@ -747,24 +766,36 @@
     ];
     
     let placeholderIndex = 0;
+    let placeholderInterval;
     
-    function rotatePlaceholder() {
-        if (promptTextarea !== document.activeElement && promptTextarea.value === '') {
+    function startPlaceholderRotation() {
+        placeholderInterval = setInterval(() => {
+            if (promptTextarea !== document.activeElement && promptTextarea.value === '') {
+                customPlaceholder.style.opacity = '0';
+                
+                setTimeout(() => {
+                    placeholderIndex = (placeholderIndex + 1) % placeholders.length;
+                    customPlaceholder.textContent = placeholders[placeholderIndex];
+                    customPlaceholder.style.opacity = '1';
+                }, 500);
+            }
+        }, 4000);
+    }
+    
+    function stopPlaceholderRotation() {
+        if (placeholderInterval) {
+            clearInterval(placeholderInterval);
             customPlaceholder.style.opacity = '0';
-            
-            setTimeout(() => {
-                placeholderIndex = (placeholderIndex + 1) % placeholders.length;
-                customPlaceholder.textContent = placeholders[placeholderIndex];
-                customPlaceholder.style.opacity = '1';
-            }, 500);
         }
     }
     
     function updatePlaceholderVisibility() {
-        if (promptTextarea.value !== '' || promptTextarea === document.activeElement) {
+        if (promptTextarea.value !== '') {
             customPlaceholder.classList.add('hidden');
-        } else {
+            stopPlaceholderRotation();
+        } else if (promptTextarea !== document.activeElement) {
             customPlaceholder.classList.remove('hidden');
+            startPlaceholderRotation();
         }
     }
     
@@ -772,10 +803,15 @@
         updatePlaceholderVisibility();
         checkGenerateButton();
     });
-    promptTextarea.addEventListener('focus', updatePlaceholderVisibility);
-    promptTextarea.addEventListener('blur', updatePlaceholderVisibility);
     
-    setInterval(rotatePlaceholder, 4000);
+    promptTextarea.addEventListener('focus', () => {
+        if (promptTextarea.value !== '') {
+            customPlaceholder.classList.add('hidden');
+            stopPlaceholderRotation();
+        }
+    });
+    
+    promptTextarea.addEventListener('blur', updatePlaceholderVisibility);
     
     // Button Click Handlers
     btnTakePhoto.addEventListener('click', () => {
@@ -784,6 +820,11 @@
     
     btnUploadGallery.addEventListener('click', () => {
         galleryInput.click();
+    });
+    
+    // Text Only Link
+    textOnlyLink.addEventListener('click', () => {
+        showPromptSection(true);
     });
     
     // File Input Handlers
@@ -817,25 +858,30 @@
         });
         
         if (selectedFiles.length > 0) {
-            showPromptSection();
+            showPromptSection(false);
         }
         
         updatePreviews();
         e.target.value = '';
     }
     
-    function showPromptSection() {
-        // Show mobile logo on mobile
-        if (window.innerWidth <= 768) {
-            logoMobile.classList.add('active');
-        }
+    function showPromptSection(textOnly) {
+        // Update subtitle
+        subtitle.textContent = 'Upload a photo or describe your vision to bring it to life';
         
         // Hide upload buttons
         uploadSection.style.display = 'none';
         
-        // Show photo preview and prompt
-        photoPreviewSection.classList.add('active');
+        // Show photo preview if not text-only
+        if (!textOnly && selectedFiles.length > 0) {
+            photoPreviewSection.classList.add('active');
+        }
+        
+        // Show prompt
         promptSection.classList.add('active');
+        
+        // Start placeholder rotation
+        startPlaceholderRotation();
     }
     
     function updatePreviews() {
@@ -891,13 +937,7 @@
         selectedFiles.splice(index, 1);
         
         if (selectedFiles.length === 0) {
-            // Reset to initial state
             photoPreviewSection.classList.remove('active');
-            promptSection.classList.remove('active');
-            generateSection.classList.remove('active');
-            uploadSection.style.display = 'block';
-            logoMobile.classList.remove('active');
-            promptTextarea.value = '';
         }
         
         updatePreviews();
@@ -1113,7 +1153,7 @@
                 newBtn.style.cssText = `
                     flex: 1;
                     padding: 12px 24px;
-                    background: linear-gradient(180deg, #FDB849 0%, #F59E0B 100%);
+                    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
                     color: #000000;
                     border: none;
                     border-radius: 10px;
@@ -1121,14 +1161,15 @@
                     font-size: 14px;
                     cursor: pointer;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                 `;
                 newBtn.onmouseover = () => {
                     newBtn.style.transform = 'translateY(-1px)';
-                    newBtn.style.boxShadow = '0 4px 12px rgba(253, 184, 73, 0.3)';
+                    newBtn.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
                 };
                 newBtn.onmouseout = () => {
                     newBtn.style.transform = 'translateY(0)';
-                    newBtn.style.boxShadow = 'none';
+                    newBtn.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
                 };
                 newBtn.onclick = () => {
                     location.reload();
