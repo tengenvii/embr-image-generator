@@ -126,6 +126,53 @@
             50% { transform: scale(0.97); }
         }
 
+        @keyframes cryptoGlitch {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        #loadingScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 3px;
+        }
+
+        .crypto-loader {
+            font-size: 24px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Courier New', monospace;
+            animation: cryptoGlitch 0.3s infinite;
+        }
+
         /* Logo - Top Left (Always visible on all screens) */
         .logo-fixed {
             position: fixed;
@@ -650,6 +697,61 @@
             transition: opacity 0.3s ease;
         }
 
+        /* Result Action Buttons */
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-edit,
+        .btn-download,
+        .btn-new {
+            flex: 1;
+            text-align: center;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-edit {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-edit:hover {
+            background: rgba(59, 130, 246, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-download {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-download:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .btn-new {
+            background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+            color: #000000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-new:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
         /* Footer */
         .footer {
             position: fixed;
@@ -719,6 +821,7 @@
         @media (max-width: 768px) {
             body {
                 padding: 16px;
+                padding-top: 100px; /* Space for logo on mobile */
                 overflow: hidden;
             }
 
@@ -734,8 +837,9 @@
             .container {
                 padding: 32px 24px;
                 margin: 0;
-                max-height: calc(100vh - 100px);
-                max-height: calc(100dvh - 100px);
+                margin-top: 20px; /* Additional margin below logo */
+                max-height: calc(100vh - 140px);
+                max-height: calc(100dvh - 140px);
             }
 
             .header h1 {
@@ -764,6 +868,16 @@
                 gap: 8px;
             }
 
+            .result-actions {
+                flex-direction: column;
+            }
+
+            .btn-edit,
+            .btn-download,
+            .btn-new {
+                width: 100%;
+            }
+
             .footer {
                 font-size: 12px;
                 bottom: 12px;
@@ -782,6 +896,14 @@
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-text">INITIALISING</div>
+            <div class="crypto-loader" id="cryptoLoader">█▓▒░</div>
+        </div>
+    </div>
+
     <!-- Logo - Always visible top left -->
     <div class="logo-fixed" id="logoFixed">
         <img src="https://media.discordapp.net/attachments/1394024573183332396/1448541231033487541/embrwhitelogo_1765429510-trimmy-Untitled_design_-_2025-12-11T050457.267.png?ex=693ba2a6&is=693a5126&hm=74b3ce9acd6ea68fead9a771f4a52500d310c2e4928ae903420a30cdad32e9b5&=&format=webp&quality=lossless&width=700&height=196" 
@@ -862,10 +984,35 @@
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
-    const MAX_IMAGES = 3;
+    const MAX_IMAGES = 6;
     
     // Detect if mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Loading Screen Logic
+    const loadingScreen = document.getElementById('loadingScreen');
+    const cryptoLoader = document.getElementById('cryptoLoader');
+    
+    const cryptoSymbols = ['█', '▓', '▒', '░', '▄', '▀', '■', '□', '▪', '▫', '◘', '◙'];
+    let cryptoInterval;
+    
+    function rotateCryptoSymbols() {
+        let symbols = '';
+        for (let i = 0; i < 4; i++) {
+            symbols += cryptoSymbols[Math.floor(Math.random() * cryptoSymbols.length)];
+        }
+        cryptoLoader.textContent = symbols;
+    }
+    
+    cryptoInterval = setInterval(rotateCryptoSymbols, 100);
+    
+    // Hide loading screen after page loads
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+            clearInterval(cryptoInterval);
+        }, 800);
+    });
     
     // Elements
     const logoFixed = document.getElementById('logoFixed');
@@ -891,6 +1038,7 @@
     
     let selectedFiles = [];
     let isTextOnlyMode = false;
+    let generatedImageUrl = null; // Store generated image
     
     // Set capture attribute to "user" for front-facing camera on mobile
     if (isMobile) {
@@ -1009,6 +1157,7 @@
         isTextOnlyMode = false;
         selectedFiles = [];
         promptTextarea.value = '';
+        generatedImageUrl = null;
         
         uploadSection.style.display = 'block';
         photoPreviewSection.classList.remove('active');
@@ -1031,7 +1180,6 @@
         const files = Array.from(e.target.files);
         
         if (files.length === 0) {
-            // Reset input value to allow re-selection
             e.target.value = '';
             return;
         }
@@ -1053,14 +1201,12 @@
             return;
         }
         
-        // Add new files to selectedFiles array
         files.forEach(file => {
             if (file.type.startsWith('image/')) {
                 selectedFiles.push(file);
             }
         });
         
-        // Reset input value to allow re-selection of same file
         e.target.value = '';
         
         if (selectedFiles.length > 0) {
@@ -1071,27 +1217,21 @@
     }
     
     function showPromptSection(textOnly) {
-        // Update subtitle
         subtitle.textContent = 'Next describe your vision to bring it to life';
         subtitle.classList.add('screen-2');
         
-        // Hide upload buttons
         uploadSection.style.display = 'none';
         
-        // Show back button if text-only mode
         if (textOnly) {
             backButton.classList.add('active');
         }
         
-        // Only show photo preview section if NOT text-only mode
         if (!textOnly) {
             photoPreviewSection.classList.add('active');
         }
         
-        // Show prompt
         promptSection.classList.add('active');
         
-        // Start placeholder rotation
         startPlaceholderRotation();
     }
     
@@ -1131,7 +1271,6 @@
             reader.readAsDataURL(file);
         });
         
-        // Always show "+" button if less than max
         if (selectedFiles.length < MAX_IMAGES) {
             const addMoreBtn = document.createElement('div');
             addMoreBtn.className = 'add-more-btn';
@@ -1146,8 +1285,6 @@
     
     function removeImage(index) {
         selectedFiles.splice(index, 1);
-        
-        // Keep photo preview section active, just update the grid
         updatePreviews();
         checkGenerateButton();
         statusDiv.style.display = 'none';
@@ -1172,260 +1309,283 @@
         }
     });
     
-    // Generate Image
-btnGenerate.addEventListener('click', async () => {
-    if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
-        statusDiv.className = 'status error';
-        statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
-        statusDiv.style.display = 'block';
-        return;
-    }
-    
-    btnGenerate.disabled = true;
-    btnGenerate.textContent = 'Generating...';
-    statusDiv.style.display = 'none';
-    
-    // Hide sections
-    backButton.style.display = 'none';
-    photoPreviewSection.style.display = 'none';
-    promptSection.style.display = 'none';
-    generateSection.style.display = 'none';
-    
-    // Create progress indicator
-    const progressContainer = createProgressIndicator();
-    document.querySelector('.container').appendChild(progressContainer);
-    
-    // Build FormData
-    const formData = new FormData();
-    formData.append('Image Prompt', promptTextarea.value);
-    
-    selectedFiles.forEach((file) => {
-        formData.append('Image', file);
-    });
-    
-    let progress = 0;
-let progressInterval;
-// Dynamic time: 30 base seconds + 25 seconds per image
-let estimatedTime = 30 + (selectedFiles.length * 25);
-let elapsedTime = 0;
-let isComplete = false;
-    
-    const startProgress = () => {
-        progressInterval = setInterval(() => {
-            if (isComplete) return;
-            
-            elapsedTime += 0.1;
-            
-            if (progress < 90) {
-                progress += (90 / (estimatedTime * 10));
-            } else if (progress < 95) {
-                progress += 0.02;
-            }
-            
-            progress = Math.min(progress, 95);
-            updateProgress(progress, elapsedTime, estimatedTime);
-        }, 100);
-    };
-    
-    const finishProgress = () => {
-        isComplete = true;
-        clearInterval(progressInterval);
+    // Edit Image Function
+    async function editImage(imageUrl) {
+        // Reset to screen 2 with the generated image
+        uploadSection.style.display = 'none';
+        backButton.classList.remove('active');
         
-        let finalProgress = progress;
-        const speedUp = setInterval(() => {
-            finalProgress += 3;
-            if (finalProgress >= 100) {
-                finalProgress = 100;
-                clearInterval(speedUp);
-                updateProgress(100, elapsedTime, estimatedTime);
-                setTimeout(() => {
-                    progressContainer.style.opacity = '0';
-                    setTimeout(() => progressContainer.remove(), 300);
-                }, 500);
-            } else {
-                updateProgress(finalProgress, elapsedTime, estimatedTime);
-            }
-        }, 30);
-    };
-    
-    startProgress();
-    
-    // ========== ADD TIMEOUT HANDLING HERE ==========
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        controller.abort();
-    }, 300000); // 5 minutes (300000ms)
-    
-    try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal // Add abort signal
-        });
-        
-        clearTimeout(timeoutId); // Clear timeout if successful
-        
-        const responseText = await response.text();
-        let data;
+        // Clear existing files and add the generated image
+        selectedFiles = [];
         
         try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            throw new Error('Invalid response from server');
-        }
-        
-        const responseData = Array.isArray(data) ? data[0] : data;
-        
-        if (!response.ok) {
-            throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
-        }
-        
-        if (!responseData || !responseData.imageUrl) {
-            throw new Error('No image URL in response');
-        }
-        
-        finishProgress();
-        
-        setTimeout(() => {
-            statusDiv.className = 'status success';
-            statusDiv.textContent = '✓ Image generated successfully!';
+            // Fetch the image and convert to File object
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'generated-image.png', { type: 'image/png' });
+            selectedFiles.push(file);
+            
+            // Show photo preview section
+            photoPreviewSection.classList.add('active');
+            updatePreviews();
+            
+            // Show prompt section
+            promptSection.classList.add('active');
+            generateSection.classList.add('active');
+            
+            // Update subtitle
+            subtitle.textContent = 'Refine your vision';
+            subtitle.classList.add('screen-2');
+            
+            // Clear any result containers
+            const existingResult = document.getElementById('resultContainer');
+            if (existingResult) {
+                existingResult.remove();
+            }
+            
+            statusDiv.style.display = 'none';
+            
+            // Scroll to top
+            document.querySelector('.container').scrollTop = 0;
+            
+        } catch (error) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = '✗ Failed to load image for editing';
             statusDiv.style.display = 'block';
-            
-            const resultContainer = document.createElement('div');
-            resultContainer.id = 'resultContainer';
-            resultContainer.style.cssText = `
-                margin-top: 32px;
-                padding: 24px;
-                background: rgba(0, 0, 0, 0.25);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 16px;
-                box-shadow: 
-                    0 8px 24px rgba(0, 0, 0, 0.2),
-                    0 1px 2px rgba(255, 255, 255, 0.05) inset;
-                opacity: 0;
-                animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            `;
-            
-            const title = document.createElement('h3');
-            title.textContent = 'Your Reality';
-            title.style.cssText = `
-                color: rgba(255, 255, 255, 0.9);
-                font-size: 18px;
-                font-weight: 600;
-                margin-bottom: 16px;
-            `;
-            resultContainer.appendChild(title);
-            
-            const img = document.createElement('img');
-            img.src = responseData.imageUrl;
-            img.alt = 'Generated image';
-            img.style.cssText = `
-                width: 100%;
-                border-radius: 12px;
-                display: block;
-                margin-bottom: 16px;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            `;
-            
-            img.onerror = () => {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
-            };
-            
-            resultContainer.appendChild(img);
-            
-            const buttonRow = document.createElement('div');
-            buttonRow.style.cssText = `
-                display: flex;
-                gap: 12px;
-            `;
-            
-            const downloadBtn = document.createElement('a');
-            downloadBtn.href = responseData.imageUrl;
-            downloadBtn.download = 'embr-generated-image.png';
-            downloadBtn.target = '_blank';
-            downloadBtn.textContent = 'Download';
-            downloadBtn.style.cssText = `
-                flex: 1;
-                text-align: center;
-                padding: 12px 24px;
-                background: rgba(255, 255, 255, 0.1);
-                color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 10px;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 14px;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            `;
-            downloadBtn.onmouseover = () => {
-                downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
-                downloadBtn.style.transform = 'translateY(-1px)';
-            };
-            downloadBtn.onmouseout = () => {
-                downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-                downloadBtn.style.transform = 'translateY(0)';
-            };
-            
-            const newBtn = document.createElement('button');
-            newBtn.textContent = 'Create New';
-            newBtn.style.cssText = `
-                flex: 1;
-                padding: 12px 24px;
-                background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
-                color: #000000;
-                border: none;
-                border-radius: 10px;
-                font-weight: 600;
-                font-size: 14px;
-                cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            `;
-            newBtn.onmouseover = () => {
-                newBtn.style.transform = 'translateY(-1px)';
-                newBtn.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-            };
-            newBtn.onmouseout = () => {
-                newBtn.style.transform = 'translateY(0)';
-                newBtn.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-            };
-            newBtn.onclick = () => {
-                location.reload();
-            };
-            
-            buttonRow.appendChild(downloadBtn);
-            buttonRow.appendChild(newBtn);
-            resultContainer.appendChild(buttonRow);
-            
-            document.querySelector('.container').appendChild(resultContainer);
-        }, 800);
-        
-    } catch (error) {
-        clearTimeout(timeoutId); // Clear timeout on error
-        isComplete = true;
-        clearInterval(progressInterval);
-        progressContainer.remove();
-        
-        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
-        photoPreviewSection.style.display = 'block';
-        promptSection.style.display = 'block';
-        generateSection.style.display = 'block';
-        
-        // Better error message for timeout
-        let errorMessage = error.message;
-        if (error.name === 'AbortError') {
-            errorMessage = 'Request took too long (5+ minutes). Try with fewer images or try again.';
+        }
+    }
+    
+    // Generate Image
+    btnGenerate.addEventListener('click', async () => {
+        if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
+            statusDiv.style.display = 'block';
+            return;
         }
         
-        statusDiv.className = 'status error';
-        statusDiv.textContent = `✗ ${errorMessage}`;
-        statusDiv.style.display = 'block';
-    } finally {
-        btnGenerate.disabled = false;
-        btnGenerate.textContent = 'Generate Image';
-    }
-});
+        btnGenerate.disabled = true;
+        btnGenerate.textContent = 'Generating...';
+        statusDiv.style.display = 'none';
+        
+        // Hide sections
+        backButton.style.display = 'none';
+        photoPreviewSection.style.display = 'none';
+        promptSection.style.display = 'none';
+        generateSection.style.display = 'none';
+        
+        // Update subtitle during generation
+        subtitle.textContent = 'Please wait, your reality is being generated...';
+        subtitle.classList.add('screen-2');
+        
+        // Create progress indicator
+        const progressContainer = createProgressIndicator();
+        document.querySelector('.container').appendChild(progressContainer);
+        
+        // Build FormData
+        const formData = new FormData();
+        formData.append('Image Prompt', promptTextarea.value);
+        
+        selectedFiles.forEach((file) => {
+            formData.append('Image', file);
+        });
+        
+        let progress = 0;
+        let progressInterval;
+        // Dynamic time: 30 base seconds + 25 seconds per image
+        let estimatedTime = 30 + (selectedFiles.length * 25);
+        let elapsedTime = 0;
+        let isComplete = false;
+        
+        const startProgress = () => {
+            progressInterval = setInterval(() => {
+                if (isComplete) return;
+                
+                elapsedTime += 0.1;
+                
+                if (progress < 90) {
+                    progress += (90 / (estimatedTime * 10));
+                } else if (progress < 95) {
+                    progress += 0.02;
+                }
+                
+                progress = Math.min(progress, 95);
+                updateProgress(progress, elapsedTime, estimatedTime);
+            }, 100);
+        };
+        
+        const finishProgress = () => {
+            isComplete = true;
+            clearInterval(progressInterval);
+            
+            let finalProgress = progress;
+            const speedUp = setInterval(() => {
+                finalProgress += 3;
+                if (finalProgress >= 100) {
+                    finalProgress = 100;
+                    clearInterval(speedUp);
+                    updateProgress(100, elapsedTime, estimatedTime);
+                    setTimeout(() => {
+                        progressContainer.style.opacity = '0';
+                        setTimeout(() => progressContainer.remove(), 300);
+                    }, 500);
+                } else {
+                    updateProgress(finalProgress, elapsedTime, estimatedTime);
+                }
+            }, 30);
+        };
+        
+        startProgress();
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, 300000);
+        
+        try {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            const responseText = await response.text();
+            let data;
+            
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error('Invalid response from server');
+            }
+            
+            const responseData = Array.isArray(data) ? data[0] : data;
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
+            }
+            
+            if (!responseData || !responseData.imageUrl) {
+                throw new Error('No image URL in response');
+            }
+            
+            generatedImageUrl = responseData.imageUrl; // Store for edit function
+            
+            finishProgress();
+            
+            setTimeout(() => {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✓ Image generated successfully!';
+                statusDiv.style.display = 'block';
+                
+                const resultContainer = document.createElement('div');
+                resultContainer.id = 'resultContainer';
+                resultContainer.style.cssText = `
+                    margin-top: 32px;
+                    padding: 24px;
+                    background: rgba(0, 0, 0, 0.25);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 16px;
+                    box-shadow: 
+                        0 8px 24px rgba(0, 0, 0, 0.2),
+                        0 1px 2px rgba(255, 255, 255, 0.05) inset;
+                    opacity: 0;
+                    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                `;
+                
+                const title = document.createElement('h3');
+                title.textContent = 'Your Reality';
+                title.style.cssText = `
+                    color: rgba(255, 255, 255, 0.9);
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                `;
+                resultContainer.appendChild(title);
+                
+                const img = document.createElement('img');
+                img.src = responseData.imageUrl;
+                img.alt = 'Generated image';
+                img.style.cssText = `
+                    width: 100%;
+                    border-radius: 12px;
+                    display: block;
+                    margin-bottom: 16px;
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+                    cursor: pointer;
+                `;
+                
+                img.addEventListener('click', () => {
+                    modalImage.src = responseData.imageUrl;
+                    modal.classList.add('active');
+                });
+                
+                img.onerror = () => {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
+                };
+                
+                resultContainer.appendChild(img);
+                
+                const buttonRow = document.createElement('div');
+                buttonRow.className = 'result-actions';
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'btn-edit';
+                editBtn.textContent = '✏️ Edit';
+                editBtn.onclick = () => {
+                    editImage(responseData.imageUrl);
+                };
+                
+                const downloadBtn = document.createElement('a');
+                downloadBtn.className = 'btn-download';
+                downloadBtn.href = responseData.imageUrl;
+                downloadBtn.download = 'embr-generated-image.png';
+                downloadBtn.target = '_blank';
+                downloadBtn.textContent = '📥 Download';
+                
+                const newBtn = document.createElement('button');
+                newBtn.className = 'btn-new';
+                newBtn.textContent = '✨ Create New';
+                newBtn.onclick = () => {
+                    location.reload();
+                };
+                
+                buttonRow.appendChild(editBtn);
+                buttonRow.appendChild(downloadBtn);
+                buttonRow.appendChild(newBtn);
+                resultContainer.appendChild(buttonRow);
+                
+                document.querySelector('.container').appendChild(resultContainer);
+            }, 800);
+            
+        } catch (error) {
+            clearTimeout(timeoutId);
+            isComplete = true;
+            clearInterval(progressInterval);
+            progressContainer.remove();
+            
+            backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+            photoPreviewSection.style.display = 'block';
+            promptSection.style.display = 'block';
+            generateSection.style.display = 'block';
+            
+            subtitle.textContent = 'Next describe your vision to bring it to life';
+            
+            let errorMessage = error.message;
+            if (error.name === 'AbortError') {
+                errorMessage = 'Request took too long (5+ minutes). Try with fewer images or try again.';
+            }
+            
+            statusDiv.className = 'status error';
+            statusDiv.textContent = `✗ ${errorMessage}`;
+            statusDiv.style.display = 'block';
+        } finally {
+            btnGenerate.disabled = false;
+            btnGenerate.textContent = 'Generate Image';
+        }
+    });
     
     function createProgressIndicator() {
         const container = document.createElement('div');
@@ -1498,7 +1658,7 @@ let isComplete = false;
         `;
         timeInfo.innerHTML = `
             <span id="progressPercent">0%</span>
-            <span id="progressTime">0s / ~45s</span>
+            <span id="progressTime">0s / ~30s</span>
         `;
         container.appendChild(timeInfo);
         
@@ -1506,18 +1666,18 @@ let isComplete = false;
     }
     
     function updateProgress(percent, elapsed, estimated) {
-    const fill = document.getElementById('progressFill');
-    const percentText = document.getElementById('progressPercent');
-    const timeText = document.getElementById('progressTime');
-    
-    if (fill) fill.style.width = Math.min(percent, 100) + '%';
-    if (percentText) percentText.textContent = Math.floor(percent) + '%';
-    if (timeText) {
-        const elapsedStr = elapsed < 60 ? `${elapsed.toFixed(0)}s` : `${(elapsed/60).toFixed(1)}m`;
-        const estStr = estimated < 60 ? `~${estimated}s` : `~${(estimated/60).toFixed(1)}m`;
-        timeText.textContent = `${elapsedStr} / ${estStr}`;
+        const fill = document.getElementById('progressFill');
+        const percentText = document.getElementById('progressPercent');
+        const timeText = document.getElementById('progressTime');
+        
+        if (fill) fill.style.width = Math.min(percent, 100) + '%';
+        if (percentText) percentText.textContent = Math.floor(percent) + '%';
+        if (timeText) {
+            const elapsedStr = elapsed < 60 ? `${elapsed.toFixed(0)}s` : `${(elapsed/60).toFixed(1)}m`;
+            const estStr = estimated < 60 ? `~${estimated}s` : `~${(estimated/60).toFixed(1)}m`;
+            timeText.textContent = `${elapsedStr} / ${estStr}`;
+        }
     }
-}
     </script>
 </body>
 </html>
