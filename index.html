@@ -337,18 +337,24 @@
         throw new Error(`Server returned ${response.status}: ${data.error || 'Unknown error'}`);
     }
     
-    if (!data.imageUrl) {
-        console.error('No imageUrl in response. Full data:', JSON.stringify(data, null, 2));
-        throw new Error('No image URL in response');
-    }
+    // Handle array response from n8n (data might be [{ imageUrl: ... }])
+const responseData = Array.isArray(data) ? data[0] : data;
+
+console.log('Response data:', responseData);
+console.log('Image URL:', responseData.imageUrl);
+
+if (!responseData || !responseData.imageUrl) {
+    console.error('No imageUrl in response. Full data:', JSON.stringify(data, null, 2));
+    throw new Error('No image URL in response');
+}
     
     // SUCCESS - We have an image URL
-    statusDiv.className = 'status success';
-    statusDiv.textContent = '✓ Image generated successfully!';
-    statusDiv.style.display = 'block';
-    
-    // Create result container
-    const resultContainer = document.createElement('div');
+statusDiv.className = 'status success';
+statusDiv.textContent = '✓ Image generated successfully!';
+statusDiv.style.display = 'block';
+
+// Create result container
+const resultContainer = document.createElement('div');
     resultContainer.id = 'resultContainer';
     resultContainer.style.cssText = `
         margin-top: 32px;
@@ -371,7 +377,7 @@
     
     // Add image
     const img = document.createElement('img');
-    img.src = data.imageUrl;
+img.src = responseData.imageUrl;  // ← Use responseData
     img.alt = 'Generated image';
     img.style.cssText = `
         width: 100%;
@@ -395,7 +401,7 @@
     
     // Add download button
     const downloadBtn = document.createElement('a');
-    downloadBtn.href = data.imageUrl;
+downloadBtn.href = responseData.imageUrl;  // ← Use responseData
     downloadBtn.download = 'embr-generated-image.png';
     downloadBtn.target = '_blank';
     downloadBtn.textContent = 'Download Image';
