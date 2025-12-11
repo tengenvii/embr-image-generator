@@ -1188,23 +1188,26 @@ window.addEventListener('load', () => {
     });
     
     function resetToInitialState() {
-        isTextOnlyMode = false;
-        selectedFiles = [];
-        promptTextarea.value = '';
-        generatedImageUrl = null;
-        
-        uploadSection.style.display = 'block';
-        photoPreviewSection.classList.remove('active');
-        promptSection.classList.remove('active');
-        generateSection.classList.remove('active');
-        backButton.classList.remove('active');
-        
-        subtitle.textContent = 'First upload a photo or reference images';
-        subtitle.classList.remove('screen-2');
-        
-        statusDiv.style.display = 'none';
-        stopPlaceholderRotation();
-    }
+    isTextOnlyMode = false;
+    selectedFiles = [];
+    promptTextarea.value = '';
+    generatedImageUrl = null;
+    
+    // Remove result class
+    document.querySelector('.container').classList.remove('has-result');
+    
+    uploadSection.style.display = 'block';
+    photoPreviewSection.classList.remove('active');
+    promptSection.classList.remove('active');
+    generateSection.classList.remove('active');
+    backButton.classList.remove('active');
+    
+    subtitle.textContent = 'First upload a photo or reference images';
+    subtitle.classList.remove('screen-2');
+    
+    statusDiv.style.display = 'none';
+    stopPlaceholderRotation();
+}
     
     // File Input Handlers
     cameraInput.addEventListener('change', handleFileSelect);
@@ -1359,11 +1362,12 @@ async function editImage(imageUrl) {
             lastModified: Date.now()
         });
         
-        // Clear result container
-        const existingResult = document.getElementById('resultContainer');
-        if (existingResult) {
-            existingResult.remove();
-        }
+        // At the start of the editImage function, after clearing the result:
+const existingResult = document.getElementById('resultContainer');
+if (existingResult) {
+    existingResult.remove();
+    document.querySelector('.container').classList.remove('has-result'); // ADD THIS
+}
         
         // Reset files and add the generated image
         selectedFiles = [file];
@@ -1559,6 +1563,7 @@ async function editImage(imageUrl) {
                 
                 const resultContainer = document.createElement('div');
                 resultContainer.id = 'resultContainer';
+                document.querySelector('.container').classList.add('has-result');
                 resultContainer.style.cssText = `
                     margin-top: 32px;
                     padding: 24px;
