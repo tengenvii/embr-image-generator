@@ -1502,47 +1502,60 @@ btnClearAll.addEventListener('click', () => {
     
     // Edit Image Function - Fixed
 async function editImage(imageUrl) {
-    // Remove existing result and spacing class
+    // ✅ IMMEDIATE UI STATE CHANGE - Do this FIRST (synchronously)
+    // This prevents any flash of old content
+    subtitle.textContent = 'Refine your vision and generate again';
+    subtitle.classList.add('screen-2');
+    
+    // Remove result container immediately
     const existingResult = document.getElementById('resultContainer');
     if (existingResult) {
         existingResult.remove();
-        document.querySelector('.container').classList.remove('has-result');
     }
-
+    document.querySelector('.container').classList.remove('has-result');
     statusDiv.style.display = 'none';
-
+    
+    // Show correct screen state immediately
+    uploadSection.style.display = 'none';
+    backButton.style.display = 'flex';
+    backButton.classList.add('active');
+    photoPreviewSection.classList.add('active');
+    photoPreviewSection.style.display = 'block';
+    promptSection.classList.add('active');
+    promptSection.style.display = 'block';
+    generateSection.classList.add('active');
+    generateSection.style.display = 'block';
+    
+    // Clear prompt immediately
+    promptTextarea.value = '';
+    checkGenerateButton();
+    
+    // Scroll to top immediately
+    document.querySelector('.container').scrollTop = 0;
+    
+    // ✅ NOW do async image loading in background
     try {
-        // For n8n images, we need to handle CORS differently
-        // Try to fetch, but if it fails, use proxy method
         let blob;
-        
         try {
-            const res = await fetch(imageUrl, { 
-                mode: 'cors',
-                cache: 'no-cache'
-            });
+            const res = await fetch(imageUrl, { mode: 'cors', cache: 'no-cache' });
             blob = await res.blob();
         } catch (fetchError) {
-            // CORS failed - use alternative method
-            console.log('Direct fetch failed, using alternative method');
+            // CORS failed - use canvas method
+            console.log('Direct fetch failed, using canvas fallback');
             
-            // Create image element to load it
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            
             await new Promise((resolve, reject) => {
                 img.onload = resolve;
                 img.onerror = reject;
                 img.src = imageUrl;
             });
             
-            // Convert to blob via canvas
             const canvas = document.createElement('canvas');
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
-            
             blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         }
         
@@ -1550,72 +1563,28 @@ async function editImage(imageUrl) {
             type: 'image/png', 
             lastModified: Date.now() 
         });
-
-        // Set file and show UI
+        
+        // Update file array and previews
         selectedFiles = [file];
         isTextOnlyMode = false;
-        
-        uploadSection.style.display = 'none';
-        backButton.style.display = 'flex';
-        backButton.classList.add('active');
-        photoPreviewSection.classList.add('active');
-        photoPreviewSection.style.display = 'block';
-        promptSection.classList.add('active');
-        promptSection.style.display = 'block';
-        generateSection.classList.add('active');
-        generateSection.style.display = 'block';
-
-        subtitle.textContent = 'Refine your vision and generate again';
-        subtitle.classList.add('screen-2');
-        
-        // Clear old prompt
-        promptTextarea.value = '';
-        checkGenerateButton(); // Update generate button state
-
-        // Small delay for smooth transition (shorter on mobile)
-        setTimeout(() => {
-            updatePreviews();
-            document.querySelector('.container').scrollTop = 0;
-        }, isMobile ? 50 : 150);
+        updatePreviews();
         
     } catch (e) {
-        console.error('Edit failed - using fallback:', e);
-
-        // Fallback: Just reset to screen 2 with empty upload
+        console.error('Edit failed - using fallback', e);
+        
+        // Fallback: Reset to empty state
         selectedFiles = [];
         isTextOnlyMode = false;
+        updatePreviews();
         
-        uploadSection.style.display = 'none';
-        backButton.style.display = 'flex';
-        backButton.classList.add('active');
-        photoPreviewSection.classList.add('active');
-        photoPreviewSection.style.display = 'block';
-        promptSection.classList.add('active');
-        promptSection.style.display = 'block';
-        generateSection.classList.remove('active');
-        generateSection.style.display = 'none';
-
-        subtitle.textContent = 'Add images and describe your vision';
-        subtitle.classList.add('screen-2');
-        
-                // Clear prompt in fallback too
-        promptTextarea.value = '';
-        checkGenerateButton();
-
-                // Small delay for consistency
-        setTimeout(() => {
-            updatePreviews();
-        }, isMobile ? 50 : 150);
-        
+        // Show error message
         statusDiv.className = 'status';
-        statusDiv.style.background = 'rgba(59,130,246,0.12)';
-        statusDiv.style.color = '#60a5fa';
-        statusDiv.style.border = '1px solid rgba(59,130,246,0.25)';
-        statusDiv.textContent = 'Ready for your next creation. Add images or describe your vision.';
+        statusDiv.style.background = 'rgba(239,68,68,0.12)';
+        statusDiv.style.color = '#f87171';
+        statusDiv.style.border = '1px solid rgba(239,68,68,0.25)';
+        statusDiv.textContent = 'Could not load image. Add a new image or describe your vision.';
         statusDiv.style.display = 'block';
-        
-        setTimeout(() => (statusDiv.style.display = 'none'), 3000);
-        document.querySelector('.container').scrollTop = 0;
+        setTimeout(() => statusDiv.style.display = 'none', 4000);
     }
 }
     
