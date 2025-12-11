@@ -160,6 +160,28 @@
             letter-spacing: -0.01em;
             margin-bottom: 8px;
         }
+
+        /* Textarea wrapper for custom placeholder */
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        .custom-placeholder {
+            position: absolute;
+            top: 16px;
+            left: 18px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 15px;
+            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', 'Inter', sans-serif;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            max-width: calc(100% - 36px);
+        }
+
+        .custom-placeholder.hidden {
+            opacity: 0;
+        }
         
         input[type="text"],
         textarea {
@@ -193,8 +215,7 @@
         
         input::placeholder,
         textarea::placeholder {
-            color: rgba(255, 255, 255, 0.35);
-            font-weight: 400;
+            color: transparent;
         }
         
         textarea {
@@ -584,6 +605,10 @@
                 font-size: 16px;
             }
 
+            .custom-placeholder {
+                font-size: 16px;
+            }
+
             .upload-preview-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
@@ -618,12 +643,14 @@
         <form id="imageForm">
             <div class="form-group" id="promptGroup">
                 <label for="prompt">Describe what you want to create *</label>
-                <textarea 
-                    id="prompt" 
-                    name="Image Prompt" 
-                    placeholder="A futuristic cityscape at sunset..."
-                    required
-                ></textarea>
+                <div class="textarea-wrapper">
+                    <div class="custom-placeholder" id="customPlaceholder">A futuristic cityscape at sunset...</div>
+                    <textarea 
+                        id="prompt" 
+                        name="Image Prompt" 
+                        required
+                    ></textarea>
+                </div>
             </div>
             
             <div class="form-group" id="imageGroup">
@@ -682,6 +709,7 @@
     const modalImage = document.getElementById('modalImage');
     const modalClose = document.getElementById('modalClose');
     const promptTextarea = document.getElementById('prompt');
+    const customPlaceholder = document.getElementById('customPlaceholder');
     
     let selectedFiles = [];
     
@@ -703,16 +731,28 @@
     
     function rotatePlaceholder() {
         if (promptTextarea !== document.activeElement && promptTextarea.value === '') {
-            promptTextarea.style.transition = 'opacity 0.5s ease';
-            promptTextarea.style.opacity = '0';
+            customPlaceholder.style.opacity = '0';
             
             setTimeout(() => {
                 placeholderIndex = (placeholderIndex + 1) % placeholders.length;
-                promptTextarea.placeholder = placeholders[placeholderIndex];
-                promptTextarea.style.opacity = '1';
+                customPlaceholder.textContent = placeholders[placeholderIndex];
+                customPlaceholder.style.opacity = '1';
             }, 500);
         }
     }
+    
+    // Hide/show custom placeholder based on input
+    function updatePlaceholderVisibility() {
+        if (promptTextarea.value !== '' || promptTextarea === document.activeElement) {
+            customPlaceholder.classList.add('hidden');
+        } else {
+            customPlaceholder.classList.remove('hidden');
+        }
+    }
+    
+    promptTextarea.addEventListener('input', updatePlaceholderVisibility);
+    promptTextarea.addEventListener('focus', updatePlaceholderVisibility);
+    promptTextarea.addEventListener('blur', updatePlaceholderVisibility);
     
     // Rotate placeholder every 4 seconds
     setInterval(rotatePlaceholder, 4000);
