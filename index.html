@@ -1093,24 +1093,6 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
         window.open(url, '_blank');
     }
 }
-        
-        // Mobile fallback: direct download
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            URL.revokeObjectURL(blobUrl);
-            a.remove();
-        }, 1000);
-        
-    } catch (err) {
-        // Last resort: direct link
-        window.open(url, '_blank');
-    }
-}
     
     // Loading Screen Logic
 const loadingScreen = document.getElementById('loadingScreen');
