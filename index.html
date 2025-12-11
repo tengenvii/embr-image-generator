@@ -698,72 +698,78 @@
         }
 
         /* Result Action Buttons */
-        .result-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
+.result-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
 
-        .btn-edit,
-        .btn-download,
-        .btn-new {
-            flex: 1;
-            text-align: center;
-            padding: 12px 24px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: none;
-        }
+.btn-edit,
+.btn-download,
+.btn-new {
+    flex: 1;
+    text-align: center;
+    padding: 14px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: none;
+    letter-spacing: -0.01em;
+}
 
-        .btn-edit {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
+.btn-edit {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
 
-        .btn-edit:hover {
-            background: rgba(59, 130, 246, 0.25);
-            transform: translateY(-1px);
-        }
+.btn-edit:hover {
+    background: rgba(34, 197, 94, 0.25);
+    border-color: rgba(34, 197, 94, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
 
-        .btn-download {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+.btn-download {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
 
-        .btn-download:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-1px);
-        }
+.btn-download:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
 
-        .btn-new {
-            background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
-            color: #000000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
+.btn-new {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+    color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: none;
+}
 
-        .btn-new:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
+.btn-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
 
         /* Footer */
-        .footer {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
-            font-weight: 500;
-            z-index: 1;
-        }
+.footer {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: auto;
+    text-align: left;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 1;
+}
 
         /* Modal */
         .modal {
@@ -819,28 +825,27 @@
         }
         
         @media (max-width: 768px) {
-            body {
-                padding: 16px;
-                padding-top: 100px; /* Space for logo on mobile */
-                overflow: hidden;
-            }
+    body {
+        padding: 16px;
+        overflow: hidden;
+    }
 
-            .logo-fixed {
-                top: 20px;
-                left: 20px;
-            }
+    .logo-fixed {
+        top: 20px;
+        left: 20px;
+        margin-bottom: 24px; /* Just margin below logo */
+    }
 
-            .logo-fixed img {
-                width: 140px;
-            }
+    .logo-fixed img {
+        width: 140px;
+    }
 
-            .container {
-                padding: 32px 24px;
-                margin: 0;
-                margin-top: 20px; /* Additional margin below logo */
-                max-height: calc(100vh - 140px);
-                max-height: calc(100dvh - 140px);
-            }
+    .container {
+        padding: 32px 24px;
+        margin: 0;
+        max-height: calc(100vh - 100px);
+        max-height: calc(100dvh - 100px);
+    }
 
             .header h1 {
                 font-size: 28px;
@@ -990,29 +995,29 @@
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     // Loading Screen Logic
-    const loadingScreen = document.getElementById('loadingScreen');
-    const cryptoLoader = document.getElementById('cryptoLoader');
-    
-    const cryptoSymbols = ['█', '▓', '▒', '░', '▄', '▀', '■', '□', '▪', '▫', '◘', '◙'];
-    let cryptoInterval;
-    
-    function rotateCryptoSymbols() {
-        let symbols = '';
-        for (let i = 0; i < 4; i++) {
-            symbols += cryptoSymbols[Math.floor(Math.random() * cryptoSymbols.length)];
-        }
-        cryptoLoader.textContent = symbols;
+const loadingScreen = document.getElementById('loadingScreen');
+const cryptoLoader = document.getElementById('cryptoLoader');
+
+const cryptoSymbols = ['𓀂', '𓀇', '𓀉', '𓀍', '𓀠', '𓁀', '𓁂', '𓀱', '𓁉', '𓀿', '𓀪', '𓁶', '𓂧', '𓂮', '𓂫', '𓃺', '𓃳', '𓄜', '𓄲', '𓄓', '𓅆', '𓅢', '𓅼', '𓆀', '𓆾', '𓈀', '𓉒', '𓉼', '𓊪', '𓋜', '𓋒', '𓍳', '𓎳'];
+let cryptoInterval;
+
+function rotateCryptoSymbols() {
+    let symbols = '';
+    for (let i = 0; i < 3; i++) {
+        symbols += cryptoSymbols[Math.floor(Math.random() * cryptoSymbols.length)];
     }
-    
-    cryptoInterval = setInterval(rotateCryptoSymbols, 100);
-    
-    // Hide loading screen after page loads
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-            clearInterval(cryptoInterval);
-        }, 800);
-    });
+    cryptoLoader.textContent = symbols;
+}
+
+cryptoInterval = setInterval(rotateCryptoSymbols, 100);
+
+// Hide loading screen after page loads
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+        clearInterval(cryptoInterval);
+    }, 1800); // 1.8 seconds (1 second longer)
+});
     
     // Elements
     const logoFixed = document.getElementById('logoFixed');
@@ -1309,51 +1314,91 @@
         }
     });
     
-    // Edit Image Function
-    async function editImage(imageUrl) {
-        // Reset to screen 2 with the generated image
+    // Edit Image Function - Fixed to work with CORS
+async function editImage(imageUrl) {
+    try {
+        // Show loading state
+        statusDiv.className = 'status';
+        statusDiv.textContent = 'Loading image for editing...';
+        statusDiv.style.display = 'block';
+        
+        // Fetch the image with CORS mode
+        const response = await fetch(imageUrl, {
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch image');
+        }
+        
+        const blob = await response.blob();
+        
+        // Create a File object from the blob
+        const file = new File([blob], 'generated-image.png', { 
+            type: blob.type || 'image/png',
+            lastModified: Date.now()
+        });
+        
+        // Clear existing state
+        const existingResult = document.getElementById('resultContainer');
+        if (existingResult) {
+            existingResult.remove();
+        }
+        
+        // Reset to editing mode
+        selectedFiles = [file];
+        isTextOnlyMode = false;
+        
+        // Update UI
         uploadSection.style.display = 'none';
         backButton.classList.remove('active');
+        photoPreviewSection.classList.add('active');
+        promptSection.classList.add('active');
+        generateSection.classList.add('active');
         
-        // Clear existing files and add the generated image
-        selectedFiles = [];
+        // Update subtitle
+        subtitle.textContent = 'Refine your vision and generate again';
+        subtitle.classList.add('screen-2');
         
-        try {
-            // Fetch the image and convert to File object
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const file = new File([blob], 'generated-image.png', { type: 'image/png' });
-            selectedFiles.push(file);
-            
-            // Show photo preview section
-            photoPreviewSection.classList.add('active');
-            updatePreviews();
-            
-            // Show prompt section
-            promptSection.classList.add('active');
-            generateSection.classList.add('active');
-            
-            // Update subtitle
-            subtitle.textContent = 'Refine your vision';
-            subtitle.classList.add('screen-2');
-            
-            // Clear any result containers
-            const existingResult = document.getElementById('resultContainer');
-            if (existingResult) {
-                existingResult.remove();
-            }
-            
+        // Update previews
+        updatePreviews();
+        
+        // Hide status after success
+        setTimeout(() => {
             statusDiv.style.display = 'none';
-            
-            // Scroll to top
-            document.querySelector('.container').scrollTop = 0;
-            
-        } catch (error) {
-            statusDiv.className = 'status error';
-            statusDiv.textContent = '✗ Failed to load image for editing';
-            statusDiv.style.display = 'block';
+        }, 1000);
+        
+        // Scroll to top
+        document.querySelector('.container').scrollTop = 0;
+        
+    } catch (error) {
+        console.error('Edit error:', error);
+        
+        // Fallback: Just reset to screen 2 without the image
+        const existingResult = document.getElementById('resultContainer');
+        if (existingResult) {
+            existingResult.remove();
         }
+        
+        uploadSection.style.display = 'none';
+        backButton.classList.remove('active');
+        photoPreviewSection.classList.add('active');
+        promptSection.classList.add('active');
+        generateSection.classList.add('active');
+        
+        subtitle.textContent = 'Describe your next vision';
+        subtitle.classList.add('screen-2');
+        
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '⚠️ Could not load image. Starting fresh generation instead.';
+        statusDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
     }
+}
     
     // Generate Image
     btnGenerate.addEventListener('click', async () => {
@@ -1529,33 +1574,33 @@
                 resultContainer.appendChild(img);
                 
                 const buttonRow = document.createElement('div');
-                buttonRow.className = 'result-actions';
-                
-                const editBtn = document.createElement('button');
-                editBtn.className = 'btn-edit';
-                editBtn.textContent = '✏️ Edit';
-                editBtn.onclick = () => {
-                    editImage(responseData.imageUrl);
-                };
-                
-                const downloadBtn = document.createElement('a');
-                downloadBtn.className = 'btn-download';
-                downloadBtn.href = responseData.imageUrl;
-                downloadBtn.download = 'embr-generated-image.png';
-                downloadBtn.target = '_blank';
-                downloadBtn.textContent = '📥 Download';
-                
-                const newBtn = document.createElement('button');
-                newBtn.className = 'btn-new';
-                newBtn.textContent = '✨ Create New';
-                newBtn.onclick = () => {
-                    location.reload();
-                };
-                
-                buttonRow.appendChild(editBtn);
-                buttonRow.appendChild(downloadBtn);
-                buttonRow.appendChild(newBtn);
-                resultContainer.appendChild(buttonRow);
+buttonRow.className = 'result-actions';
+
+const editBtn = document.createElement('button');
+editBtn.className = 'btn-edit';
+editBtn.textContent = 'Edit';
+editBtn.onclick = () => {
+    editImage(responseData.imageUrl);
+};
+
+const downloadBtn = document.createElement('a');
+downloadBtn.className = 'btn-download';
+downloadBtn.href = responseData.imageUrl;
+downloadBtn.download = 'embr-generated-image.png';
+downloadBtn.target = '_blank';
+downloadBtn.textContent = 'Download';
+
+const newBtn = document.createElement('button');
+newBtn.className = 'btn-new';
+newBtn.textContent = 'Create New';
+newBtn.onclick = () => {
+    location.reload();
+};
+
+buttonRow.appendChild(editBtn);
+buttonRow.appendChild(downloadBtn);
+buttonRow.appendChild(newBtn);
+resultContainer.appendChild(buttonRow);
                 
                 document.querySelector('.container').appendChild(resultContainer);
             }, 800);
