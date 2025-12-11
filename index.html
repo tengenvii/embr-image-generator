@@ -1090,13 +1090,47 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
         return;
     }
 
-    // Mobile: Force share sheet
+    // Mobile: Try Web Share API with proper blob handling
     try {
-        const res = await fetch(url);
-        const blob = await res.blob();
+        // Use CORS proxy approach for better compatibility
+        let blob;
+        
+        try {
+            // Try direct fetch first
+            const response = await fetch(url, { mode: 'no-cors' });
+            blob = await response.blob();
+        } catch (fetchErr) {
+            // If CORS fails, use Image + Canvas approach
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => {
+                    // If image loading fails, just open URL
+                    window.open(url, '_blank');
+                    reject();
+                };
+                img.src = url;
+            });
+            
+            // Convert to blob via canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        }
+        
+        if (!blob) {
+            window.open(url, '_blank');
+            return;
+        }
+        
         const file = new File([blob], filename, { type: 'image/png' });
         
-        // Always try share on mobile
+        // Check if share is supported
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({ 
                 files: [file],
@@ -1118,6 +1152,7 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
         }
     } catch (err) {
         console.error('Save failed:', err);
+        // Last resort: open in new tab
         window.open(url, '_blank');
     }
 }
@@ -1537,11 +1572,18 @@ async function editImage(imageUrl) {
         promptTextarea.value = '';
         checkGenerateButton(); // Update generate button state
 
-        // Delay for blob processing (important for desktop)
-        setTimeout(() => {
+        // Delay for blob processing (desktop only)
+        if (isMobile) {
+            // Mobile: instant update
             updatePreviews();
             document.querySelector('.container').scrollTop = 0;
-        }, 150);
+        } else {
+            // Desktop: small delay for blob processing
+            setTimeout(() => {
+                updatePreviews();
+                document.querySelector('.container').scrollTop = 0;
+            }, 150);
+        }
         
     } catch (e) {
         console.error('Edit failed - using fallback:', e);
@@ -1563,13 +1605,18 @@ async function editImage(imageUrl) {
         subtitle.textContent = 'Add images and describe your vision';
         subtitle.classList.add('screen-2');
         
-        // Clear prompt in fallback too
+                // Clear prompt in fallback too
         promptTextarea.value = '';
         checkGenerateButton();
 
-        setTimeout(() => {
+        // Conditional delay
+        if (isMobile) {
             updatePreviews();
-        }, 150);
+        } else {
+            setTimeout(() => {
+                updatePreviews();
+            }, 150);
+        }
         
         statusDiv.className = 'status';
         statusDiv.style.background = 'rgba(59,130,246,0.12)';
