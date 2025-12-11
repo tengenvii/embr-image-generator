@@ -636,7 +636,7 @@
         }
         
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Generating...';
+        submitBtn.textContent = 'none';
         statusDiv.style.display = 'none';
         
         // Hide form fields and submit button
@@ -815,14 +815,16 @@
             // Show form fields again on error
             promptGroup.classList.remove('hidden');
             imageGroup.classList.remove('hidden');
+            submitBtn.style.display = 'block'; //
             
             statusDiv.className = 'status error';
             statusDiv.textContent = `✗ ${error.message}`;
             statusDiv.style.display = 'block';
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Generate Image';
-        }
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Generate Image';
+    // Don't show button here - it's controlled by success/error/newImageBtn
+}
     });
     
     function createProgressIndicator() {
