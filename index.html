@@ -437,6 +437,38 @@
         .photo-preview-section.active {
             display: block;
         }
+/* Clear All Button */
+.clear-all-container {
+    display: none;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.clear-all-container.active {
+    display: flex;
+}
+
+.btn-clear-all {
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-clear-all:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-clear-all:active {
+    transform: scale(0.98);
+}
 
         .photo-preview-grid {
             display: grid;
@@ -995,11 +1027,14 @@
         <input type="file" id="galleryInput" accept="image/*" multiple>
 
         <!-- Photo Preview Section (Shows after upload) -->
-        <div class="photo-preview-section" id="photoPreviewSection">
-            <div class="photo-preview-grid" id="photoPreviewGrid">
-                <!-- Preview items will be added here -->
-            </div>
-        </div>
+<div class="photo-preview-section" id="photoPreviewSection">
+    <div class="clear-all-container" id="clearAllContainer">
+        <button class="btn-clear-all" id="btnClearAll">Clear All</button>
+    </div>
+    <div class="photo-preview-grid" id="photoPreviewGrid">
+        <!-- Preview items will be added here -->
+    </div>
+</div>
 
         <!-- Prompt Section (Shows after photo upload or text-only) -->
         <div class="prompt-section" id="promptSection">
@@ -1035,7 +1070,7 @@
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/generate-image';
-    const MAX_IMAGES = 6;
+    const MAX_IMAGES = 3;
     
     // Detect if mobile
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -1055,25 +1090,37 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
         return;
     }
 
-    // Mobile: Try native share API first
+    // Mobile: Force share sheet
     try {
-        const res = await fetch(url, { mode: 'cors' });
+        const res = await fetch(url);
         const blob = await res.blob();
         const file = new File([blob], filename, { type: 'image/png' });
         
-        // Check if Web Share API is available
-        if (navigator.share) {
-            try {
-                await navigator.share({ 
-                    files: [file],
-                    title: 'Generated Image',
-                    text: 'Created with EMBR'
-                });
-                return;
-            } catch (shareError) {
-                console.log('Share cancelled or failed:', shareError);
-            }
+        // Always try share on mobile
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ 
+                files: [file],
+                title: 'Generated Image',
+                text: 'Created with EMBR'
+            });
+        } else {
+            // Fallback: download
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+                a.remove();
+            }, 1000);
         }
+    } catch (err) {
+        console.error('Save failed:', err);
+        window.open(url, '_blank');
+    }
+}
         
         // Fallback for mobile: trigger download
         const blobUrl = URL.createObjectURL(blob);
@@ -1130,6 +1177,8 @@ window.addEventListener('load', () => {
     const uploadSection = document.getElementById('uploadSection');
     const photoPreviewSection = document.getElementById('photoPreviewSection');
     const photoPreviewGrid = document.getElementById('photoPreviewGrid');
+    const clearAllContainer = document.getElementById('clearAllContainer');
+    const btnClearAll = document.getElementById('btnClearAll');
     const promptSection = document.getElementById('promptSection');
     const generateSection = document.getElementById('generateSection');
     const promptTextarea = document.getElementById('prompt');
@@ -1258,6 +1307,15 @@ backButton.addEventListener('click', () => {
 backButton.addEventListener('touchend', (e) => {
     e.preventDefault();
     location.reload();
+});   
+// Clear All Button
+btnClearAll.addEventListener('click', () => {
+    if (confirm('Remove all images?')) {
+        selectedFiles = [];
+        updatePreviews();
+        checkGenerateButton();
+        statusDiv.style.display = 'none';
+    }
 });
     
     function resetToInitialState() {
@@ -1346,7 +1404,14 @@ backButton.addEventListener('touchend', (e) => {
     }
     
     function updatePreviews() {
-        photoPreviewGrid.innerHTML = '';
+    // Show/hide Clear All button
+    if (selectedFiles.length > 1) {
+        clearAllContainer.classList.add('active');
+    } else {
+        clearAllContainer.classList.remove('active');
+    }
+    
+    photoPreviewGrid.innerHTML = '';
         
         selectedFiles.forEach((file, index) => {
             const reader = new FileReader();
