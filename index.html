@@ -300,187 +300,202 @@
     });
     
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    e.preventDefault();
+    
+    if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
+        statusDiv.style.display = 'block';
+        return;
+    }
+    
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Generating...';
+    }
+    
+    statusDiv.style.display = 'none';
+    
+    const existingResult = document.getElementById('resultContainer');
+    if (existingResult) existingResult.remove();
+    
+    // Create and show progress indicator
+    const progressContainer = createProgressIndicator();
+    document.querySelector('.container').appendChild(progressContainer);
+    
+    const formData = new FormData(form);
+    
+    let progress = 0;
+    let progressInterval;
+    let estimatedTime = 45; // 45 seconds
+    let elapsedTime = 0;
+    let isComplete = false;
+    
+    const startProgress = () => {
+        progressInterval = setInterval(() => {
+            if (isComplete) return; // Stop updating if complete
+            
+            elapsedTime += 0.1;
+            
+            // Progress from 0-90% over 45 seconds
+            if (progress < 90) {
+                progress += (90 / (estimatedTime * 10)); // 90% / (45 seconds * 10 ticks per second)
+            } 
+            // After 90%, slow down to max 95%
+            else if (progress < 95) {
+                progress += 0.02; // Very slow crawl
+            }
+            // Cap at 95% until image is ready
+            
+            // Never exceed 95% until finishProgress is called
+            progress = Math.min(progress, 95);
+            
+            updateProgress(progress, elapsedTime, estimatedTime);
+        }, 100);
+    };
+    
+    const finishProgress = () => {
+        isComplete = true;
+        clearInterval(progressInterval);
         
-        if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
-            statusDiv.className = 'status error';
-            statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
-            statusDiv.style.display = 'block';
-            return;
-        }
+        // Speed up to 100%
+        let finalProgress = progress;
+        const speedUp = setInterval(() => {
+            finalProgress += 3;
+            if (finalProgress >= 100) {
+                finalProgress = 100;
+                clearInterval(speedUp);
+                updateProgress(100, elapsedTime, estimatedTime);
+                setTimeout(() => {
+                    progressContainer.style.opacity = '0';
+                    setTimeout(() => progressContainer.remove(), 300);
+                }, 500);
+            } else {
+                updateProgress(finalProgress, elapsedTime, estimatedTime);
+            }
+        }, 30);
+    };
+    
+    startProgress();
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            body: formData
+        });
         
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Generating...';
-        }
-        
-        statusDiv.style.display = 'none';
-        
-        const existingResult = document.getElementById('resultContainer');
-        if (existingResult) existingResult.remove();
-        
-        // Create and show progress indicator
-        const progressContainer = createProgressIndicator();
-        document.querySelector('.container').appendChild(progressContainer);
-        
-        const formData = new FormData(form);
-        
-        let progress = 0;
-        let progressInterval;
-        let estimatedTime = 25;
-        let elapsedTime = 0;
-        
-        const startProgress = () => {
-            progressInterval = setInterval(() => {
-                elapsedTime += 0.1;
-                
-                if (progress < 90) {
-                    progress += (90 / (estimatedTime * 10));
-                } else {
-                    progress += 0.05;
-                }
-                
-                updateProgress(progress, elapsedTime, estimatedTime);
-            }, 100);
-        };
-        
-        const finishProgress = () => {
-            clearInterval(progressInterval);
-            let finalProgress = progress;
-            const speedUp = setInterval(() => {
-                finalProgress += 5;
-                if (finalProgress >= 100) {
-                    finalProgress = 100;
-                    clearInterval(speedUp);
-                    updateProgress(100, elapsedTime, estimatedTime);
-                    setTimeout(() => {
-                        progressContainer.style.opacity = '0';
-                        setTimeout(() => progressContainer.remove(), 300);
-                    }, 500);
-                } else {
-                    updateProgress(finalProgress, elapsedTime, estimatedTime);
-                }
-            }, 30);
-        };
-        
-        startProgress();
+        const responseText = await response.text();
+        let data;
         
         try {
-            const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                body: formData
-            });
-            
-            const responseText = await response.text();
-            let data;
-            
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                throw new Error('Invalid response from server');
-            }
-            
-            const responseData = Array.isArray(data) ? data[0] : data;
-            
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
-            }
-            
-            if (!responseData || !responseData.imageUrl) {
-                throw new Error('No image URL in response');
-            }
-            
-            finishProgress();
-            
-            setTimeout(() => {
-                statusDiv.className = 'status success';
-                statusDiv.textContent = '✓ Image generated successfully!';
-                statusDiv.style.display = 'block';
-                
-                const resultContainer = document.createElement('div');
-                resultContainer.id = 'resultContainer';
-                resultContainer.style.cssText = `
-                    margin-top: 32px;
-                    padding: 24px;
-                    background: rgba(0, 0, 0, 0.3);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 12px;
-                    opacity: 0;
-                    animation: fadeIn 0.4s ease forwards;
-                `;
-                
-                const title = document.createElement('h3');
-                title.textContent = 'Generated Image';
-                title.style.cssText = `
-                    color: rgba(255, 255, 255, 0.9);
-                    font-size: 18px;
-                    font-weight: 600;
-                    margin-bottom: 16px;
-                `;
-                resultContainer.appendChild(title);
-                
-                const img = document.createElement('img');
-                img.src = responseData.imageUrl;
-                img.alt = 'Generated image';
-                img.style.cssText = `
-                    width: 100%;
-                    border-radius: 8px;
-                    display: block;
-                    margin-bottom: 16px;
-                `;
-                
-                img.onerror = () => {
-                    statusDiv.className = 'status error';
-                    statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
-                };
-                
-                resultContainer.appendChild(img);
-                
-                const downloadBtn = document.createElement('a');
-                downloadBtn.href = responseData.imageUrl;
-                downloadBtn.download = 'embr-generated-image.png';
-                downloadBtn.target = '_blank';
-                downloadBtn.textContent = 'Download Image';
-                downloadBtn.style.cssText = `
-                    display: inline-block;
-                    padding: 12px 24px;
-                    background: rgba(255, 255, 255, 0.1);
-                    color: #ffffff;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    border-radius: 8px;
-                    text-decoration: none;
-                    font-weight: 600;
-                    font-size: 14px;
-                    transition: all 0.2s ease;
-                `;
-                downloadBtn.onmouseover = () => {
-                    downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
-                };
-                downloadBtn.onmouseout = () => {
-                    downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-                };
-                resultContainer.appendChild(downloadBtn);
-                
-                document.querySelector('.container').appendChild(resultContainer);
-                
-                form.reset();
-                fileName.textContent = 'No file chosen';
-            }, 800);
-            
-        } catch (error) {
-            clearInterval(progressInterval);
-            progressContainer.remove();
-            
-            statusDiv.className = 'status error';
-            statusDiv.textContent = `✗ ${error.message}`;
-            statusDiv.style.display = 'block';
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Generate Image';
-            }
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            throw new Error('Invalid response from server');
         }
-    });
+        
+        const responseData = Array.isArray(data) ? data[0] : data;
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
+        }
+        
+        if (!responseData || !responseData.imageUrl) {
+            throw new Error('No image URL in response');
+        }
+        
+        // Image is ready - now finish progress
+        finishProgress();
+        
+        setTimeout(() => {
+            statusDiv.className = 'status success';
+            statusDiv.textContent = '✓ Image generated successfully!';
+            statusDiv.style.display = 'block';
+            
+            const resultContainer = document.createElement('div');
+            resultContainer.id = 'resultContainer';
+            resultContainer.style.cssText = `
+                margin-top: 32px;
+                padding: 24px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                opacity: 0;
+                animation: fadeIn 0.4s ease forwards;
+            `;
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Generated Image';
+            title.style.cssText = `
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 16px;
+            `;
+            resultContainer.appendChild(title);
+            
+            const img = document.createElement('img');
+            img.src = responseData.imageUrl;
+            img.alt = 'Generated image';
+            img.style.cssText = `
+                width: 100%;
+                border-radius: 8px;
+                display: block;
+                margin-bottom: 16px;
+            `;
+            
+            img.onerror = () => {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
+            };
+            
+            resultContainer.appendChild(img);
+            
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = responseData.imageUrl;
+            downloadBtn.download = 'embr-generated-image.png';
+            downloadBtn.target = '_blank';
+            downloadBtn.textContent = 'Download Image';
+            downloadBtn.style.cssText = `
+                display: inline-block;
+                padding: 12px 24px;
+                background: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.2s ease;
+            `;
+            downloadBtn.onmouseover = () => {
+                downloadBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+            };
+            downloadBtn.onmouseout = () => {
+                downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            };
+            resultContainer.appendChild(downloadBtn);
+            
+            document.querySelector('.container').appendChild(resultContainer);
+            
+            form.reset();
+            fileName.textContent = 'No file chosen';
+        }, 800);
+        
+    } catch (error) {
+        isComplete = true;
+        clearInterval(progressInterval);
+        progressContainer.remove();
+        
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `✗ ${error.message}`;
+        statusDiv.style.display = 'block';
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate Image';
+        }
+    }
+});
     
     function createProgressIndicator() {
         const container = document.createElement('div');
