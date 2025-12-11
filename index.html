@@ -743,6 +743,11 @@
     box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
 }
 
+.btn-edit:active {
+    transform: translateY(0) scale(0.98);
+    transition: transform 0.1s ease;
+}
+
 .btn-download {
     background: rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.9);
@@ -1052,18 +1057,42 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
 
     // Mobile: Try native share API first
     try {
-        const res = await fetch(url);
+        const res = await fetch(url, { mode: 'cors' });
         const blob = await res.blob();
+        const file = new File([blob], filename, { type: 'image/png' });
         
-        if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: blob.type })] })) {
-            const file = new File([blob], filename, { type: blob.type });
-            await navigator.share({ 
-                files: [file], 
-                title: 'Save Image', 
-                text: 'Generated with EMBR' 
-            });
-            return;
+        // Check if Web Share API is available
+        if (navigator.share) {
+            try {
+                await navigator.share({ 
+                    files: [file],
+                    title: 'Generated Image',
+                    text: 'Created with EMBR'
+                });
+                return;
+            } catch (shareError) {
+                console.log('Share cancelled or failed:', shareError);
+            }
         }
+        
+        // Fallback for mobile: trigger download
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+            a.remove();
+        }, 1000);
+        
+    } catch (err) {
+        console.error('Save failed:', err);
+        // Last resort: open in new tab
+        window.open(url, '_blank');
+    }
+}
         
         // Mobile fallback: direct download
         const blobUrl = URL.createObjectURL(blob);
@@ -1475,6 +1504,10 @@ async function editImage(imageUrl) {
 
         subtitle.textContent = 'Refine your vision and generate again';
         subtitle.classList.add('screen-2');
+        
+        // Clear old prompt
+        promptTextarea.value = '';
+        checkGenerateButton(); // Update generate button state
 
         // Delay for blob processing (important for desktop)
         setTimeout(() => {
@@ -1501,6 +1534,10 @@ async function editImage(imageUrl) {
 
         subtitle.textContent = 'Add images and describe your vision';
         subtitle.classList.add('screen-2');
+        
+        // Clear prompt in fallback too
+        promptTextarea.value = '';
+        checkGenerateButton();
 
         setTimeout(() => {
             updatePreviews();
@@ -1647,11 +1684,14 @@ let isComplete = false;
             finishProgress();
             
             setTimeout(() => {
-                statusDiv.className = 'status success';
-                statusDiv.textContent = '✓ Image generated successfully!';
-                statusDiv.style.display = 'block';
-                
-                const resultContainer = document.createElement('div');
+    statusDiv.className = 'status success';
+    statusDiv.textContent = '✓ Image generated successfully!';
+    statusDiv.style.display = 'block';
+    
+    // Update subtitle
+    subtitle.textContent = 'Complete, view your image below';
+    
+    const resultContainer = document.createElement('div');
                 resultContainer.id = 'resultContainer';
                 document.querySelector('.container').classList.add('has-result');
                 resultContainer.style.cssText = `
@@ -1713,7 +1753,7 @@ editBtn.onclick = () => {
 
 const saveBtn = document.createElement('button');
 saveBtn.className = 'btn-download';
-saveBtn.textContent = 'Save Image';
+saveBtn.textContent = isMobile ? 'Save Image' : 'Download';
 saveBtn.onclick = () => saveImageSmart(responseData.imageUrl, 'embr-generated-image.png');
 
 const newBtn = document.createElement('button');
