@@ -2020,11 +2020,7 @@ window.addEventListener('load', () => {
   fetchAndDisplayCredits();
 });
 
-// Credit Modal Handlers - MUST be after all elements are defined
-const creditModal = document.getElementById('creditModal');
-const creditModalClose = document.getElementById('creditModalClose');
-const btnBuyCredits = document.getElementById('btnBuyCredits');
-
+// Credit Modal Handlers - Attach after DOM loads
 btnBuyCredits.addEventListener('click', () => {
   console.log('🛒 Buy Credits button clicked!');
   creditModal.classList.add('active');
