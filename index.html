@@ -1686,9 +1686,6 @@ window.addEventListener('load', () => {
     const modalImage = document.getElementById('modalImage');
     const modalClose = document.getElementById('modalClose');
     const subtitle = document.getElementById('subtitle');
-    const creditModal = document.getElementById('creditModal');
-    const creditModalClose = document.getElementById('creditModalClose');
-    const btnBuyCredits = document.getElementById('btnBuyCredits');
     
     let selectedFiles = [];
     let isTextOnlyMode = false;
@@ -2013,6 +2010,10 @@ window.addEventListener('load', () => {
   fetchAndDisplayCredits();
   
   // Setup credit modal handlers AFTER DOM is fully loaded
+  const creditModal = document.getElementById('creditModal');
+  const creditModalClose = document.getElementById('creditModalClose');
+  const btnBuyCredits = document.getElementById('btnBuyCredits');
+  
   if (btnBuyCredits && creditModal) {
     btnBuyCredits.addEventListener('click', () => {
       console.log('🛒 Buy Credits button clicked!');
