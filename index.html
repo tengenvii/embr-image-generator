@@ -1428,31 +1428,52 @@ function formatPerImagePrice(usdPrice, credits) {
 
 // Update all pricing displays on the page
 function updatePricingDisplay() {
-  const packs = document.querySelectorAll('.credit-pack');
+  console.log('💰 updatePricingDisplay called');
+  console.log('Currency:', userCurrency, 'Rate:', exchangeRate, 'Symbol:', currencySymbol);
   
-  packs.forEach(pack => {
+  const packs = document.querySelectorAll('.credit-pack');
+  console.log('Found packs:', packs.length);
+  
+  if (packs.length === 0) {
+    console.error('❌ No credit packs found! Modal may not be rendered yet.');
+    return;
+  }
+  
+  packs.forEach((pack, index) => {
     const credits = pack.dataset.credits;
     const usdPrice = PRICING_USD[credits];
+    console.log(`Pack ${index + 1}:`, credits, 'credits, USD price:', usdPrice);
     
     if (usdPrice) {
       // Update main price
       const priceElement = pack.querySelector('.pack-price');
       if (priceElement) {
-        priceElement.textContent = formatPrice(usdPrice);
+        const newPrice = formatPrice(usdPrice);
+        console.log('✅ Updating price from', priceElement.textContent, 'to', newPrice);
+        priceElement.textContent = newPrice;
+      } else {
+        console.error('❌ Could not find .pack-price element');
       }
       
       // Update per-image price
       const perImageElement = pack.querySelector('.pack-per-image');
       if (perImageElement) {
-        perImageElement.textContent = `${formatPerImagePrice(usdPrice, credits)} per image`;
+        const newPerImage = `${formatPerImagePrice(usdPrice, credits)} per image`;
+        console.log('✅ Updating per-image to:', newPerImage);
+        perImageElement.textContent = newPerImage;
+      } else {
+        console.error('❌ Could not find .pack-per-image element');
       }
     }
   });
   
   // Add currency note if not USD
   if (userCurrency !== 'USD') {
+    console.log('💳 Adding currency note for', userCurrency);
     addCurrencyNote();
   }
+  
+  console.log('✅ Price update complete!');
 }
 
 // Add a subtle note about currency conversion
@@ -1965,11 +1986,14 @@ const creditModal = document.getElementById('creditModal');
 const creditModalClose = document.getElementById('creditModalClose');
 const btnBuyCredits = document.getElementById('btnBuyCredits');
 
-btnBuyCredits.addEventListener('click', async () => {
+btnBuyCredits.addEventListener('click', () => {
   creditModal.classList.add('active');
   
-  // Initialize currency after modal is visible
-  await initializeCurrency();
+  // Wait for modal animation to complete, then initialize currency
+  setTimeout(async () => {
+    console.log('🌍 Starting currency initialization...');
+    await initializeCurrency();
+  }, 300); // Wait 300ms for modal to render
 });
 
 creditModalClose.addEventListener('click', () => {
