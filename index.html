@@ -2001,6 +2001,28 @@ try {
 
 // Check for error in the JSON body (not just HTTP status)
 if (data.error) {
+  // Stop the progress animation
+  isComplete = true;
+  clearInterval(progressInterval);
+  
+  // Update progress to show paused state
+  const progressTitle = progressContainer.querySelector('div:first-child');
+  if (progressTitle) {
+    progressTitle.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" stroke="rgba(239,68,68,0.8)" stroke-width="2"/>
+        <path d="M10 8v8M14 8v8" stroke="rgba(239,68,68,0.8)"/>
+      </svg>
+      <span style="color: #f87171;">Paused - Insufficient Credits</span>
+    `;
+  }
+  
+  // Fade out progress after showing paused state
+  setTimeout(() => {
+    progressContainer.style.opacity = '0';
+    setTimeout(() => progressContainer.remove(), 300);
+  }, 2000);
+  
   // Show error with "Buy Credits" button
   statusDiv.className = 'status error';
   statusDiv.innerHTML = `
@@ -2010,6 +2032,14 @@ if (data.error) {
     </button>
   `;
   statusDiv.style.display = 'block';
+  
+  // Reset UI state
+  backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+  photoPreviewSection.style.display = 'block';
+  promptSection.style.display = 'block';
+  generateSection.style.display = 'block';
+  subtitle.textContent = 'Next describe your vision to bring it to life';
+  
   return; // Stop execution
 }
 
