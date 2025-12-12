@@ -1506,6 +1506,11 @@ function updatePricingDisplay() {
 
 // Add a subtle note about currency conversion
 function addCurrencyNote() {
+  // Don't show note if already in GBP (native payment currency)
+  if (userCurrency === 'GBP') {
+    return;
+  }
+  
   const modalContent = document.querySelector('.credit-modal-content');
   const existingNote = document.getElementById('currencyNote');
   
@@ -1521,7 +1526,7 @@ function addCurrencyNote() {
       font-size: 12px;
       color: rgba(255, 255, 255, 0.5);
     `;
-    note.innerHTML = `💳 Prices shown in ${userCurrency}. Charged in USD at checkout.`;
+    note.innerHTML = `💳 Prices shown in ${userCurrency}. Charged in GBP at checkout.`;
     modalContent.appendChild(note);
   }
 }
