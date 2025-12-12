@@ -2132,7 +2132,7 @@ btnClearAll.addEventListener('click', () => {
   }
 });
 
-// Credit Pack Selection - MOBILE-FIXED
+// Credit Pack Selection - MOBILE RACE CONDITION FIXED
 document.querySelectorAll('.credit-pack').forEach(pack => {
   pack.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -2146,25 +2146,7 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       return;
     }
     
-    // ✅ USE YOUR REAL PAYMENT LINKS
-    const paymentLinks = {
-      '10': 'https://buy.stripe.com/test_fZudRaflr2Hn2335Fv2Ji01',
-      '40': 'https://buy.stripe.com/test_3cI4gAa170zf233fg52Ji02',
-      '120': 'https://buy.stripe.com/test_8x2dRa7SZbdT2334Br2Ji03'
-    };
-    
-    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
-    
-    // ✅ OPEN PAYMENT IMMEDIATELY (before async operations)
-    if (isMobile) {
-      // Mobile: Use location.href for reliable redirect
-      window.location.href = paymentUrl;
-    } else {
-      // Desktop: Can use window.open
-      window.open(paymentUrl, '_blank');
-    }
-    
-    // ✅ SAVE STATE IN BACKGROUND (after redirect started)
+    // ✅ SAVE STATE FIRST (before any redirect)
     const pendingGeneration = {
       prompt: promptTextarea.value.trim(),
       hasImages: selectedFiles.length > 0,
@@ -2173,34 +2155,35 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       isTextOnly: isTextOnlyMode
     };
     
-    // Save COMPRESSED images as base64 for restoration
+    // ✅ COMPRESS AND SAVE IMAGES (wait for completion on mobile)
     if (selectedFiles.length > 0) {
-      const imagePromises = selectedFiles.map(file => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              const maxWidth = 800;
-              const scale = maxWidth / img.width;
-              canvas.width = maxWidth;
-              canvas.height = img.height * scale;
-              
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              
-              resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-      
       try {
+        const imagePromises = selectedFiles.map(file => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxWidth = 800;
+                const scale = maxWidth / img.width;
+                canvas.width = maxWidth;
+                canvas.height = img.height * scale;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+              };
+              img.onerror = () => resolve(null); // Skip on error
+              img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+        
         const imageData = await Promise.all(imagePromises);
-        pendingGeneration.images = imageData;
+        pendingGeneration.images = imageData.filter(img => img !== null);
         
         const testData = JSON.stringify(pendingGeneration);
         if (testData.length > 4500000) {
@@ -2213,17 +2196,37 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       }
     }
     
+    // ✅ SAVE TO LOCALSTORAGE (synchronous after await above)
     try {
       localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
       console.log('💾 Saved pending generation:', pendingGeneration);
     } catch (err) {
       console.error('❌ Failed to save to localStorage:', err);
+      // Try without images
       delete pendingGeneration.images;
       try {
         localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
+        console.log('💾 Saved pending generation (no images):', pendingGeneration);
       } catch (finalErr) {
         console.error('❌ Could not save even without images');
       }
+    }
+    
+    // ✅ NOW REDIRECT (after everything is saved)
+    const paymentLinks = {
+      '10': 'https://buy.stripe.com/6oU5kE2yFdm1bDDaZP2Ji01',
+      '40': 'https://buy.stripe.com/9B63cw5KRa9PcHH5Fv2Ji02',
+      '120': 'https://buy.stripe.com/bJe4gA7SZfu95ffgk92Ji03'
+    };
+    
+    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
+    
+    if (isMobile) {
+      // Mobile: Same tab redirect (after save completes)
+      window.location.href = paymentUrl;
+    } else {
+      // Desktop: New tab (doesn't matter since page stays open)
+      window.open(paymentUrl, '_blank');
     }
     
     creditModal.classList.remove('active');
