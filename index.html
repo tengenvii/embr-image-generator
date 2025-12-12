@@ -279,7 +279,7 @@
 
 /* Credit Display */
 .credit-display {
-  display: flex;
+  display: none; /* Hidden by default */
   align-items: center;
   justify-content: space-between;
   margin-top: 20px;
@@ -288,6 +288,10 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   animation: slideDown 0.5s ease;
+}
+
+.credit-display.active {
+  display: flex; /* Show when active class is added */
 }
 
 .credit-badge {
@@ -1213,7 +1217,7 @@
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
         
         <!-- Credit Display -->
-        <div class="credit-display" id="creditDisplay" style="display: none;">
+        <div class="credit-display" id="creditDisplay">
           <div class="credit-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               ircle cx="12" cy="12" r="10"/>
@@ -1565,7 +1569,7 @@ async function fetchAndDisplayCredits() {
     
     if (data.credits !== undefined) {
       document.getElementById('creditCount').textContent = data.credits;
-      document.getElementById('creditDisplay').style.display = 'flex';
+      document.getElementById('creditDisplay').classList.add('active'); // ✅ Add active class
     }
   } catch (error) {
     console.error('Failed to fetch credits:', error);
@@ -2035,6 +2039,12 @@ window.addEventListener('load', () => {
   creditModal = document.getElementById('creditModal');
   creditModalClose = document.getElementById('creditModalClose');
   btnBuyCredits = document.getElementById('btnBuyCredits');
+
+  // ✅ ADD THIS: Show credit display even without credits loaded
+  const creditDisplay = document.getElementById('creditDisplay');
+  if (creditDisplay && !getStoredEmail()) {
+    creditDisplay.classList.add('active'); // Show it so Buy Credits button is clickable
+  }
   
   // Attach event listener even if parent is hidden
   if (btnBuyCredits && creditModal) {
