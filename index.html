@@ -1213,7 +1213,7 @@
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
         
         <!-- Credit Display -->
-        <div class="credit-display" id="creditDisplay" style="display: flex;">
+        <div class="credit-display" id="creditDisplay" style="display: none;">
           <div class="credit-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               ircle cx="12" cy="12" r="10"/>
@@ -2036,24 +2036,19 @@ window.addEventListener('load', () => {
   creditModalClose = document.getElementById('creditModalClose');
   btnBuyCredits = document.getElementById('btnBuyCredits');
   
+  // Attach event listener even if parent is hidden
   if (btnBuyCredits && creditModal) {
-  btnBuyCredits.addEventListener('click', async () => {
-    console.log('🛒 Buy Credits button clicked!');
-    creditModal.classList.add('active');
-    
-    // Wait for modal animation, then initialize currency
-    setTimeout(async () => {
-      console.log('🌍 Starting currency initialization...');
-      try {
+    btnBuyCredits.addEventListener('click', async () => {
+      console.log('🛒 Buy Credits button clicked!');
+      creditModal.classList.add('active');
+      
+      // Initialize currency when modal opens
+      setTimeout(async () => {
+        console.log('🌍 Starting currency initialization...');
         await initializeCurrency();
-        console.log('✅ Currency initialization complete!');
-      } catch (err) {
-        console.error('❌ Currency init error:', err);
-        updatePricingDisplay(); // Show USD prices as fallback
-      }
-    }, 300);
-  });
-}
+      }, 300);
+    });
+  }
   
   if (creditModalClose && creditModal) {
     creditModalClose.addEventListener('click', () => {
