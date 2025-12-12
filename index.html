@@ -288,6 +288,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   animation: slideDown 0.5s ease;
+  pointer-events: auto !important; /* Allow clicks even when hidden */
 }
 
 .credit-display.active {
@@ -1217,7 +1218,7 @@
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
         
         <!-- Credit Display -->
-        <div class="credit-display" id="creditDisplay">
+        <div class="credit-display" id="creditDisplay" style="display: none">
           <div class="credit-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               ircle cx="12" cy="12" r="10"/>
@@ -2039,16 +2040,18 @@ window.addEventListener('load', () => {
   creditModal = document.getElementById('creditModal');
   creditModalClose = document.getElementById('creditModalClose');
   btnBuyCredits = document.getElementById('btnBuyCredits');
-
-  // ✅ Show credit display by default so Buy Credits button is clickable
-const creditDisplay = document.getElementById('creditDisplay');
-if (creditDisplay) {
-  creditDisplay.style.display = 'flex'; // Force it to show, overriding inline style
-}
   
-  // Attach event listener even if parent is hidden
+  // Make Buy Credits button work even when parent is hidden
   if (btnBuyCredits && creditModal) {
-    btnBuyCredits.addEventListener('click', async () => {
+    // Remove inline style that blocks clicks
+    const creditDisplay = document.getElementById('creditDisplay');
+    if (creditDisplay) {
+      creditDisplay.style.pointerEvents = 'auto'; // Allow clicks through
+    }
+    
+    // Attach click handler to button with event delegation
+    btnBuyCredits.addEventListener('click', async (e) => {
+      e.stopPropagation();
       console.log('🛒 Buy Credits button clicked!');
       creditModal.classList.add('active');
       
@@ -2057,7 +2060,7 @@ if (creditDisplay) {
         console.log('🌍 Starting currency initialization...');
         await initializeCurrency();
       }, 300);
-    });
+    }, true); // Use capture phase
   }
   
   if (creditModalClose && creditModal) {
