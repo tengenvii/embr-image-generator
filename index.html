@@ -2005,7 +2005,7 @@ if (data.error) {
   isComplete = true;
   clearInterval(progressInterval);
   
-  // Update progress to show paused state
+  // Update progress to paused state and keep it visible
   const progressTitle = progressContainer.querySelector('div:first-child');
   if (progressTitle) {
     progressTitle.innerHTML = `
@@ -2017,28 +2017,35 @@ if (data.error) {
     `;
   }
   
-  // Fade out progress after showing paused state
-  setTimeout(() => {
-    progressContainer.style.opacity = '0';
-    setTimeout(() => progressContainer.remove(), 300);
-  }, 2000);
+  // Keep progress bar visible permanently (don't fade it out)
   
-  // Show error with "Buy Credits" button
+  // HIDE EVERYTHING - create clean slate
+  backButton.style.display = 'none';
+  photoPreviewSection.style.display = 'none';
+  promptSection.style.display = 'none';
+  generateSection.style.display = 'none';
+  
+  // Update subtitle to be action-oriented
+  subtitle.textContent = 'Purchase credits to continue creating';
+  subtitle.classList.add('screen-2');
+  
+  // Show focused error with prominent Buy Credits CTA
   statusDiv.className = 'status error';
   statusDiv.innerHTML = `
-    ${data.message || 'Insufficient credits'}
-    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" style="margin-top: 12px; display: block; width: 100%;">
-      Buy Credits
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5;">
+      ${data.message || 'You have 0 credits remaining'}
+    </div>
+    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
+      style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
+      Buy Credits →
     </button>
   `;
   statusDiv.style.display = 'block';
+  statusDiv.style.marginTop = '32px'; // More breathing room
   
-  // Reset UI state
-  backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
-  photoPreviewSection.style.display = 'block';
-  promptSection.style.display = 'block';
-  generateSection.style.display = 'block';
-  subtitle.textContent = 'Next describe your vision to bring it to life';
+  // Re-enable button so user can retry after purchase
+  btnGenerate.disabled = false;
+  btnGenerate.textContent = 'Generate Image';
   
   return; // Stop execution
 }
