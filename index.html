@@ -1494,6 +1494,12 @@ function formatPerImagePrice(usdPrice, credits) {
   const totalPrice = regionalPrices[credits];
   const perImagePrice = totalPrice / parseInt(credits);
   
+  // Special formatting for GBP pence
+  if (userCurrency === 'GBP' && perImagePrice < 1) {
+    const pence = Math.round(perImagePrice * 100);
+    return `${pence}p`;
+  }
+  
   if (userCurrency === 'JPY' || userCurrency === 'KRW' || userCurrency === 'IDR') {
     return `${currencySymbol}${Math.round(perImagePrice)}`;
   } else {
