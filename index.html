@@ -2174,7 +2174,8 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       '120': 'https://buy.stripe.com/test_8x2dRa7SZbdT2334Br2Ji03'
     };
     
-    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
+    const returnUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}?purchase_success=true`);
+    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}&client_reference_id=${encodeURIComponent(email)}`;
     window.open(paymentUrl, '_blank');
     
     creditModal.classList.remove('active');
