@@ -1965,8 +1965,9 @@ const creditModal = document.getElementById('creditModal');
 const creditModalClose = document.getElementById('creditModalClose');
 const btnBuyCredits = document.getElementById('btnBuyCredits');
 
-btnBuyCredits.addEventListener('click', () => {
+btnBuyCredits.addEventListener('click', async () => {
   creditModal.classList.add('active');
+  await initializeCurrency();
 });
 
 creditModalClose.addEventListener('click', () => {
@@ -1982,7 +1983,6 @@ creditModal.addEventListener('click', (e) => {
 // Credit Pack Selection
 document.querySelectorAll('.credit-pack').forEach(pack => {
   pack.addEventListener('click', async () => {
-    const price = pack.dataset.price;
     const credits = pack.dataset.credits;
     const email = getStoredEmail();
     
@@ -1992,12 +1992,12 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
     }
     
     const paymentLinks = {
-      '5': 'https://buy.stripe.com/YOUR-STRIPE-LINK-10-CREDITS',
-      '15': 'https://buy.stripe.com/YOUR-STRIPE-LINK-40-CREDITS',
-      '40': 'https://buy.stripe.com/YOUR-STRIPE-LINK-120-CREDITS'
+      '10': 'https://buy.stripe.com/6oU5kE2yFdm1bDDaZP2Ji0W',
+      '40': 'https://buy.stripe.com/9B63cw5KRa9PcHH5Fv2Ji0X',
+      '120': 'https://buy.stripe.com/14A6oIddjdm1gXXc3T2Ji0Y'
     };
     
-    const paymentUrl = `${paymentLinks[price]}?prefilled_email=${encodeURIComponent(email)}`;
+    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
     window.open(paymentUrl, '_blank');
     
     creditModal.classList.remove('active');
