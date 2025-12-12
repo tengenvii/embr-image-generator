@@ -2132,7 +2132,7 @@ btnClearAll.addEventListener('click', () => {
   }
 });
 
-// Credit Pack Selection - ENHANCED VERSION
+// Credit Pack Selection - FIXED WITH IMAGE COMPRESSION
 document.querySelectorAll('.credit-pack').forEach(pack => {
   pack.addEventListener('click', async () => {
     const credits = pack.dataset.credits;
@@ -2152,31 +2152,72 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       isTextOnly: isTextOnlyMode
     };
     
-    // Save images as base64 for restoration
+    // Save COMPRESSED images as base64 for restoration
     if (selectedFiles.length > 0) {
       const imagePromises = selectedFiles.map(file => {
         return new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
+          reader.onload = (e) => {
+            // Create image and compress it
+            const img = new Image();
+            img.onload = () => {
+              // Create canvas and resize to max 800px width
+              const canvas = document.createElement('canvas');
+              const maxWidth = 800;
+              const scale = maxWidth / img.width;
+              canvas.width = maxWidth;
+              canvas.height = img.height * scale;
+              
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              
+              // Convert to compressed base64 (0.7 quality)
+              resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.src = e.target.result;
+          };
           reader.readAsDataURL(file);
         });
       });
       
-      const imageData = await Promise.all(imagePromises);
-      pendingGeneration.images = imageData;
+      try {
+        const imageData = await Promise.all(imagePromises);
+        pendingGeneration.images = imageData;
+        
+        // Test if it fits in localStorage
+        const testData = JSON.stringify(pendingGeneration);
+        if (testData.length > 4500000) { // ~4.5MB safety limit
+          console.warn('⚠️ Images too large, saving without images');
+          delete pendingGeneration.images;
+        }
+      } catch (err) {
+        console.warn('⚠️ Failed to compress images:', err);
+        delete pendingGeneration.images;
+      }
     }
     
-    localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
-    console.log('💾 Saved pending generation:', pendingGeneration);
+    try {
+      localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
+      console.log('💾 Saved pending generation:', pendingGeneration);
+    } catch (err) {
+      console.error('❌ Failed to save to localStorage:', err);
+      // Continue anyway without saving images
+      delete pendingGeneration.images;
+      try {
+        localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
+      } catch (finalErr) {
+        console.error('❌ Could not save even without images');
+      }
+    }
     
+    // ✅ USE YOUR REAL PAYMENT LINKS
     const paymentLinks = {
-      '10': 'https://buy.stripe.com/test_fZudRaflr2Hn2335Fv2Ji01',
-      '40': 'https://buy.stripe.com/test_3cI4gAa170zf233fg52Ji02',
-      '120': 'https://buy.stripe.com/test_8x2dRa7SZbdT2334Br2Ji03'
+      '10': 'https://buy.stripe.com/6oU5kE2yFdm1bDDaZP',
+      '40': 'https://buy.stripe.com/9B63cw5KRa9PcHH5Fv',
+      '120': 'https://buy.stripe.com/bJe4gA7SZfu95ffgk9'
     };
     
-    const returnUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}?purchase_success=true`);
-    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}&client_reference_id=${encodeURIComponent(email)}`;
+    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
     window.open(paymentUrl, '_blank');
     
     creditModal.classList.remove('active');
