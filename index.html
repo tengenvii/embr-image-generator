@@ -1986,26 +1986,36 @@ let isComplete = false;
         
         try {
             const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                body: formData,
-                signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            const responseText = await response.text();
-            let data;
-            
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                throw new Error('Invalid response from server');
-            }
-            
-            const responseData = Array.isArray(data) ? data[0] : data;
-            
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${responseData.error || 'Unknown error'}`);
+  method: 'POST',
+  body: formData,
+  signal: controller.signal
+});
+
+const responseText = await response.text();
+let data;
+try {
+  data = JSON.parse(responseText);
+} catch (parseError) {
+  throw new Error("Invalid response from server");
+}
+
+// Check for error in the JSON body (not just HTTP status)
+if (data.error) {
+  // Show error with "Buy Credits" button
+  statusDiv.className = 'status error';
+  statusDiv.innerHTML = `
+    ${data.message || 'Insufficient credits'}
+    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" style="margin-top: 12px; display: block; width: 100%;">
+      Buy Credits
+    </button>
+  `;
+  statusDiv.style.display = 'block';
+  return; // Stop execution
+}
+
+if (!response.ok) {
+  throw new Error(`Server returned ${response.status}`);
+    
             }
             
             if (!responseData || !responseData.imageUrl) {
