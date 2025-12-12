@@ -2033,7 +2033,7 @@ if (data.error) {
   statusDiv.className = 'status error';
   statusDiv.innerHTML = `
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5;">
-      ${data.message || 'You have 0 credits remaining'}
+      ${data.message || 'Your session requires credits to continue'}
     </div>
     <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
       style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
