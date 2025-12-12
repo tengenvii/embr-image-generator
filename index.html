@@ -2018,11 +2018,11 @@ if (!response.ok) {
     
             }
             
-            if (!responseData || !responseData.imageUrl) {
+            if (!data || !data.imageUrl) {
                 throw new Error('No image URL in response');
             }
             
-                  generatedImageUrl = responseData.imageUrl; // Store for edit function
+                  generatedImageUrl = data.imageUrl; // Store for edit function
       
       // Refresh credit display
       await fetchAndDisplayCredits();
@@ -2064,7 +2064,7 @@ if (!response.ok) {
                 resultContainer.appendChild(title);
                 
                 const img = document.createElement('img');
-                img.src = responseData.imageUrl;
+                img.src = data.imageUrl;
                 img.alt = 'Generated image';
                 img.style.cssText = `
                     width: 100%;
@@ -2076,7 +2076,7 @@ if (!response.ok) {
                 `;
                 
                 img.addEventListener('click', () => {
-                    modalImage.src = responseData.imageUrl;
+                    modalImage.src = data.imageUrl;
                     modal.classList.add('active');
                 });
                 
@@ -2094,13 +2094,13 @@ const editBtn = document.createElement('button');
 editBtn.className = 'btn-edit';
 editBtn.textContent = 'Edit';
 editBtn.onclick = () => {
-    editImage(responseData.imageUrl);
+    editImage(data.imageUrl);
 };
 
 const saveBtn = document.createElement('button');
 saveBtn.className = 'btn-download';
 saveBtn.textContent = isMobile ? 'Save Image' : 'Download';
-saveBtn.onclick = () => saveImageSmart(responseData.imageUrl, 'embr-generated-image.png');
+saveBtn.onclick = () => saveImageSmart(data.imageUrl, 'embr-generated-image.png');
 
 const newBtn = document.createElement('button');
 newBtn.className = 'btn-new';
