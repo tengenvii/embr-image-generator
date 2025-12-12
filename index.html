@@ -2029,31 +2029,25 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
   });
 });
 
-// Declare modal variables (will be initialized after load)
+// Declare modal variables
 let creditModal, creditModalClose, btnBuyCredits;
 
-// Initialize credits on page load
-window.addEventListener('load', () => {
+// Initialize on page load
+window.addEventListener('load', async () => {
+  // Convert currency FIRST (before anything else)
+  await initializeCurrency();
+  
+  // Then fetch credits
   fetchAndDisplayCredits();
   
-  // Setup credit modal handlers AFTER DOM is fully loaded
+  // Setup modal handlers
   creditModal = document.getElementById('creditModal');
   creditModalClose = document.getElementById('creditModalClose');
   btnBuyCredits = document.getElementById('btnBuyCredits');
   
-  // Make Buy Credits button work even when parent is hidden
   if (btnBuyCredits && creditModal) {
-    // Attach click handler to button
-    btnBuyCredits.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      console.log('🛒 Buy Credits button clicked!');
+    btnBuyCredits.addEventListener('click', () => {
       creditModal.classList.add('active');
-      
-      // Initialize currency when modal opens
-      setTimeout(async () => {
-        console.log('🌍 Starting currency initialization...');
-        await initializeCurrency();
-      }, 300);
     });
   }
   
@@ -2065,16 +2059,6 @@ window.addEventListener('load', () => {
     creditModal.addEventListener('click', (e) => {
       if (e.target === creditModal) {
         creditModal.classList.remove('active');
-      }
-    });
-  }
-  
-  // Initialize currency whenever credit modal opens (for inline onclick buttons)
-  if (creditModal) {
-    creditModal.addEventListener('transitionend', async (e) => {
-      if (creditModal.classList.contains('active') && e.propertyName === 'opacity') {
-        console.log('🌍 Modal opened via inline button, initializing currency...');
-        await initializeCurrency();
       }
     });
   }
