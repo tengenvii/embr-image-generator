@@ -938,9 +938,10 @@
   border: 1px solid rgba(192, 192, 192, 0.15);
   border-radius: 20px;
   padding: 40px;
-  max-width: 600px;
+  max-width: 650px;
   width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.4s ease;
 }
 
 .credit-modal-content h2 {
@@ -960,20 +961,34 @@
 
 .credit-packs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 20px;
+  animation: slideUp 0.5s ease;
+}
+
+/* Staggered entrance animation */
+.credit-pack:nth-child(1) {
+  animation: slideUp 0.5s ease 0.1s backwards;
+}
+
+.credit-pack:nth-child(2) {
+  animation: slideUp 0.5s ease 0.2s backwards;
+}
+
+.credit-pack:nth-child(3) {
+  animation: slideUp 0.5s ease 0.3s backwards;
 }
 
 .credit-pack {
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 24px 20px;
+  padding: 28px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  /* Add GPU acceleration to prevent flicker */
+  /* GPU acceleration to prevent flicker */
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -988,43 +1003,74 @@
 }
 
 .credit-pack.popular {
-  border-color: rgba(74, 222, 128, 0.3);
-  background: rgba(74, 222, 128, 0.08);
-  /* Ensure popular also uses GPU acceleration */
-  transform: translateZ(0) translateY(0);
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.12);
+  transform: translateZ(0) scale(1.03);
+  box-shadow: 0 0 30px rgba(74, 222, 128, 0.15);
+  animation: gentlePulse 3s ease-in-out infinite, slideUp 0.5s ease 0.2s backwards;
+}
+
+.credit-pack.popular:hover {
+  transform: translateZ(0) scale(1.03) translateY(-4px);
+  box-shadow: 0 8px 30px rgba(74, 222, 128, 0.25);
+}
+
+/* Gentle pulse for Best Value */
+@keyframes gentlePulse {
+  0%, 100% { 
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.15); 
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(74, 222, 128, 0.25); 
+  }
 }
 
 .popular-badge {
   position: absolute;
-  top: -10px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
   color: #000000;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border-radius: 6px;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
 }
 
 .pack-credits {
   font-size: 24px;
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .pack-price {
-  font-size: 32px;
+  font-size: 36px;
+  font-weight: 800;
+  color: #4ade80;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.pack-savings {
+  font-size: 11px;
   font-weight: 700;
   color: #4ade80;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 8px;
+  height: 16px;
 }
 
 .pack-per-image {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
@@ -1034,6 +1080,15 @@
   
   .credit-packs {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .credit-pack.popular {
+    transform: translateZ(0) scale(1);
+  }
+  
+  .credit-pack.popular:hover {
+    transform: translateZ(0) translateY(-4px);
   }
 }
 
@@ -1239,34 +1294,190 @@
       <p class="credit-modal-subtitle">Choose a credit pack to continue creating</p>
       
       <div class="credit-packs">
-        <div class="credit-pack" data-price="5" data-credits="10">
-          <div class="pack-credits">10 Credits</div>
-          <div class="pack-price">$5</div>
-          <div class="pack-per-image">$0.50 per image</div>
-        </div>
-        
-        <div class="credit-pack popular" data-price="15" data-credits="35">
-          <div class="popular-badge">⭐ Best Value</div>
-          <div class="pack-credits">35 Credits</div>
-          <div class="pack-price">$15</div>
-          <div class="pack-per-image">$0.43 per image</div>
-        </div>
-        
-        <div class="credit-pack" data-price="40" data-credits="100">
-          <div class="pack-credits">100 Credits</div>
-          <div class="pack-price">$40</div>
-          <div class="pack-per-image">$0.40 per image</div>
-        </div>
-      </div>
+  <div class="credit-pack" data-credits="10">
+    <div class="pack-credits">10 Credits</div>
+    <div class="pack-price">$5</div>
+    <div class="pack-savings"></div>
+    <div class="pack-per-image">$0.50 per image</div>
+  </div>
+  
+  <div class="credit-pack popular" data-credits="40">
+    <div class="popular-badge">⭐ BEST VALUE</div>
+    <div class="pack-credits">40 Credits</div>
+    <div class="pack-price">$15</div>
+    <div class="pack-savings">SAVE 25%</div>
+    <div class="pack-per-image">$0.375 per image</div>
+  </div>
+  
+  <div class="credit-pack" data-credits="120">
+    <div class="pack-credits">120 Credits</div>
+    <div class="pack-price">$40</div>
+    <div class="pack-savings">SAVE 34%</div>
+    <div class="pack-per-image">$0.33 per image</div>
+  </div>
+</div>
     </div>
   </div>
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/check-credits-generate';
-    const GET_CREDITS_URL = 'https://embrsol.app.n8n.cloud/webhook/get-credits';
-    const MAX_IMAGES = 3;
+const GET_CREDITS_URL = 'https://embrsol.app.n8n.cloud/webhook/get-credits';
+const MAX_IMAGES = 3;
 
-    // Email Storage Functions
+// ===== CURRENCY CONVERSION SYSTEM =====
+const PRICING_USD = {
+  '10': 5,
+  '40': 15,
+  '120': 40
+};
+
+let userCurrency = 'USD';
+let exchangeRate = 1;
+let currencySymbol = '$';
+
+// Currency symbols map
+const CURRENCY_SYMBOLS = {
+  'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'AUD': 'A$', 'CAD': 'C$',
+  'CHF': 'CHF', 'CNY': '¥', 'SEK': 'kr', 'NZD': 'NZ$', 'MXN': 'MX$',
+  'SGD': 'S$', 'HKD': 'HK$', 'NOK': 'kr', 'KRW': '₩', 'TRY': '₺',
+  'INR': '₹', 'RUB': '₽', 'BRL': 'R$', 'ZAR': 'R', 'DKK': 'kr',
+  'PLN': 'zł', 'THB': '฿', 'IDR': 'Rp', 'HUF': 'Ft', 'CZK': 'Kč',
+  'ILS': '₪', 'CLP': 'CLP', 'PHP': '₱', 'AED': 'AED', 'COP': 'COP',
+  'SAR': 'SAR', 'MYR': 'RM', 'RON': 'lei', 'ARS': 'ARS'
+};
+
+// Detect user's currency and get exchange rate
+async function initializeCurrency() {
+  try {
+    // Get user's location
+    const geoResponse = await fetch('https://ipapi.co/json/');
+    const geoData = await geoResponse.json();
+    const detectedCurrency = geoData.currency || 'USD';
+    
+    // Don't convert if USD
+    if (detectedCurrency === 'USD') {
+      userCurrency = 'USD';
+      exchangeRate = 1;
+      currencySymbol = '$';
+      updatePricingDisplay();
+      return;
+    }
+    
+    // Get exchange rate
+    const rateResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+    const rateData = await rateResponse.json();
+    
+    if (rateData.rates && rateData.rates[detectedCurrency]) {
+      userCurrency = detectedCurrency;
+      exchangeRate = rateData.rates[detectedCurrency];
+      currencySymbol = CURRENCY_SYMBOLS[detectedCurrency] || detectedCurrency;
+      updatePricingDisplay();
+    } else {
+      // Fallback to USD
+      userCurrency = 'USD';
+      exchangeRate = 1;
+      currencySymbol = '$';
+      updatePricingDisplay();
+    }
+  } catch (error) {
+    console.log('Currency detection failed, using USD:', error);
+    userCurrency = 'USD';
+    exchangeRate = 1;
+    currencySymbol = '$';
+    updatePricingDisplay();
+  }
+}
+
+// Convert USD to local currency
+function convertPrice(usdPrice) {
+  const convertedPrice = usdPrice * exchangeRate;
+  
+  // Format based on currency
+  if (userCurrency === 'JPY' || userCurrency === 'KRW') {
+    // No decimals for JPY/KRW
+    return Math.round(convertedPrice);
+  } else {
+    // 2 decimals for most currencies
+    return convertedPrice.toFixed(2);
+  }
+}
+
+// Format price with currency symbol
+function formatPrice(usdPrice) {
+  const price = convertPrice(usdPrice);
+  
+  // Symbol position varies by currency
+  if (userCurrency === 'EUR' || userCurrency === 'SEK' || userCurrency === 'NOK' || userCurrency === 'DKK') {
+    return `${price}${currencySymbol}`;
+  } else {
+    return `${currencySymbol}${price}`;
+  }
+}
+
+// Calculate per-image price
+function formatPerImagePrice(usdPrice, credits) {
+  const perImageUSD = usdPrice / credits;
+  const perImageLocal = perImageUSD * exchangeRate;
+  
+  if (userCurrency === 'JPY' || userCurrency === 'KRW') {
+    return `${currencySymbol}${Math.round(perImageLocal)}`;
+  } else {
+    return `${currencySymbol}${perImageLocal.toFixed(2)}`;
+  }
+}
+
+// Update all pricing displays on the page
+function updatePricingDisplay() {
+  const packs = document.querySelectorAll('.credit-pack');
+  
+  packs.forEach(pack => {
+    const credits = pack.dataset.credits;
+    const usdPrice = PRICING_USD[credits];
+    
+    if (usdPrice) {
+      // Update main price
+      const priceElement = pack.querySelector('.pack-price');
+      if (priceElement) {
+        priceElement.textContent = formatPrice(usdPrice);
+      }
+      
+      // Update per-image price
+      const perImageElement = pack.querySelector('.pack-per-image');
+      if (perImageElement) {
+        perImageElement.textContent = `${formatPerImagePrice(usdPrice, credits)} per image`;
+      }
+    }
+  });
+  
+  // Add currency note if not USD
+  if (userCurrency !== 'USD') {
+    addCurrencyNote();
+  }
+}
+
+// Add a subtle note about currency conversion
+function addCurrencyNote() {
+  const modalContent = document.querySelector('.credit-modal-content');
+  const existingNote = document.getElementById('currencyNote');
+  
+  if (!existingNote && modalContent) {
+    const note = document.createElement('div');
+    note.id = 'currencyNote';
+    note.style.cssText = `
+      text-align: center;
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    `;
+    note.innerHTML = `💳 Prices shown in ${userCurrency}. Charged in USD at checkout.`;
+    modalContent.appendChild(note);
+  }
+}
+
+// Email Storage Functions
 function getStoredEmail() {
   return localStorage.getItem('userEmail') || '';
 }
@@ -1780,13 +1991,12 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       return;
     }
     
-     const paymentLinks = {
-      '5': 'https://buy.stripe.com/6oU5kE2yFdm1bDDaZP2Ji0W',   // $5 for 10 credits
-      '15': 'https://buy.stripe.com/9B63cw5KRa9PcHH5Fv2Ji0X',  // $15 for 35 credits (Best Value)
-      '40': 'https://buy.stripe.com/14A6oIddjdm1gXXc3T2Ji0Y'   // $40 for 100 credits
+    const paymentLinks = {
+      '5': 'https://buy.stripe.com/YOUR-STRIPE-LINK-10-CREDITS',
+      '15': 'https://buy.stripe.com/YOUR-STRIPE-LINK-40-CREDITS',
+      '40': 'https://buy.stripe.com/YOUR-STRIPE-LINK-120-CREDITS'
     };
     
-    // Open Stripe payment link with email pre-filled
     const paymentUrl = `${paymentLinks[price]}?prefilled_email=${encodeURIComponent(email)}`;
     window.open(paymentUrl, '_blank');
     
