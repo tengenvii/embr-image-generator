@@ -279,7 +279,7 @@
 
 /* Credit Display */
 .credit-display {
-  display: flex; /* Always visible */
+  display: none; /* Always visible */
   align-items: center;
   justify-content: flex-end; /* Right-align button when badge is hidden */
   margin-top: 20px;
@@ -291,9 +291,10 @@
 }
 
 .credit-display.has-credits {
+  display: flex; /* Only show when credits loaded */
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  justify-content: space-between; /* Spread out when both visible */
+  justify-content: space-between;
 }
 
 .credit-badge {
@@ -1568,8 +1569,8 @@ async function fetchAndDisplayCredits() {
     
     if (data.credits !== undefined) {
       document.getElementById('creditCount').textContent = data.credits;
-      document.getElementById('creditBadge').style.display = 'flex'; // Show badge
-      document.getElementById('creditDisplay').classList.add('has-credits'); // Add styling
+      document.getElementById('creditBadge').style.display = 'flex';
+      document.getElementById('creditDisplay').classList.add('has-credits'); // Show display
     }
   } catch (error) {
     console.error('Failed to fetch credits:', error);
