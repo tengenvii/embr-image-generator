@@ -196,8 +196,6 @@
     width: 180px;
     height: auto;
     display: block;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
 }
         
         .container {
@@ -1161,6 +1159,9 @@
 
     .logo-fixed img {
         width: 140px;
+        height: auto;
+        max-width: 100%;
+        display: block;
     }
 
     .container {
@@ -1222,20 +1223,6 @@
     }
 }
 
-        @media (max-width: 768px) {
-    .logo-fixed {
-        top: 20px;
-        left: 20px;
-        margin-bottom: 24px;
-    }
-
-    .logo-fixed img {
-        width: 140px;
-        height: auto;
-        max-width: 100%;
-        display: block;
-    }
-}
     </style>
 </head>
 <body>
