@@ -1417,19 +1417,8 @@ function formatPrice(usdPrice) {
     if (value === usdPrice) {
       credits = key;
       break;
-        // Calculate per-image price from regional pricing
-function formatPerImagePrice(usdPrice, credits) {
-  // Get regional price
-  const regionalPrices = REGIONAL_PRICING[userCurrency] || REGIONAL_PRICING['USD'];
-  const totalPrice = regionalPrices[credits];
-  const perImagePrice = totalPrice / parseInt(credits);
-  
-  if (userCurrency === 'JPY' || userCurrency === 'KRW' || userCurrency === 'IDR') {
-    return `${currencySymbol}${Math.round(perImagePrice)}`;
-  } else {
-    return `${currencySymbol}${perImagePrice.toFixed(2)}`;
+    }
   }
-}
   
   if (!credits) return `${currencySymbol}${usdPrice}`;
   
@@ -1451,6 +1440,20 @@ function formatPerImagePrice(usdPrice, credits) {
   }
 }
 
+// Calculate per-image price from regional pricing
+function formatPerImagePrice(usdPrice, credits) {
+  // Get regional price
+  const regionalPrices = REGIONAL_PRICING[userCurrency] || REGIONAL_PRICING['USD'];
+  const totalPrice = regionalPrices[credits];
+  const perImagePrice = totalPrice / parseInt(credits);
+  
+  if (userCurrency === 'JPY' || userCurrency === 'KRW' || userCurrency === 'IDR') {
+    return `${currencySymbol}${Math.round(perImagePrice)}`;
+  } else {
+    return `${currencySymbol}${perImagePrice.toFixed(2)}`;
+  }
+}
+
 // Update all pricing displays on the page
 function updatePricingDisplay() {
   console.log('💰 updatePricingDisplay called');
@@ -1467,7 +1470,14 @@ function updatePricingDisplay() {
   packs.forEach((pack, index) => {
     const credits = pack.dataset.credits;
     const usdPrice = REGIONAL_PRICING['USD'][credits];
-    console.log(`Pack ${index + 1}:`, credits, 'credits, USD price:', usdPrice);
+        console.log(`Pack ${index + 1}:`, credits, 'credits, USD price:', usdPrice);
+    
+    if (usdPrice) {
+      // Update main price
+      const priceElement = pack.querySelector('.pack-price');
+      if (priceElement) {
+        const newPrice = formatPrice(usdPrice);
+        console.log('✅ Updating price from', priceElement.textContent, 'to', newPrice);
         priceElement.textContent = newPrice;
       } else {
         console.error('❌ Could not find .pack-price element');
