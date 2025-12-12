@@ -1351,18 +1351,12 @@ async function initializeCurrency() {
   console.log('🌍 initializeCurrency started');
   
   try {
-    // Get user's location with timeout
+    // Get user's location
     console.log('📍 Fetching location...');
-    const geoController = new AbortController();
-    const geoTimeout = setTimeout(() => geoController.abort(), 5000); // 5 sec timeout
-    
-    const geoResponse = await fetch('https://ipapi.co/json/', { 
-      signal: geoController.signal 
-    });
-    clearTimeout(geoTimeout);
+    const geoResponse = await fetch('https://ipapi.co/json/');
     
     if (!geoResponse.ok) {
-      throw new Error(`Geo API failed: ${geoResponse.status}`);
+      throw new Error('Geo API failed');
     }
     
     const geoData = await geoResponse.json();
@@ -1381,22 +1375,16 @@ async function initializeCurrency() {
       return;
     }
     
-    // Get exchange rate with timeout
+    // Get exchange rate
     console.log('💱 Fetching exchange rate...');
-    const rateController = new AbortController();
-    const rateTimeout = setTimeout(() => rateController.abort(), 5000);
-    
-    const rateResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`, {
-      signal: rateController.signal
-    });
-    clearTimeout(rateTimeout);
+    const rateResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
     
     if (!rateResponse.ok) {
-      throw new Error(`Exchange rate API failed: ${rateResponse.status}`);
+      throw new Error('Exchange rate API failed');
     }
     
     const rateData = await rateResponse.json();
-    console.log('💱 Exchange rate data received:', rateData.rates[detectedCurrency]);
+    console.log('💱 Exchange rate data:', rateData);
     
     if (rateData.rates && rateData.rates[detectedCurrency]) {
       userCurrency = detectedCurrency;
