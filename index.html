@@ -1981,16 +1981,6 @@ btnClearAll.addEventListener('click', () => {
   }
 });
 
-creditModalClose.addEventListener('click', () => {
-  creditModal.classList.remove('active');
-});
-
-creditModal.addEventListener('click', (e) => {
-  if (e.target === creditModal) {
-    creditModal.classList.remove('active');
-  }
-});
-
 // Credit Pack Selection
 document.querySelectorAll('.credit-pack').forEach(pack => {
   pack.addEventListener('click', async () => {
