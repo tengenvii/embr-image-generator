@@ -279,20 +279,21 @@
 
 /* Credit Display */
 .credit-display {
-  display: none; /* Hidden by default */
+  display: flex; /* Always visible */
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end; /* Right-align button when badge is hidden */
   margin-top: 20px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent; /* Transparent until badge shows */
+  border: none; /* No border until badge shows */
   border-radius: 12px;
   animation: slideDown 0.5s ease;
-  pointer-events: auto !important; /* Allow clicks even when hidden */
 }
 
-.credit-display.active {
-  display: flex; /* Show when active class is added */
+.credit-display.has-credits {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between; /* Spread out when both visible */
 }
 
 .credit-badge {
@@ -1218,16 +1219,13 @@
             <p class="subtitle" id="subtitle">First upload a photo or reference images</p>
         
         <!-- Credit Display -->
-        <div class="credit-display" id="creditDisplay" style="display: none">
-          <div class="credit-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              ircle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
-            </svg>
-            <span id="creditCount">-</span> credits
-          </div>
-          <button class="btn-buy-credits" id="btnBuyCredits">Buy Credits</button>
-        </div>
+        <div class="credit-display" id="creditDisplay">
+  <div class="credit-badge" id="creditBadge" style="display: none;">
+    <svg>...</svg>
+    <span id="creditCount">-</span> credits
+  </div>
+  <button class="btn-buy-credits" id="btnBuyCredits">Buy Credits</button>
+</div>
       </div>
 
         <!-- Initial Upload Buttons -->
@@ -1570,7 +1568,8 @@ async function fetchAndDisplayCredits() {
     
     if (data.credits !== undefined) {
       document.getElementById('creditCount').textContent = data.credits;
-      document.getElementById('creditDisplay').style.display = 'flex'; // Keep it visible
+      document.getElementById('creditBadge').style.display = 'flex'; // Show badge
+      document.getElementById('creditDisplay').classList.add('has-credits'); // Add styling
     }
   } catch (error) {
     console.error('Failed to fetch credits:', error);
