@@ -2043,13 +2043,7 @@ window.addEventListener('load', () => {
   
   // Make Buy Credits button work even when parent is hidden
   if (btnBuyCredits && creditModal) {
-    // Remove inline style that blocks clicks
-    const creditDisplay = document.getElementById('creditDisplay');
-    if (creditDisplay) {
-      creditDisplay.style.pointerEvents = 'auto'; // Allow clicks through
-    }
-    
-    // Attach click handler to button with event delegation
+    // Attach click handler to button
     btnBuyCredits.addEventListener('click', async (e) => {
       e.stopPropagation();
       console.log('🛒 Buy Credits button clicked!');
@@ -2060,7 +2054,7 @@ window.addEventListener('load', () => {
         console.log('🌍 Starting currency initialization...');
         await initializeCurrency();
       }, 300);
-    }, true); // Use capture phase
+    });
   }
   
   if (creditModalClose && creditModal) {
@@ -2071,12 +2065,18 @@ window.addEventListener('load', () => {
     creditModal.addEventListener('click', (e) => {
       if (e.target === creditModal) {
         creditModal.classList.remove('active');
-
-    // Initialize currency whenever credit modal opens
+      }
+    });
+  }
+  
+  // Initialize currency whenever credit modal opens (for inline onclick buttons)
+  if (creditModal) {
     creditModal.addEventListener('transitionend', async (e) => {
       if (creditModal.classList.contains('active') && e.propertyName === 'opacity') {
-        console.log('🌍 Modal opened, initializing currency...');
+        console.log('🌍 Modal opened via inline button, initializing currency...');
         await initializeCurrency();
+      }
+    });
   }
 });
     
