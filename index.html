@@ -1967,6 +1967,8 @@ const btnBuyCredits = document.getElementById('btnBuyCredits');
 
 btnBuyCredits.addEventListener('click', async () => {
   creditModal.classList.add('active');
+  
+  // Initialize currency after modal is visible
   await initializeCurrency();
 });
 
