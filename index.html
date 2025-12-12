@@ -1348,39 +1348,70 @@ const CURRENCY_SYMBOLS = {
 
 // Detect user's currency and get exchange rate
 async function initializeCurrency() {
+  console.log('🌍 initializeCurrency started');
+  
   try {
-    // Get user's location
-    const geoResponse = await fetch('https://ipapi.co/json/');
+    // Get user's location with timeout
+    console.log('📍 Fetching location...');
+    const geoController = new AbortController();
+    const geoTimeout = setTimeout(() => geoController.abort(), 5000); // 5 sec timeout
+    
+    const geoResponse = await fetch('https://ipapi.co/json/', { 
+      signal: geoController.signal 
+    });
+    clearTimeout(geoTimeout);
+    
+    if (!geoResponse.ok) {
+      throw new Error(`Geo API failed: ${geoResponse.status}`);
+    }
+    
     const geoData = await geoResponse.json();
+    console.log('📍 Location data:', geoData);
+    
     const detectedCurrency = geoData.currency || 'USD';
+    console.log('💰 Detected currency:', detectedCurrency);
     
     // Don't convert if USD
     if (detectedCurrency === 'USD') {
       userCurrency = 'USD';
       exchangeRate = 1;
       currencySymbol = '$';
+      console.log('✅ Using USD (no conversion needed)');
       updatePricingDisplay();
       return;
     }
     
-    // Get exchange rate
-    const rateResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+    // Get exchange rate with timeout
+    console.log('💱 Fetching exchange rate...');
+    const rateController = new AbortController();
+    const rateTimeout = setTimeout(() => rateController.abort(), 5000);
+    
+    const rateResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`, {
+      signal: rateController.signal
+    });
+    clearTimeout(rateTimeout);
+    
+    if (!rateResponse.ok) {
+      throw new Error(`Exchange rate API failed: ${rateResponse.status}`);
+    }
+    
     const rateData = await rateResponse.json();
+    console.log('💱 Exchange rate data received:', rateData.rates[detectedCurrency]);
     
     if (rateData.rates && rateData.rates[detectedCurrency]) {
       userCurrency = detectedCurrency;
       exchangeRate = rateData.rates[detectedCurrency];
       currencySymbol = CURRENCY_SYMBOLS[detectedCurrency] || detectedCurrency;
+      console.log(`✅ Currency set: ${userCurrency}, Rate: ${exchangeRate}, Symbol: ${currencySymbol}`);
       updatePricingDisplay();
     } else {
-      // Fallback to USD
-      userCurrency = 'USD';
-      exchangeRate = 1;
-      currencySymbol = '$';
-      updatePricingDisplay();
+      throw new Error('Currency not found in rates');
     }
   } catch (error) {
-    console.log('Currency detection failed, using USD:', error);
+    console.error('❌ Currency detection failed:', error);
+    console.log('⚠️ Falling back to USD');
+    
+    // Fallback to USD
     userCurrency = 'USD';
     exchangeRate = 1;
     currencySymbol = '$';
@@ -2018,17 +2049,23 @@ window.addEventListener('load', () => {
   btnBuyCredits = document.getElementById('btnBuyCredits');
   
   if (btnBuyCredits && creditModal) {
-    btnBuyCredits.addEventListener('click', () => {
-      console.log('🛒 Buy Credits button clicked!');
-      creditModal.classList.add('active');
-      
-      // Wait for modal animation to complete, then initialize currency
-      setTimeout(async () => {
-        console.log('🌍 Starting currency initialization...');
+  btnBuyCredits.addEventListener('click', async () => {
+    console.log('🛒 Buy Credits button clicked!');
+    creditModal.classList.add('active');
+    
+    // Wait for modal animation, then initialize currency
+    setTimeout(async () => {
+      console.log('🌍 Starting currency initialization...');
+      try {
         await initializeCurrency();
-      }, 300);
-    });
-  }
+        console.log('✅ Currency initialization complete!');
+      } catch (err) {
+        console.error('❌ Currency init error:', err);
+        updatePricingDisplay(); // Show USD prices as fallback
+      }
+    }, 300);
+  });
+}
   
   if (creditModalClose && creditModal) {
     creditModalClose.addEventListener('click', () => {
