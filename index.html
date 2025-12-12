@@ -1981,21 +1981,6 @@ btnClearAll.addEventListener('click', () => {
   }
 });
 
-// Credit Modal Handlers
-const creditModal = document.getElementById('creditModal');
-const creditModalClose = document.getElementById('creditModalClose');
-const btnBuyCredits = document.getElementById('btnBuyCredits');
-
-btnBuyCredits.addEventListener('click', () => {
-  creditModal.classList.add('active');
-  
-  // Wait for modal animation to complete, then initialize currency
-  setTimeout(async () => {
-    console.log('🌍 Starting currency initialization...');
-    await initializeCurrency();
-  }, 300); // Wait 300ms for modal to render
-});
-
 creditModalClose.addEventListener('click', () => {
   creditModal.classList.remove('active');
 });
@@ -2033,6 +2018,32 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
 // Initialize credits on page load
 window.addEventListener('load', () => {
   fetchAndDisplayCredits();
+});
+
+// Credit Modal Handlers - MUST be after all elements are defined
+const creditModal = document.getElementById('creditModal');
+const creditModalClose = document.getElementById('creditModalClose');
+const btnBuyCredits = document.getElementById('btnBuyCredits');
+
+btnBuyCredits.addEventListener('click', () => {
+  console.log('🛒 Buy Credits button clicked!');
+  creditModal.classList.add('active');
+  
+  // Wait for modal animation to complete, then initialize currency
+  setTimeout(async () => {
+    console.log('🌍 Starting currency initialization...');
+    await initializeCurrency();
+  }, 300);
+});
+
+creditModalClose.addEventListener('click', () => {
+  creditModal.classList.remove('active');
+});
+
+creditModal.addEventListener('click', (e) => {
+  if (e.target === creditModal) {
+    creditModal.classList.remove('active');
+  }
 });
     
     // Edit Image Function - Fixed
