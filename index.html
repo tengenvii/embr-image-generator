@@ -2071,6 +2071,12 @@ window.addEventListener('load', () => {
     creditModal.addEventListener('click', (e) => {
       if (e.target === creditModal) {
         creditModal.classList.remove('active');
+
+    // Initialize currency whenever credit modal opens
+    creditModal.addEventListener('transitionend', async (e) => {
+      if (creditModal.classList.contains('active') && e.propertyName === 'opacity') {
+        console.log('🌍 Modal opened, initializing currency...');
+        await initializeCurrency();
       }
     });
   }
