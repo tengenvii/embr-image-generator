@@ -2132,9 +2132,12 @@ btnClearAll.addEventListener('click', () => {
   }
 });
 
-// Credit Pack Selection - FIXED WITH IMAGE COMPRESSION
+// Credit Pack Selection - MOBILE-FIXED
 document.querySelectorAll('.credit-pack').forEach(pack => {
-  pack.addEventListener('click', async () => {
+  pack.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const credits = pack.dataset.credits;
     const email = getStoredEmail();
     
@@ -2143,7 +2146,25 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       return;
     }
     
-    // ✅ SAVE CURRENT STATE BEFORE PAYMENT
+    // ✅ USE YOUR REAL PAYMENT LINKS
+    const paymentLinks = {
+      '10': 'https://buy.stripe.com/test_fZudRaflr2Hn2335Fv2Ji01',
+      '40': 'https://buy.stripe.com/test_3cI4gAa170zf233fg52Ji02',
+      '120': 'https://buy.stripe.com/test_8x2dRa7SZbdT2334Br2Ji03'
+    };
+    
+    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
+    
+    // ✅ OPEN PAYMENT IMMEDIATELY (before async operations)
+    if (isMobile) {
+      // Mobile: Use location.href for reliable redirect
+      window.location.href = paymentUrl;
+    } else {
+      // Desktop: Can use window.open
+      window.open(paymentUrl, '_blank');
+    }
+    
+    // ✅ SAVE STATE IN BACKGROUND (after redirect started)
     const pendingGeneration = {
       prompt: promptTextarea.value.trim(),
       hasImages: selectedFiles.length > 0,
@@ -2158,10 +2179,8 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
         return new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = (e) => {
-            // Create image and compress it
             const img = new Image();
             img.onload = () => {
-              // Create canvas and resize to max 800px width
               const canvas = document.createElement('canvas');
               const maxWidth = 800;
               const scale = maxWidth / img.width;
@@ -2171,7 +2190,6 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
               const ctx = canvas.getContext('2d');
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
               
-              // Convert to compressed base64 (0.7 quality)
               resolve(canvas.toDataURL('image/jpeg', 0.7));
             };
             img.src = e.target.result;
@@ -2184,9 +2202,8 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
         const imageData = await Promise.all(imagePromises);
         pendingGeneration.images = imageData;
         
-        // Test if it fits in localStorage
         const testData = JSON.stringify(pendingGeneration);
-        if (testData.length > 4500000) { // ~4.5MB safety limit
+        if (testData.length > 4500000) {
           console.warn('⚠️ Images too large, saving without images');
           delete pendingGeneration.images;
         }
@@ -2201,7 +2218,6 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       console.log('💾 Saved pending generation:', pendingGeneration);
     } catch (err) {
       console.error('❌ Failed to save to localStorage:', err);
-      // Continue anyway without saving images
       delete pendingGeneration.images;
       try {
         localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
@@ -2209,16 +2225,6 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
         console.error('❌ Could not save even without images');
       }
     }
-    
-    // ✅ USE YOUR REAL PAYMENT LINKS
-    const paymentLinks = {
-      '10': 'https://buy.stripe.com/test_fZudRaflr2Hn2335Fv2Ji01',
-      '40': 'https://buy.stripe.com/test_3cI4gAa170zf233fg52Ji02',
-      '120': 'https://buy.stripe.com/test_8x2dRa7SZbdT2334Br2Ji03'
-    };
-    
-    const paymentUrl = `${paymentLinks[credits]}?prefilled_email=${encodeURIComponent(email)}`;
-    window.open(paymentUrl, '_blank');
     
     creditModal.classList.remove('active');
   });
