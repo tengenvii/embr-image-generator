@@ -2005,14 +2005,17 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
   });
 });
 
+// Declare modal variables (will be initialized after load)
+let creditModal, creditModalClose, btnBuyCredits;
+
 // Initialize credits on page load
 window.addEventListener('load', () => {
   fetchAndDisplayCredits();
   
   // Setup credit modal handlers AFTER DOM is fully loaded
-  const creditModal = document.getElementById('creditModal');
-  const creditModalClose = document.getElementById('creditModalClose');
-  const btnBuyCredits = document.getElementById('btnBuyCredits');
+  creditModal = document.getElementById('creditModal');
+  creditModalClose = document.getElementById('creditModalClose');
+  btnBuyCredits = document.getElementById('btnBuyCredits');
   
   if (btnBuyCredits && creditModal) {
     btnBuyCredits.addEventListener('click', () => {
