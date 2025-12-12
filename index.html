@@ -1569,7 +1569,7 @@ async function fetchAndDisplayCredits() {
     
     if (data.credits !== undefined) {
       document.getElementById('creditCount').textContent = data.credits;
-      document.getElementById('creditDisplay').classList.add('active'); // ✅ Add active class
+      document.getElementById('creditDisplay').style.display = 'flex'; // Keep it visible
     }
   } catch (error) {
     console.error('Failed to fetch credits:', error);
@@ -2040,11 +2040,11 @@ window.addEventListener('load', () => {
   creditModalClose = document.getElementById('creditModalClose');
   btnBuyCredits = document.getElementById('btnBuyCredits');
 
-  // ✅ ADD THIS: Show credit display even without credits loaded
-  const creditDisplay = document.getElementById('creditDisplay');
-  if (creditDisplay && !getStoredEmail()) {
-    creditDisplay.classList.add('active'); // Show it so Buy Credits button is clickable
-  }
+  // ✅ Show credit display by default so Buy Credits button is clickable
+const creditDisplay = document.getElementById('creditDisplay');
+if (creditDisplay) {
+  creditDisplay.style.display = 'flex'; // Force it to show, overriding inline style
+}
   
   // Attach event listener even if parent is hidden
   if (btnBuyCredits && creditModal) {
