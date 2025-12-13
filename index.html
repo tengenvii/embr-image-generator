@@ -2637,12 +2637,18 @@ async function editImage(imageUrl) {
   promptSection.classList.add('active');
 promptSection.style.display = 'block';
 
-// ✅ SHOW generate section - button will appear when user types
-generateSection.classList.add('active');
-generateSection.style.display = 'block';
+// ❌ DON'T show generate section immediately
+// Generate button will appear ONLY when user starts typing (handled by input event)
+generateSection.classList.remove('active');
+generateSection.style.display = 'none';
 
 // Clear prompt immediately
 promptTextarea.value = '';
+
+// Focus the textarea so user can start typing
+setTimeout(() => {
+  promptTextarea.focus();
+}, 100);
 // Generate button will appear when user types (handled by input event listener)
   
   // Scroll to top immediately
