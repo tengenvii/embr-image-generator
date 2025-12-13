@@ -2342,30 +2342,29 @@ btnClearAll.addEventListener('click', () => {
     }
     
     function showPromptSection(textOnly) {
-        subtitle.textContent = 'Next describe your vision to bring it to life';
-        subtitle.classList.add('screen-2');
-        
-        uploadSection.style.display = 'none';
-        
-        if (textOnly) {
-            backButton.classList.add('active');
-        }
-        
-        if (!textOnly) {
-            photoPreviewSection.classList.add('active');
-        }
-        
-        promptSection.classList.add('active');
-        generateSection.classList.add('active');
-
-        // UPDATE PROGRESS TO STEP 2 (if not already)
-  if (!isTextOnly && selectedFiles.length > 0) {
-    updateProgressStep(2);
-  }
-}
-        
-        startPlaceholderRotation();
+    subtitle.textContent = 'Next describe your vision to bring it to life';
+    subtitle.classList.add('screen-2');
+    
+    uploadSection.style.display = 'none';
+    
+    if (textOnly) {
+        backButton.classList.add('active');
     }
+    
+    if (!textOnly) {
+        photoPreviewSection.classList.add('active');
+    }
+    
+    promptSection.classList.add('active');
+    generateSection.classList.add('active');
+
+    // UPDATE PROGRESS TO STEP 2 (if not already)
+    if (!isTextOnly && selectedFiles.length > 0) {
+        updateProgressStep(2);
+    }
+    
+    startPlaceholderRotation();  // ✅ Moved INSIDE the function
+}  // ✅ Function closes here - only ONE closing brace needed
     
     function updatePreviews() {
     // Show/hide Clear All button
