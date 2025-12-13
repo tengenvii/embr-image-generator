@@ -1992,88 +1992,99 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     return;
   }
   
-  // Mobile: iOS-specific handling
+  // Mobile: iOS Share Sheet optimized
   try {
-    // Method 1: Try creating blob from fetch (works if no CORS)
     let blob;
+    
+    // Try to fetch the image
     try {
       const response = await fetch(url);
       if (response.ok) {
         blob = await response.blob();
       }
     } catch (e) {
-      // Fetch failed - likely CORS
-    }
-    
-    // Method 2: If fetch failed, load via Image + Canvas
-    if (!blob) {
-      const img = new Image();
+      // CORS blocked - create blob from data URL instead
+      const img = document.createElement('img');
       
-      // Load image (will work even with CORS for display)
+      // Use a promise to wait for image load
       await new Promise((resolve, reject) => {
         img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Image load failed'));
-        // Don't set crossOrigin for Discord CDN
+        img.onerror = () => reject(new Error('Failed to load image'));
+        // Don't set crossOrigin - let browser handle it naturally
         img.src = url;
       });
       
-      // Convert to canvas
+      // Create canvas and draw
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
       
-      // Convert canvas to blob
-      blob = await new Promise(resolve => {
-        canvas.toBlob(resolve, 'image/png', 1.0);
-      });
+      const ctx = canvas.getContext('2d');
+      try {
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert to blob
+        blob = await new Promise((resolve, reject) => {
+          canvas.toBlob((result) => {
+            if (result) resolve(result);
+            else reject(new Error('Canvas conversion failed'));
+          }, 'image/png', 1.0);
+        });
+      } catch (canvasErr) {
+        throw new Error('Canvas drawing blocked by CORS');
+      }
     }
     
     if (!blob) {
-      throw new Error('Could not create image blob');
+      throw new Error('Could not create image data');
     }
     
-    // Create File from blob
+    // Create File object
     const file = new File([blob], filename, {
       type: 'image/png',
       lastModified: Date.now()
     });
     
-    // iOS Share Sheet (preferred on iOS)
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Generated Image',
-          text: 'Created with EMBR'
-        });
-        return;
-      } catch (shareErr) {
-        // User cancelled or share failed
-        if (shareErr.name === 'AbortError') {
-          return; // User cancelled - don't show error
+    // Try iOS/Android native share
+    if (navigator.share && navigator.canShare) {
+      // Check if files are supported
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'Generated Image',
+            text: 'Created with EMBR'
+          });
+          return; // Success!
+        } catch (shareErr) {
+          // User cancelled or share failed
+          if (shareErr.name === 'AbortError') {
+            return; // User cancelled - don't show error
+          }
+          // Share failed, try download fallback
         }
       }
     }
     
-    // Fallback: Download via blob URL
+    // Fallback: Trigger download
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
     a.download = filename;
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     
+    // Cleanup
     setTimeout(() => {
       URL.revokeObjectURL(blobUrl);
-      a.remove();
-    }, 1000);
+      document.body.removeChild(a);
+    }, 100);
     
   } catch (err) {
     console.error('Save failed:', err);
     
-    // Last resort: Open in new tab
+    // Absolute last resort: Open in new tab
     alert('Could not save image. Opening in new tab - you can save from there.');
     window.open(url, '_blank');
   }
