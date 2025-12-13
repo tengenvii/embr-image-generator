@@ -1294,10 +1294,14 @@ body.result-locked {
     .subtitle {
         font-size: 17px;
     }
-
-    .subtitle.screen-2 {
-        display: none;
-    }
+    /* Hide subtitle only on result screen when has-result class is active */
+  .container.has-result .subtitle.screen-2 {
+    display: none !important;
+  }
+  
+  .subtitle.screen-2 {
+    max-width: 100%;
+  }
 
     textarea {
         min-height: 90px;
