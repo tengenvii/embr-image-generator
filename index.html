@@ -2677,13 +2677,11 @@ async function editImage(imageUrl) {
   }
 }
     
-    // Generate Image
+   // Generate Image Button
 btnGenerate.addEventListener('click', async () => {
-    // UPDATE PROGRESS TO STEP 3
+  // UPDATE PROGRESS TO STEP 3
   updateProgressStep(3);
   
-  await generateImage();
-});
   // Get user email
   let userEmail;
   try {
