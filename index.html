@@ -2115,20 +2115,36 @@ window.addEventListener('load', () => {
     // Progress indicator element
 const progressSteps = document.getElementById('progressSteps');
 
-// Update progress indicator
+// Update progress indicator - WITH NULL CHECKS
 function updateProgressStep(currentStep) {
+  // Safety check - if progress steps don't exist, don't crash
+  if (!progressSteps) {
+    console.warn('Progress steps element not found');
+    return;
+  }
+  
   const steps = progressSteps.querySelectorAll('.step');
+  
+  // Another safety check
+  if (!steps || steps.length === 0) {
+    console.warn('No step elements found');
+    return;
+  }
   
   steps.forEach((step, index) => {
     const stepNumber = index + 1;
     
+    // Remove all classes first
     step.classList.remove('active', 'completed');
     
     if (stepNumber < currentStep) {
+      // Steps before current are completed
       step.classList.add('completed');
     } else if (stepNumber === currentStep) {
+      // Current step is active
       step.classList.add('active');
     }
+    // Steps after current remain default (dim)
   });
 }
     
@@ -2225,26 +2241,14 @@ function updateProgressStep(currentStep) {
     btnUploadGallery.addEventListener('touchend', triggerGalleryInput, { passive: false });
     
     // Text Only Link
-    textOnlyLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        isTextOnlyMode = true;
-        showPromptSection(true);
-    });
-    // In textOnlyLink click handler
 textOnlyLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  isTextOnlyMode = true;
-  
-  // Hide Upload step for text-only
-  const uploadStep = progressSteps.querySelector('[data-step="1"]');
-  const firstLine = progressSteps.querySelector('.step-line');
-  if (uploadStep && firstLine) {
-    uploadStep.style.display = 'none';
-    firstLine.style.display = 'none';
-  }
-  
-  updateProgressStep(2); // Start at Describe
-  showPromptSection(true);
+    e.preventDefault();
+    isTextOnlyMode = true;
+    
+    // Update progress to Describe step (skip Upload)
+    updateProgressStep(2);
+    
+    showPromptSection(true);
 });
     
     // Back Button - Goes to home
