@@ -874,13 +874,16 @@
         /* Result Action Buttons */
 .result-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, auto);
     gap: 10px;
     margin-top: 16px;
+    justify-content: center;
 }
 
 .btn-new {
     grid-column: 1 / -1;
+    justify-self: center;
+    min-width: 200px;
 }
 
 .btn-edit,
@@ -1299,7 +1302,6 @@
     .btn-edit,
     .btn-download,
     .btn-new {
-        width: 100%;
     }
 
     .footer {
