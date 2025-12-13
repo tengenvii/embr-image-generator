@@ -2737,7 +2737,7 @@ document.querySelector('.container').appendChild(resultContainer);
             
             let errorMessage = error.message;
             if (error.name === 'AbortError') {
-                errorMessage = 'Request took too long (5+ minutes). Try with fewer images or try again.';
+                errorMessage = 'Request took too long. Try with fewer images or try again.';
             }
             
             statusDiv.className = 'status error';
