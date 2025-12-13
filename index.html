@@ -2670,14 +2670,15 @@ toast.innerHTML = `
     animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 `;
                 
-                const title = document.createElement('h3');
-                title.textContent = 'Your Reality';
-                title.style.cssText = `
-                    color: rgba(255, 255, 255, 0.9);
-                    font-size: 18px;
-                    font-weight: 600;
-                    margin-bottom: 16px;
-                `;
+                const title = document.createElement('div');
+title.textContent = 'Your Reality';
+title.style.cssText = `
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+`;
                 resultContainer.appendChild(title);
                 
                 const img = document.createElement('img');
