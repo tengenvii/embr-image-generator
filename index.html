@@ -1235,37 +1235,43 @@
         }
         
         @media (max-width: 768px) {
-    body {
-        padding: 16px;
-        overflow: hidden;
-    }
-
-    .logo-fixed {
-        top: 20px;
-        left: 20px;
-        margin-bottom: 24px;
-    }
-
-    .logo-fixed img {
-        width: 140px;
-        height: auto;
-        max-width: 100%;
-        display: block;
-    }
-
-    .container {
-        padding: 32px 24px;
-        margin: 0;
-        max-height: calc(100vh - 100px);
-        max-height: calc(100dvh - 100px);
-    }
-
-    /* Extra spacing when result is shown */
-    .container.has-result {
-        margin-top: 100px;
-        max-height: calc(100vh - 200px);
-        max-height: calc(100dvh - 200px);
-    }
+  body {
+    padding: 16px;
+    overflow: hidden;
+  }
+  
+  .logo-fixed {
+    top: 20px;
+    left: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .logo-fixed img {
+    width: 140px;
+    height: auto;
+    max-width: 100%;
+    display: block;
+  }
+  
+  .container {
+    padding: 32px 24px;
+    margin: 0;
+    max-height: calc(100vh - 100px);
+    max-height: calc(100dvh - 100px);
+  }
+  
+  /* Reduced spacing when result is shown - NO SCROLL NEEDED */
+  .container.has-result {
+    margin-top: 40px !important;
+    padding-top: 16px !important;
+    max-height: calc(100vh - 140px) !important;
+    max-height: calc(100dvh - 140px) !important;
+  }
+  
+  /* Reduce image height on result screen */
+  #resultContainer img {
+    max-height: 280px !important;
+  }
 
     .header h1 {
         font-size: 28px;
