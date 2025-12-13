@@ -773,6 +773,75 @@
         .status.error.fade-out {
             animation: fadeOut 0.3s ease forwards;
         }
+        /* Toast Notification */
+.toast-notification {
+    position: fixed;
+    top: 32px;
+    right: 32px;
+    z-index: 200;
+    padding: 16px 24px;
+    background: rgba(34, 197, 94, 0.95);
+    backdrop-filter: blur(10px);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 
+        0 8px 32px rgba(34, 197, 94, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-notification.fade-out {
+    animation: toastFadeOut 0.5s ease forwards;
+}
+
+.toast-icon {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(50px) translateY(-10px);
+    }
+}
+
+@media (max-width: 768px) {
+    .toast-notification {
+        top: 20px;
+        right: 20px;
+        left: 20px;
+        width: auto;
+        font-size: 14px;
+        padding: 14px 20px;
+    }
+}
 
         /* Progress Container */
         #progressContainer {
@@ -2546,9 +2615,24 @@ if (!response.ok) {
       finishProgress();
             
             setTimeout(() => {
-    statusDiv.className = 'status success';
-    statusDiv.textContent = '✓ Image generated successfully!';
-    statusDiv.style.display = 'block';
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <span>Image generated successfully!</span>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 3.5 seconds with fade out
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 500);
+    }, 3500);
     
     // Update subtitle
     subtitle.textContent = 'Complete, view your image below';
