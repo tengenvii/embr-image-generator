@@ -1419,20 +1419,118 @@ body.result-locked {
     max-height: calc(100dvh - 100px);
   }
   
-        /* Optimized spacing when result is shown - NO SCROLL */
+  /* Adaptive spacing for result screen - works on all screen sizes */
   .container.has-result {
-    margin-top: 50px !important;
-    padding: 24px 24px 24px 24px !important;
-    max-height: calc(100vh - 150px) !important;
-    max-height: calc(100dvh - 150px) !important;
-    overflow-y: hidden !important;
+    margin-top: 8vh !important; /* Percentage-based */
+    padding: 20px !important;
+    max-height: calc(100vh - 140px) !important;
+    max-height: calc(100dvh - 140px) !important;
+    overflow-y: auto !important; /* Allow minimal scroll */
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
-  /* Slightly reduce image height on result screen */
+  /* Dynamic image height */
   #resultContainer img {
-    max-height: 300px !important;
+    max-height: min(300px, 40vh) !important;
   }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 17px;
+  }
+  
+  .subtitle.screen-2 {
+    max-width: 100%;
+  }
+
+  textarea {
+    min-height: 90px;
+    font-size: 16px;
+  }
+
+  .custom-placeholder {
+    font-size: 16px;
+  }
+
+  .photo-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  #resultContainer > div:first-child {
+    font-size: 20px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: 600 !important;
+  }
+
+  .footer {
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    bottom: 12px;
+  }
+}
+
+/* Extra small screens (iPhone SE, 12/13 Mini, etc.) */
+@media (max-width: 768px) and (max-height: 700px) {
+  .container.has-result {
+    margin-top: 5vh !important;
+    padding: 16px !important;
+    max-height: calc(100vh - 100px) !important;
+    max-height: calc(100dvh - 100px) !important;
+  }
+  
+  #resultContainer img {
+    max-height: min(250px, 35vh) !important;
+  }
+  
+  .header h1 {
+    font-size: 24px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .progress-steps {
+    margin: 12px 0 8px 0 !important;
+  }
+  
+  #resultContainer > div:first-child {
+    font-size: 18px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .result-actions {
+    gap: 8px !important;
+    margin-top: 12px !important;
+  }
+  
+  .btn-edit, .btn-download, .btn-new {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  /* Compact non-result screens too */
+  .container {
+    padding: 24px 20px !important;
+    max-height: calc(100vh - 80px) !important;
+  }
+  
+  .photo-preview-grid {
+    gap: 6px !important;
+  }
+  
+  textarea {
+    min-height: 80px !important;
+  }
+}
 
     .header h1 {
         font-size: 28px;
