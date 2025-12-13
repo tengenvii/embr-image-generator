@@ -1992,63 +1992,72 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     return;
   }
   
-  // Mobile: Better blob handling with proper error recovery
+  // Mobile: iOS-specific handling
   try {
+    // Method 1: Try creating blob from fetch (works if no CORS)
     let blob;
-    
-    // Method 1: Try direct fetch with CORS
     try {
       const response = await fetch(url);
       if (response.ok) {
         blob = await response.blob();
       }
-    } catch (fetchErr) {
-      console.log('Direct fetch failed, trying canvas method');
+    } catch (e) {
+      // Fetch failed - likely CORS
     }
     
-    // Method 2: If fetch failed, use canvas (works for CORS issues)
+    // Method 2: If fetch failed, load via Image + Canvas
     if (!blob) {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       
+      // Load image (will work even with CORS for display)
       await new Promise((resolve, reject) => {
         img.onload = () => resolve();
         img.onerror = () => reject(new Error('Image load failed'));
+        // Don't set crossOrigin for Discord CDN
         img.src = url;
       });
       
+      // Convert to canvas
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       
+      // Convert canvas to blob
       blob = await new Promise(resolve => {
         canvas.toBlob(resolve, 'image/png', 1.0);
       });
     }
     
     if (!blob) {
-      throw new Error('Failed to create blob');
+      throw new Error('Could not create image blob');
     }
     
-    // Create proper File object with correct MIME type
-    const file = new File([blob], filename, { 
+    // Create File from blob
+    const file = new File([blob], filename, {
       type: 'image/png',
       lastModified: Date.now()
     });
     
-    // Try Web Share API (native iOS/Android share)
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: 'Generated Image',
-        text: 'Created with EMBR'
-      });
-      return;
+    // iOS Share Sheet (preferred on iOS)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Generated Image',
+          text: 'Created with EMBR'
+        });
+        return;
+      } catch (shareErr) {
+        // User cancelled or share failed
+        if (shareErr.name === 'AbortError') {
+          return; // User cancelled - don't show error
+        }
+      }
     }
     
-    // Fallback: Create download link with blob URL
+    // Fallback: Download via blob URL
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
@@ -2064,7 +2073,7 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
   } catch (err) {
     console.error('Save failed:', err);
     
-    // Last resort: Open image in new tab
+    // Last resort: Open in new tab
     alert('Could not save image. Opening in new tab - you can save from there.');
     window.open(url, '_blank');
   }
@@ -2626,9 +2635,13 @@ async function editImage(imageUrl) {
   photoPreviewSection.classList.add('active');
   photoPreviewSection.style.display = 'block';
   promptSection.classList.add('active');
-  promptSection.style.display = 'block';
-  
-  // Clear prompt immediately - DON'T call checkGenerateButton yet
+promptSection.style.display = 'block';
+
+// ✅ SHOW generate section - button will appear when user types
+generateSection.classList.add('active');
+generateSection.style.display = 'block';
+
+// Clear prompt immediately
 promptTextarea.value = '';
 // Generate button will appear when user types (handled by input event listener)
   
