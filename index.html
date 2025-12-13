@@ -2631,15 +2631,20 @@ if (!response.ok) {
             setTimeout(() => {
     // Create toast notification
     const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.innerHTML = `
-        <div class="toast-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        </div>
-        <span>Image generated successfully!</span>
-    `;
+toast.className = 'toast-notification';
+
+// Check if mobile
+const isMobile = window.innerWidth <= 768;
+const toastText = isMobile ? 'Image ready!' : 'Image generated successfully!';
+
+toast.innerHTML = `
+    <div class="toast-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+    </div>
+    <span>${toastText}</span>
+`;
     document.body.appendChild(toast);
     
     // Auto-remove after 3.5 seconds with fade out
