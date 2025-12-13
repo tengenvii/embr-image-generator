@@ -2660,17 +2660,15 @@ toast.innerHTML = `
                 resultContainer.id = 'resultContainer';
                 document.querySelector('.container').classList.add('has-result');
                 resultContainer.style.cssText = `
-                    margin-top: 32px;
-                    padding: 24px;
-                    background: rgba(0, 0, 0, 0.25);
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 16px;
-                    box-shadow: 
-                        0 8px 24px rgba(0, 0, 0, 0.2),
-                        0 1px 2px rgba(255, 255, 255, 0.05) inset;
-                    opacity: 0;
-                    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                `;
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(255, 255, 255, 0.05) inset;
+    opacity: 0;
+    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+`;
                 
                 const title = document.createElement('h3');
                 title.textContent = 'Your Reality';
