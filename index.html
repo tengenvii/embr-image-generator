@@ -2700,9 +2700,9 @@ async function editImage(imageUrl) {
   promptSection.classList.add('active');
 promptSection.style.display = 'block';
 
-// Show generate section (button will appear when user types)
-generateSection.style.display = 'block';
-// Don't add 'active' class yet - that comes from checkGenerateButton()
+// Reset generate section - button will only appear when user types
+generateSection.classList.remove('active');
+generateSection.style.display = ''; // ✅ Clear inline style (let CSS handle it)
 
 // Clear prompt
 promptTextarea.value = '';
