@@ -1992,51 +1992,68 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     return;
   }
   
-  // Mobile: iOS Share Sheet optimized
+  // Mobile: Use simpler approach that works with CORS restrictions
   try {
     let blob;
+    let success = false;
     
-    // Try to fetch the image
+    // Method 1: Try direct fetch
     try {
       const response = await fetch(url);
       if (response.ok) {
         blob = await response.blob();
+        success = true;
       }
     } catch (e) {
-      // CORS blocked - create blob from data URL instead
-      const img = document.createElement('img');
-      
-      // Use a promise to wait for image load
-      await new Promise((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Failed to load image'));
-        // Don't set crossOrigin - let browser handle it naturally
-        img.src = url;
-      });
-      
-      // Create canvas and draw
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth || img.width;
-      canvas.height = img.naturalHeight || img.height;
-      
-      const ctx = canvas.getContext('2d');
+      console.log('Fetch failed:', e.message);
+    }
+    
+    // Method 2: Canvas method (only if fetch failed)
+    if (!success) {
       try {
+        const img = new Image();
+        
+        // Load image WITHOUT crossOrigin to avoid CORS preflight
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Image load timeout')), 10000);
+          img.onload = () => {
+            clearTimeout(timeout);
+            resolve();
+          };
+          img.onerror = () => {
+            clearTimeout(timeout);
+            reject(new Error('Image load failed'));
+          };
+          img.src = url;
+        });
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        
+        // Try to draw
+        const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         
         // Convert to blob
         blob = await new Promise((resolve, reject) => {
           canvas.toBlob((result) => {
             if (result) resolve(result);
-            else reject(new Error('Canvas conversion failed'));
+            else reject(new Error('Blob conversion failed'));
           }, 'image/png', 1.0);
         });
+        
+        success = true;
       } catch (canvasErr) {
-        throw new Error('Canvas drawing blocked by CORS');
+        console.log('Canvas method failed:', canvasErr.message);
       }
     }
     
-    if (!blob) {
-      throw new Error('Could not create image data');
+    // If both methods failed, open in new tab
+    if (!success || !blob) {
+      window.open(url, '_blank');
+      return;
     }
     
     // Create File object
@@ -2045,28 +2062,28 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       lastModified: Date.now()
     });
     
-    // Try iOS/Android native share
-    if (navigator.share && navigator.canShare) {
-      // Check if files are supported
-      if (navigator.canShare({ files: [file] })) {
-        try {
+    // Try Web Share API (iOS/Android)
+    if (navigator.share) {
+      try {
+        // Check if files are supported
+        const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
+        
+        if (canShareFiles) {
           await navigator.share({
             files: [file],
-            title: 'Generated Image',
-            text: 'Created with EMBR'
+            title: 'Generated Image'
           });
           return; // Success!
-        } catch (shareErr) {
-          // User cancelled or share failed
-          if (shareErr.name === 'AbortError') {
-            return; // User cancelled - don't show error
-          }
-          // Share failed, try download fallback
         }
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') {
+          return; // User cancelled
+        }
+        console.log('Share failed:', shareErr.message);
       }
     }
     
-    // Fallback: Trigger download
+    // Fallback: Download via blob URL
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
@@ -2082,10 +2099,8 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     }, 100);
     
   } catch (err) {
-    console.error('Save failed:', err);
-    
-    // Absolute last resort: Open in new tab
-    alert('Could not save image. Opening in new tab - you can save from there.');
+    console.error('All save methods failed:', err);
+    // Last resort: open in new tab (no alert)
     window.open(url, '_blank');
   }
 }
@@ -2461,12 +2476,12 @@ btnClearAll.addEventListener('click', () => {
     }
     
     function checkGenerateButton() {
-        if (promptTextarea.value.trim().length > 0) {
-            generateSection.classList.add('active');
-        } else {
-            generateSection.classList.remove('active');
-        }
-    }
+  if (promptTextarea.value.trim().length > 0) {
+    generateSection.classList.add('active');
+  } else {
+    generateSection.classList.remove('active');
+  }
+}
     
     // Modal
     modalClose.addEventListener('click', () => {
@@ -2648,12 +2663,11 @@ async function editImage(imageUrl) {
   promptSection.classList.add('active');
 promptSection.style.display = 'block';
 
-// ❌ DON'T show generate section immediately
-// Generate button will appear ONLY when user starts typing (handled by input event)
+// Start with generate section hidden
 generateSection.classList.remove('active');
-generateSection.style.display = 'none';
+// ❌ DON'T set inline display:none - it blocks CSS from working!
 
-// Clear prompt immediately
+// Clear prompt
 promptTextarea.value = '';
 
 // Focus the textarea so user can start typing
