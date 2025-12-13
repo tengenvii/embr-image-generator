@@ -2230,13 +2230,22 @@ function updateProgressStep(currentStep) {
         isTextOnlyMode = true;
         showPromptSection(true);
     });
-    
-    textOnlyLink.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        isTextOnlyMode = true;
-        showPromptSection(true);
-    });
+    // In textOnlyLink click handler
+textOnlyLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  isTextOnlyMode = true;
+  
+  // Hide Upload step for text-only
+  const uploadStep = progressSteps.querySelector('[data-step="1"]');
+  const firstLine = progressSteps.querySelector('.step-line');
+  if (uploadStep && firstLine) {
+    uploadStep.style.display = 'none';
+    firstLine.style.display = 'none';
+  }
+  
+  updateProgressStep(2); // Start at Describe
+  showPromptSection(true);
+});
     
     // Back Button - Goes to home
 backButton.addEventListener('click', () => {
@@ -2576,7 +2585,8 @@ window.addEventListener('load', async () => {
     
     // Edit Image Function - Fixed
 async function editImage(imageUrl) {
-  // IMMEDIATE UI STATE CHANGE
+  // IMMEDIATE UI STATE CHANGE - Do this FIRST synchronously
+  // This prevents any flash of old content
   subtitle.textContent = "Refine your vision and generate again";
   subtitle.classList.add('screen-2');
   
@@ -2589,82 +2599,79 @@ async function editImage(imageUrl) {
   // Unlock body scroll
   document.body.classList.remove('result-locked');
   
-  // RESET PROGRESS TO STEP 2 - ADD THIS LINE
+  // RESET PROGRESS TO STEP 2
   updateProgressStep(2);
   
   statusDiv.style.display = 'none';
-    
-    // Show correct screen state immediately
-    uploadSection.style.display = 'none';
-    backButton.style.display = 'flex';
-    backButton.classList.add('active');
-    photoPreviewSection.classList.add('active');
-    photoPreviewSection.style.display = 'block';
-    promptSection.classList.add('active');
-    promptSection.style.display = 'block';
-    generateSection.classList.add('active');
-    generateSection.style.display = 'block';
-    
-    // Clear prompt immediately
-    promptTextarea.value = '';
-    checkGenerateButton();
-    
-    // Scroll to top immediately
-    document.querySelector('.container').scrollTop = 0;
-    
-    // ✅ NOW do async image loading in background
+  
+  // Show correct screen state immediately
+  uploadSection.style.display = 'none';
+  backButton.style.display = 'flex';
+  backButton.classList.add('active');
+  photoPreviewSection.classList.add('active');
+  photoPreviewSection.style.display = 'block';
+  promptSection.classList.add('active');
+  promptSection.style.display = 'block';
+  
+  // Clear prompt immediately
+  promptTextarea.value = '';
+  checkGenerateButton();
+  
+  // Scroll to top immediately
+  document.querySelector('.container').scrollTop = 0;
+  
+  // NOW do async image loading in background
+  try {
+    let blob;
     try {
-        let blob;
-        try {
-            const res = await fetch(imageUrl, { mode: 'cors', cache: 'no-cache' });
-            blob = await res.blob();
-        } catch (fetchError) {
-            // CORS failed - use canvas method
-            console.log('Direct fetch failed, using canvas fallback');
-            
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = imageUrl;
-            });
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        }
-        
-        const file = new File([blob], 'generated-image.png', { 
-            type: 'image/png', 
-            lastModified: Date.now() 
-        });
-        
-        // Update file array and previews
-        selectedFiles = [file];
-        isTextOnlyMode = false;
-        updatePreviews();
-        
-    } catch (e) {
-        console.error('Edit failed - using fallback', e);
-        
-        // Fallback: Reset to empty state
-        selectedFiles = [];
-        isTextOnlyMode = false;
-        updatePreviews();
-        
-        // Show error message
-        statusDiv.className = 'status';
-        statusDiv.style.background = 'rgba(239,68,68,0.12)';
-        statusDiv.style.color = '#f87171';
-        statusDiv.style.border = '1px solid rgba(239,68,68,0.25)';
-        statusDiv.textContent = 'Could not load image. Add a new image or describe your vision.';
-        statusDiv.style.display = 'block';
-        setTimeout(() => statusDiv.style.display = 'none', 4000);
+      const res = await fetch(imageUrl, { mode: 'cors', cache: 'no-cache' });
+      blob = await res.blob();
+    } catch (fetchError) {
+      // CORS failed - use canvas method
+      console.log('Direct fetch failed, using canvas fallback');
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject();
+        img.src = imageUrl;
+      });
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     }
+    
+    const file = new File([blob], 'generated-image.png', { 
+      type: 'image/png',
+      lastModified: Date.now()
+    });
+    
+    // Update file array and previews
+    selectedFiles = [file];
+    isTextOnlyMode = false;
+    updatePreviews();
+    
+  } catch (e) {
+    console.error('Edit failed - using fallback', e);
+    
+    // Fallback: Reset to empty state
+    selectedFiles = [];
+    isTextOnlyMode = false;
+    updatePreviews();
+    
+    // Show error message
+    statusDiv.className = 'status';
+    statusDiv.style.background = 'rgba(239,68,68,0.12)';
+    statusDiv.style.color = '#f87171';
+    statusDiv.style.border = '1px solid rgba(239,68,68,0.25)';
+    statusDiv.textContent = 'Could not load image. Add a new image or describe your vision.';
+    statusDiv.style.display = 'block';
+    setTimeout(() => statusDiv.style.display = 'none', 4000);
+  }
 }
     
     // Generate Image
@@ -2977,7 +2984,9 @@ const newBtn = document.createElement('button');
 newBtn.className = 'btn-new';
 newBtn.textContent = 'Create New';
 newBtn.onclick = () => {
-    location.reload();
+  // Reset progress before reload for smooth UX
+  updateProgressStep(1);
+  setTimeout(() => location.reload(), 100);
 };
 
 buttonRow.appendChild(editBtn);
