@@ -2440,12 +2440,10 @@ btnClearAll.addEventListener('click', () => {
     }
     
     promptSection.classList.add('active');
-    generateSection.classList.add('active');
-
-    // ❌ REMOVE THIS SECTION - progress already updated in handleFileSelect
-    // if (!isTextOnly && selectedFiles.length > 0) {
-    //     updateProgressStep(2);
-    // }
+    
+    // ✅ Reset generate section - button only appears when user types
+    generateSection.classList.remove('active');
+    generateSection.style.display = ''; // Clear inline style (let CSS handle it)
     
     startPlaceholderRotation();
 }
