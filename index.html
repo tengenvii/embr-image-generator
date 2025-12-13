@@ -2296,50 +2296,51 @@ btnClearAll.addEventListener('click', () => {
     galleryInput.addEventListener('change', handleFileSelect);
     
     function handleFileSelect(e) {
-        const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files);
+    
+    if (files.length === 0) {
+        e.target.value = '';
+        return;
+    }
+    
+    if (selectedFiles.length + files.length > MAX_IMAGES) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed`;
+        statusDiv.style.display = 'block';
         
-        if (files.length === 0) {
-            e.target.value = '';
-            return;
-        }
-        
-        if (selectedFiles.length + files.length > MAX_IMAGES) {
-            statusDiv.className = 'status error';
-            statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed`;
-            statusDiv.style.display = 'block';
-            
+        setTimeout(() => {
+            statusDiv.classList.add('fade-out');
             setTimeout(() => {
-                statusDiv.classList.add('fade-out');
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                    statusDiv.classList.remove('fade-out');
-                }, 300);
-            }, 3000);
-            
-            e.target.value = '';
-            return;
-        }
-        
-        files.forEach(file => {
-            if (file.type.startsWith('image/')) {
-                selectedFiles.push(file);
-            }
-        });
+                statusDiv.style.display = 'none';
+                statusDiv.classList.remove('fade-out');
+            }, 300);
+        }, 3000);
         
         e.target.value = '';
-        
-        if (selectedFiles.length > 0) {
-            isTextOnlyMode = false;
-            showPromptSection(false);
-            updatePreviews();
-
-              // Unlock body scroll
-  document.body.classList.remove('result-locked');
-            
-            // UPDATE PROGRESS TO STEP 2
-    updateProgressStep(2);
-        }
+        return;
     }
+    
+    files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+            selectedFiles.push(file);
+        }
+    });
+    
+    e.target.value = '';
+    
+    if (selectedFiles.length > 0) {
+        isTextOnlyMode = false;
+        
+        // ✅ UPDATE PROGRESS FIRST (before showing sections)
+        updateProgressStep(2);
+        
+        showPromptSection(false);
+        updatePreviews();
+
+        // Unlock body scroll
+        document.body.classList.remove('result-locked');
+    }
+}
     
     function showPromptSection(textOnly) {
     subtitle.textContent = 'Next describe your vision to bring it to life';
@@ -2358,13 +2359,13 @@ btnClearAll.addEventListener('click', () => {
     promptSection.classList.add('active');
     generateSection.classList.add('active');
 
-    // UPDATE PROGRESS TO STEP 2 (if not already)
-    if (!isTextOnly && selectedFiles.length > 0) {
-        updateProgressStep(2);
-    }
+    // ❌ REMOVE THIS SECTION - progress already updated in handleFileSelect
+    // if (!isTextOnly && selectedFiles.length > 0) {
+    //     updateProgressStep(2);
+    // }
     
-    startPlaceholderRotation();  // ✅ Moved INSIDE the function
-}  // ✅ Function closes here - only ONE closing brace needed
+    startPlaceholderRotation();
+}
     
     function updatePreviews() {
     // Show/hide Clear All button
