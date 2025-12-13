@@ -1992,69 +1992,88 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     return;
   }
   
-  // Mobile: Use simpler approach that works with CORS restrictions
+  // Mobile: iOS Share Sheet
   try {
     let blob;
-    let success = false;
     
-    // Method 1: Try direct fetch
+    // Method 1: Try fetch WITHOUT credentials (works for public URLs)
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-cache'
+      });
+      
       if (response.ok) {
         blob = await response.blob();
-        success = true;
+        console.log('✅ Fetch successful, blob size:', blob.size);
       }
-    } catch (e) {
-      console.log('Fetch failed:', e.message);
+    } catch (fetchErr) {
+      console.log('❌ Fetch failed:', fetchErr.message);
     }
     
-    // Method 2: Canvas method (only if fetch failed)
-    if (!success) {
+    // Method 2: If fetch failed, try loading via img element (no crossOrigin)
+    if (!blob) {
+      console.log('Trying image load method...');
+      
+      const img = new Image();
+      
+      // Load image WITHOUT crossOrigin attribute (allows canvas drawing)
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Image load timeout')), 15000);
+        
+        img.onload = () => {
+          clearTimeout(timeout);
+          console.log('✅ Image loaded:', img.width, 'x', img.height);
+          resolve();
+        };
+        
+        img.onerror = (err) => {
+          clearTimeout(timeout);
+          console.log('❌ Image load error:', err);
+          reject(new Error('Image load failed'));
+        };
+        
+        img.src = url;
+      });
+      
+      // Create canvas and draw
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      
+      console.log('Canvas size:', canvas.width, 'x', canvas.height);
+      
+      const ctx = canvas.getContext('2d');
+      
+      // Try drawing (this will work since we didn't set crossOrigin)
       try {
-        const img = new Image();
-        
-        // Load image WITHOUT crossOrigin to avoid CORS preflight
-        await new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Image load timeout')), 10000);
-          img.onload = () => {
-            clearTimeout(timeout);
-            resolve();
-          };
-          img.onerror = () => {
-            clearTimeout(timeout);
-            reject(new Error('Image load failed'));
-          };
-          img.src = url;
-        });
-        
-        // Create canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || img.width;
-        canvas.height = img.naturalHeight || img.height;
-        
-        // Try to draw
-        const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
+        console.log('✅ Canvas draw successful');
         
         // Convert to blob
         blob = await new Promise((resolve, reject) => {
           canvas.toBlob((result) => {
-            if (result) resolve(result);
-            else reject(new Error('Blob conversion failed'));
+            if (result) {
+              console.log('✅ Blob created, size:', result.size);
+              resolve(result);
+            } else {
+              console.log('❌ Blob creation failed');
+              reject(new Error('Blob creation failed'));
+            }
           }, 'image/png', 1.0);
         });
-        
-        success = true;
-      } catch (canvasErr) {
-        console.log('Canvas method failed:', canvasErr.message);
+      } catch (drawErr) {
+        console.log('❌ Canvas draw failed:', drawErr.message);
+        throw drawErr;
       }
     }
     
-    // If both methods failed, open in new tab
-    if (!success || !blob) {
-      window.open(url, '_blank');
-      return;
+    if (!blob) {
+      throw new Error('Could not create blob from image');
     }
+    
+    console.log('📦 Final blob ready, size:', blob.size);
     
     // Create File object
     const file = new File([blob], filename, {
@@ -2062,28 +2081,42 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       lastModified: Date.now()
     });
     
-    // Try Web Share API (iOS/Android)
+    console.log('📄 File object created:', file.name, file.type, file.size);
+    
+    // Try iOS/Android Share API
     if (navigator.share) {
-      try {
-        // Check if files are supported
-        const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
-        
-        if (canShareFiles) {
+      console.log('📱 Web Share API available');
+      
+      // Check if files are supported
+      const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
+      console.log('Can share files?', canShareFiles);
+      
+      if (canShareFiles) {
+        try {
+          console.log('🚀 Triggering share sheet...');
           await navigator.share({
             files: [file],
             title: 'Generated Image'
           });
-          return; // Success!
+          console.log('✅ Share completed successfully!');
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            console.log('ℹ️ User cancelled share');
+            return; // User cancelled - don't show error
+          }
+          console.log('❌ Share failed:', shareErr.message);
+          // Continue to fallback
         }
-      } catch (shareErr) {
-        if (shareErr.name === 'AbortError') {
-          return; // User cancelled
-        }
-        console.log('Share failed:', shareErr.message);
+      } else {
+        console.log('❌ File sharing not supported');
       }
+    } else {
+      console.log('❌ Web Share API not available');
     }
     
     // Fallback: Download via blob URL
+    console.log('Using download fallback...');
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
@@ -2092,6 +2125,8 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     document.body.appendChild(a);
     a.click();
     
+    console.log('✅ Download triggered');
+    
     // Cleanup
     setTimeout(() => {
       URL.revokeObjectURL(blobUrl);
@@ -2099,8 +2134,10 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     }, 100);
     
   } catch (err) {
-    console.error('All save methods failed:', err);
-    // Last resort: open in new tab (no alert)
+    console.error('❌ All save methods failed:', err);
+    
+    // Last resort: Open in new tab (like your old screenshot)
+    console.log('Opening in new tab as last resort');
     window.open(url, '_blank');
   }
 }
@@ -2663,9 +2700,9 @@ async function editImage(imageUrl) {
   promptSection.classList.add('active');
 promptSection.style.display = 'block';
 
-// Start with generate section hidden
-generateSection.classList.remove('active');
-// ❌ DON'T set inline display:none - it blocks CSS from working!
+// Show generate section (button will appear when user types)
+generateSection.style.display = 'block';
+// Don't add 'active' class yet - that comes from checkGenerateButton()
 
 // Clear prompt
 promptTextarea.value = '';
