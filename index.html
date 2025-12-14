@@ -2990,11 +2990,17 @@ let isComplete = false;
         }, 300000);
         
         try {
-            const response = await fetch(WEBHOOK_URL, {
-  method: 'POST',
-  body: formData,
-  signal: controller.signal
-});
+            try {
+    console.log('🚀 Starting fetch to:', WEBHOOK_URL);
+    console.log('📦 FormData size:', selectedFiles.length, 'images');
+    
+    const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+    });
+    
+    console.log('✅ Response received:', response.status);
 
 const responseText = await response.text();
 let data;
@@ -3206,10 +3212,15 @@ document.querySelector('.container').appendChild(resultContainer);
             }, 800);
             
         } catch (error) {
-            clearTimeout(timeoutId);
-            isComplete = true;
-            clearInterval(progressInterval);
-                progressContainer.remove();
+    console.error('❌ FETCH ERROR:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    clearTimeout(timeoutId);
+    isComplete = true;
+    clearInterval(progressInterval);
+    progressContainer.remove();
     
     // Remove spacing class on error
     document.querySelector('.container').classList.remove('has-result');
