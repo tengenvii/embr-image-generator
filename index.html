@@ -1641,10 +1641,6 @@ body.result-locked {
     </div>
         
         <!-- Credit Display -->
-        <div class="credit-display" id="creditDisplay">
-  <div class="credit-badge" id="creditBadge" style="display: none;">
-    <svg>...</svg>
-    <span id="creditCount">-</span> credits
   </div>
   <button class="btn-buy-credits" id="btnBuyCredits">Buy Credits</button>
 </div>
@@ -1746,7 +1742,6 @@ body.result-locked {
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/check-credits-generate';
-const GET_CREDITS_URL = 'https://embrsol.app.n8n.cloud/webhook/get-credits';
 const MAX_IMAGES = 3;
 
 // ===== CURRENCY CONVERSION SYSTEM =====
@@ -2084,9 +2079,6 @@ async function checkAndResumeGeneration() {
     generateSection.classList.add('active');
     checkGenerateButton();
     
-    // Refresh credits first
-    await fetchAndDisplayCredits();
-    
     // Auto-click generate after short delay
     setTimeout(() => {
       console.log('🚀 Auto-triggering generation...');
@@ -2099,25 +2091,6 @@ async function checkAndResumeGeneration() {
   } catch (error) {
     console.error('❌ Failed to restore generation:', error);
     localStorage.removeItem('pendingGeneration');
-  }
-}
-
-// Fetch and display credits
-async function fetchAndDisplayCredits() {
-  try {
-    const email = getStoredEmail();
-    if (!email) return;
-    
-    const response = await fetch(`${GET_CREDITS_URL}?email=${encodeURIComponent(email)}`);
-    const data = await response.json();
-    
-    if (data.credits !== undefined) {
-      document.getElementById('creditCount').textContent = data.credits;
-      document.getElementById('creditBadge').style.display = 'flex';
-      document.getElementById('creditDisplay').classList.add('has-credits'); // Show display
-    }
-  } catch (error) {
-    console.error('Failed to fetch credits:', error);
   }
 }
     
@@ -2785,9 +2758,6 @@ window.addEventListener('load', async () => {
   // Convert currency FIRST (before anything else)
   await initializeCurrency();
   
-  // Then fetch credits
-  await fetchAndDisplayCredits();
-  
   // ✅ CHECK FOR PAYMENT RETURN AND AUTO-RESUME
   await checkAndResumeGeneration();
   
@@ -3143,9 +3113,6 @@ if (!response.ok) {
             
                   generatedImageUrl = data.imageUrl; // Store for edit function
       
-      // Refresh credit display
-      await fetchAndDisplayCredits();
-      
       finishProgress();
             
             setTimeout(() => {
@@ -3283,112 +3250,56 @@ document.querySelector('.container').appendChild(resultContainer);
             }, 800);
             
         } catch (error) {
-    console.error('🔥 FETCH ERROR:', error);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
+    console.error('Generation error:', error.message);
     
     clearTimeout(timeoutId);
     isComplete = true;
     clearInterval(progressInterval);
     
-    // Remove spacing class on error
+    if (progressContainer && progressContainer.parentNode) {
+        progressContainer.remove();
+    }
+    
     document.querySelector('.container').classList.remove('has-result');
     
-    // ✅ DETECT MOBILE NETWORK TIMEOUT (iOS/Android cellular "Load failed")
-    if (error.message === 'Load failed' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-        console.log('📱 Mobile network timeout - backend is still processing');
+    // Mobile timeout - backend still processing
+    if (error.message === 'Load failed' || error.message.includes('Failed to fetch')) {
+        subtitle.textContent = 'Generation in progress';
+        subtitle.classList.add('screen-2');
         
-        // Keep progress container visible with updated message
-        progressContainer.style.opacity = '1';
-        const progressTitle = progressContainer.querySelector('div:first-child');
-        if (progressTitle) {
-            progressTitle.innerHTML = `
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2">
-                    <circle cx="12" cy="12" r="10" opacity="0.25"/>
-                    <path d="M12 2 A10 10 0 0 1 12 22" stroke-linecap="round">
-                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
-                    </path>
-                </svg>
-                <span style="color: #4ade80;">Generation in progress...</span>
-            `;
-        }
-        
-        // Show success message with refresh instructions
         statusDiv.className = 'status success';
         statusDiv.innerHTML = `
-            <div style="font-size: 18px; margin-bottom: 14px; font-weight: 700;">
-                ✓ Generation Started Successfully
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+                Processing your image
             </div>
-            <div style="font-size: 15px; opacity: 0.95; line-height: 1.7; margin-bottom: 20px;">
-                Your image is being generated on our servers right now. This typically takes <strong>30-90 seconds</strong>.
-            </div>
-            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 10px; margin-bottom: 20px; border-left: 3px solid #4ade80;">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">⏱️ What to do:</div>
-                <div style="font-size: 14px; opacity: 0.9; line-height: 1.6;">
-                    1. Wait <strong>1 minute</strong><br>
-                    2. Tap the button below to refresh<br>
-                    3. Your image will appear automatically
-                </div>
+            <div style="font-size: 14px; margin-bottom: 16px;">
+                Wait 1 minute, then refresh this page
             </div>
             <button onclick="window.location.reload()" style="
                 width: 100%;
-                padding: 16px 24px;
-                background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
-                color: #000000;
+                padding: 14px;
+                background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
                 border: none;
-                border-radius: 14px;
-                font-size: 16px;
-                font-weight: 700;
+                border-radius: 12px;
+                font-size: 15px;
+                font-weight: 600;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                letter-spacing: -0.01em;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.25)'" 
-               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)'">
-                🔄 Refresh to View Your Image
+            ">
+                Refresh Now
             </button>
-            <div style="margin-top: 16px; font-size: 13px; opacity: 0.7; text-align: center;">
-                💡 <strong>Pro tip:</strong> Bookmark this page to check back later
-            </div>
         `;
         statusDiv.style.display = 'block';
-        
-        // Hide progress after 60 seconds
-        setTimeout(() => {
-            if (progressContainer) {
-                progressContainer.style.opacity = '0';
-                setTimeout(() => progressContainer.remove(), 300);
-            }
-        }, 60000);
-        
-    } else if (error.name === 'AbortError') {
-        // 5-minute timeout reached
-        progressContainer.remove();
-        
+    } 
+    // Real error
+    else {
         backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
         photoPreviewSection.style.display = 'block';
         promptSection.style.display = 'block';
         generateSection.style.display = 'block';
-        
         subtitle.textContent = 'Next describe your vision to bring it to life';
         
         statusDiv.className = 'status error';
-        statusDiv.textContent = 'Request took too long. Try with fewer images or try again.';
-        statusDiv.style.display = 'block';
-        
-    } else {
-        // Real network error
-        progressContainer.remove();
-        
-        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
-        photoPreviewSection.style.display = 'block';
-        promptSection.style.display = 'block';
-        generateSection.style.display = 'block';
-        
-        subtitle.textContent = 'Next describe your vision to bring it to life';
-        
-        statusDiv.className = 'status error';
-        statusDiv.textContent = `Network error: ${error.message}. Please try again.`;
+        statusDiv.textContent = 'Generation failed. Please retry.';
         statusDiv.style.display = 'block';
     }
     
