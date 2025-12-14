@@ -246,13 +246,14 @@ body.result-locked {
         }
 
         .header h1 {
-            font-size: 32px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 16px;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        }
+    font-size: clamp(24px, 6vw, 32px);
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
 
         /* Progress Steps Indicator */
 .progress-steps {
@@ -407,12 +408,13 @@ body.result-locked {
         }
 
         .subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 18px;
-            font-weight: 400;
-            line-height: 1.6;
-            letter-spacing: 0.01em;
-        }
+    color: rgba(255, 255, 255, 0.7);
+    font-size: clamp(14px, 3.5vw, 18px);
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
 
         /* Screen 2 subtitle - subtle and refined */
 .subtitle.screen-2 {
@@ -1436,12 +1438,12 @@ body.result-locked {
   }
 
   .header h1 {
-    font-size: 28px;
-  }
-
-  .subtitle {
-    font-size: 17px;
-  }
+        font-size: clamp(20px, 5.5vw, 28px);
+    }
+    
+    .subtitle {
+        font-size: clamp(13px, 3.2vw, 17px);
+    }
   
   .subtitle.screen-2 {
     max-width: 100%;
