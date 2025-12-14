@@ -3265,136 +3265,73 @@ document.querySelector('.container').appendChild(resultContainer);
     
     // ✅ DETECT MOBILE NETWORK TIMEOUT (iOS/Android cellular "Load failed")
     if (error.message === 'Load failed' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-        console.log('📱 Mobile network timeout detected - backend likely still processing');
+        console.log('📱 Mobile network timeout - backend is still processing');
         
-        // Keep progress container visible with "Processing remotely" state
+        // Keep progress container visible with updated message
         progressContainer.style.opacity = '1';
         const progressTitle = progressContainer.querySelector('div:first-child');
         if (progressTitle) {
             progressTitle.innerHTML = `
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2">
                     <circle cx="12" cy="12" r="10" opacity="0.25"/>
-                    <path d="M12 2 A10 10 0 0 1 12 22" stroke="#4ade80" stroke-linecap="round">
+                    <path d="M12 2 A10 10 0 0 1 12 22" stroke-linecap="round">
                         <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
                     </path>
                 </svg>
-                <span style="color: #4ade80;">Processing remotely...</span>
+                <span style="color: #4ade80;">Generation in progress...</span>
             `;
         }
         
-        // Update subtitle
-        subtitle.textContent = 'Generation in progress (may take 1-2 minutes)';
-        subtitle.classList.add('screen-2');
-        
-        // Show friendly status message
+        // Show success message with refresh instructions
         statusDiv.className = 'status success';
         statusDiv.innerHTML = `
-            <div style="font-size: 16px; margin-bottom: 12px; font-weight: 600;">
-                ✓ Generation started successfully
+            <div style="font-size: 18px; margin-bottom: 14px; font-weight: 700;">
+                ✓ Generation Started Successfully
             </div>
-            <div style="font-size: 14px; opacity: 0.9; line-height: 1.5;">
-                Your image is being processed on our servers. This typically takes 30-90 seconds.
-                <br><br>
-                <strong>You can:</strong><br>
-                • Wait here (we'll check automatically)<br>
-                • Refresh this page in 1-2 minutes<br>
-                • Check your email for the result
+            <div style="font-size: 15px; opacity: 0.95; line-height: 1.7; margin-bottom: 20px;">
+                Your image is being generated on our servers right now. This typically takes <strong>30-90 seconds</strong>.
             </div>
-            <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 13px;">
-                💡 <strong>Tip:</strong> Bookmark this page to check back later
+            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 10px; margin-bottom: 20px; border-left: 3px solid #4ade80;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">⏱️ What to do:</div>
+                <div style="font-size: 14px; opacity: 0.9; line-height: 1.6;">
+                    1. Wait <strong>1 minute</strong><br>
+                    2. Tap the button below to refresh<br>
+                    3. Your image will appear automatically
+                </div>
+            </div>
+            <button onclick="window.location.reload()" style="
+                width: 100%;
+                padding: 16px 24px;
+                background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+                color: #000000;
+                border: none;
+                border-radius: 14px;
+                font-size: 16px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                letter-spacing: -0.01em;
+            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.25)'" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)'">
+                🔄 Refresh to View Your Image
+            </button>
+            <div style="margin-top: 16px; font-size: 13px; opacity: 0.7; text-align: center;">
+                💡 <strong>Pro tip:</strong> Bookmark this page to check back later
             </div>
         `;
         statusDiv.style.display = 'block';
         
-        // Start polling for result every 10 seconds
-        let pollAttempts = 0;
-        const maxPollAttempts = 18; // 18 × 10s = 3 minutes
-        
-        const pollInterval = setInterval(async () => {
-            pollAttempts++;
-            console.log(`🔄 Polling attempt ${pollAttempts}/${maxPollAttempts}...`);
-            
-            try {
-                // Try to fetch latest generation from backend
-                const pollResponse = await fetch(`${GET_CREDITS_URL}?email=${encodeURIComponent(userEmail)}&latest=true`, {
-                    method: 'GET',
-                    cache: 'no-cache'
-                });
-                
-                if (pollResponse.ok) {
-                    const pollData = await pollResponse.json();
-                    
-                    // Check if there's a new image generated
-                    if (pollData.latestImage && pollData.latestImage !== generatedImageUrl) {
-                        console.log('✅ Found generated image:', pollData.latestImage);
-                        clearInterval(pollInterval);
-                        
-                        // Hide progress and status
-                        progressContainer.style.opacity = '0';
-                        setTimeout(() => progressContainer.remove(), 300);
-                        statusDiv.style.display = 'none';
-                        
-                        // Display the result (reuse existing code)
-                        generatedImageUrl = pollData.latestImage;
-                        await fetchAndDisplayCredits(); // Refresh credits
-                        
-                        // Show success toast
-                        const toast = document.createElement('div');
-                        toast.className = 'toast-notification';
-                        toast.innerHTML = `
-                            <div class="toast-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </div>
-                            <span>Image ready!</span>
-                        `;
-                        document.body.appendChild(toast);
-                        setTimeout(() => {
-                            toast.classList.add('fade-out');
-                            setTimeout(() => toast.remove(), 500);
-                        }, 3500);
-                        
-                        // Display result (copy your existing result display code here)
-                        subtitle.textContent = 'Complete, view your image below';
-                        const resultContainer = document.createElement('div');
-                        resultContainer.id = 'resultContainer';
-                        // ... [rest of your result display code] ...
-                        document.querySelector('.container').classList.add('has-result');
-                        document.querySelector('.container').appendChild(resultContainer);
-                        
-                        return;
-                    }
-                }
-            } catch (pollError) {
-                console.log('❌ Poll failed:', pollError.message);
-            }
-            
-            // Stop polling after max attempts
-            if (pollAttempts >= maxPollAttempts) {
-                clearInterval(pollInterval);
-                console.log('⏱️ Polling timeout reached');
-                
-                statusDiv.className = 'status';
-                statusDiv.style.background = 'rgba(255, 193, 7, 0.12)';
-                statusDiv.style.color = '#ffc107';
-                statusDiv.style.border = '1px solid rgba(255, 193, 7, 0.25)';
-                statusDiv.innerHTML = `
-                    <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">
-                        ⏰ Generation taking longer than expected
-                    </div>
-                    <div style="font-size: 14px; opacity: 0.9;">
-                        Please check your email or refresh this page in a few minutes.
-                    </div>
-                `;
-                
+        // Hide progress after 60 seconds
+        setTimeout(() => {
+            if (progressContainer) {
                 progressContainer.style.opacity = '0';
                 setTimeout(() => progressContainer.remove(), 300);
             }
-        }, 10000); // Poll every 10 seconds
+        }, 60000);
         
     } else if (error.name === 'AbortError') {
-        // Your 5-minute timeout was reached
+        // 5-minute timeout reached
         progressContainer.remove();
         
         backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
