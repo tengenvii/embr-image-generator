@@ -1439,12 +1439,16 @@ body.result-locked {
   }
 
   .header h1 {
-    font-size: clamp(18px, 4.8vw, 28px);
-    letter-spacing: -0.6px;
+    font-size: clamp(15px, 4vw, 28px) !important;
+    letter-spacing: -1px !important;
+    word-spacing: -0.2em !important;
+    line-height: 1.1 !important;
 }
-    
-    .subtitle {
-    font-size: clamp(12px, 3vw, 17px);
+
+.subtitle {
+    font-size: clamp(10px, 2.5vw, 17px) !important;
+    letter-spacing: -0.05em !important;
+    line-height: 1.3 !important;
 }
   
   .subtitle.screen-2 {
@@ -1535,13 +1539,6 @@ body.result-locked {
     min-height: 80px !important;
   }
 }
-
-            .header h1 {
-        font-size: 28px;
-    }
-    .subtitle {
-        font-size: 17px;
-    }
   
   .subtitle.screen-2 {
     max-width: 100%;
