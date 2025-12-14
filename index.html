@@ -2928,29 +2928,66 @@ btnGenerate.addEventListener('click', async () => {
   formData.append('Image Prompt', promptTextarea.value);
   // Compress images on mobile before sending
 if (isMobile && selectedFiles.length > 0) {
-    console.log('📱 Mobile detected - compressing images before upload');
+    // Detect if device is older/low-memory (iPhone 11 and earlier)
+    const isOldDevice = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || 
+                        (navigator.deviceMemory && navigator.deviceMemory <= 4);
+    
+    const maxWidth = isOldDevice ? 800 : 1200; // Smaller for old devices
+    const quality = isOldDevice ? 0.75 : 0.85;  // Lower quality = less memory
+    
+    console.log(`📱 Mobile detected - compressing images (maxWidth: ${maxWidth}, quality: ${quality}, oldDevice: ${isOldDevice})`);
     
     for (const file of selectedFiles) {
         try {
-            const compressed = await new Promise((resolve) => {
+            const compressed = await new Promise((resolve, reject) => { // ← ADD reject
                 const reader = new FileReader();
+                
+                // ADD: Error handler
+                reader.onerror = () => {
+                    console.warn('FileReader error for', file.name);
+                    reject(new Error('FileReader failed'));
+                };
+                
                 reader.onload = (e) => {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const maxWidth = 1200; // Larger than credit pack (was 800)
-                        const scale = maxWidth / img.width;
+                        const scale = maxWidth / img.width; // Use variable
                         canvas.width = maxWidth;
                         canvas.height = img.height * scale;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        canvas.toBlob(resolve, 'image/jpeg', 0.85); // 85% quality
+                                                // ADD: toBlob timeout
+                        let blobResolved = false;
+                        const blobTimeout = setTimeout(() => {
+                            if (!blobResolved) {
+                                reject(new Error('toBlob timeout'));
+                            }
+                        }, 5000);
+                        
+                        canvas.toBlob((blob) => {
+                            blobResolved = true;
+                            clearTimeout(blobTimeout);
+                            
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('toBlob returned null'));
+                            }
+                        }, 'image/jpeg', quality); // ← Use variable quality
                     };
-                    img.onerror = () => resolve(file); // Fallback to original
+                    img.onerror = () => reject(new Error('Image load failed'));
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
-            });
+                
+                                }),
+                
+                // Overall 15-second timeout
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Compression timeout')), 15000)
+                )
+            ]);
             
             const compressedFile = new File([compressed], file.name, { 
                 type: 'image/jpeg',
@@ -2971,6 +3008,7 @@ if (isMobile && selectedFiles.length > 0) {
         
         let progress = 0;
 let progressInterval;
+
 // Dynamic time based on number of images
 // Text-only: 50s
 // With images: 72s for first image (1.2min) + 25s for each additional
@@ -2978,33 +3016,44 @@ let estimatedTime;
 if (selectedFiles.length === 0) {
     estimatedTime = 50; // Text-only: 50 seconds
 } else if (selectedFiles.length === 1) {
-    estimatedTime = 72; // 1 image: 1.2 minutes (72 seconds)
+    estimatedTime = 72; // 1 image: 1.2 minutes = 72 seconds
 } else {
-    estimatedTime = 72 + ((selectedFiles.length - 1) * 25); // First image 72s + 25s per additional
+    estimatedTime = 72 + (selectedFiles.length - 1) * 25; // First image 72s + 25s per additional
 }
+
+// Detect old devices for aggressive timeout
+const isOldDevice = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+                    (navigator.deviceMemory && navigator.deviceMemory <= 4);
+
+const fetchTimeout = isOldDevice 
+    ? 15 * 1000  // 15 seconds for iPhone 11 and older - show friendly message fast
+    : (isMobile ? 30 * 1000 : estimatedTime * 1.5 * 1000);
+
+console.log(`⏱️ Setting fetch timeout to ${fetchTimeout / 1000}s (${isOldDevice ? 'old device' : 'modern device'})`);
+
 let elapsedTime = 0;
 let isComplete = false;
+
+const startProgress = () => {
+    progressInterval = setInterval(() => {
+        if (isComplete) return;
         
-        const startProgress = () => {
-            progressInterval = setInterval(() => {
-                if (isComplete) return;
-                
-                elapsedTime += 0.1;
-                
-                if (progress < 90) {
-                    progress += (90 / (estimatedTime * 10));
-                } else if (progress < 95) {
-                    progress += 0.02;
-                }
-                
-                progress = Math.min(progress, 95);
-                updateProgress(progress, elapsedTime, estimatedTime);
-            }, 100);
-        };
+        elapsedTime += 0.1;
         
-        const finishProgress = () => {
-            isComplete = true;
-            clearInterval(progressInterval);
+        if (progress < 90) {
+            progress += (90 / (estimatedTime * 10));
+        } else if (progress < 95) {
+            progress += 0.02;
+        }
+        
+        progress = Math.min(progress, 95);
+        updateProgress(progress, elapsedTime, estimatedTime);
+    }, 100);
+};
+
+const finishProgress = () => {
+    isComplete = true;
+    clearInterval(progressInterval);
             
             let finalProgress = progress;
             const speedUp = setInterval(() => {
@@ -3251,35 +3300,58 @@ document.querySelector('.container').classList.add('has-result');
 document.querySelector('.container').appendChild(resultContainer);
             }, 800);
             
-        } catch (error) {
-    console.error('❌ FETCH ERROR:', error);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    
-    clearTimeout(timeoutId);
-    isComplete = true;
-    clearInterval(progressInterval);
-    progressContainer.remove();
-    
-    // Remove spacing class on error
-    document.querySelector('.container').classList.remove('has-result');
-    
-    backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
-            photoPreviewSection.style.display = 'block';
-            promptSection.style.display = 'block';
-            generateSection.style.display = 'block';
+            } catch (error) {
+        console.error('❌ FETCH ERROR:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        
+        clearTimeout(timeoutId);
+        
+        isComplete = true;
+        clearInterval(progressInterval);
+        progressContainer.remove();
+        
+        // Remove spacing class on error
+        document.querySelector('.container').classList.remove('has-result');
+        
+        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+        photoPreviewSection.style.display = 'block';
+        promptSection.style.display = 'block';
+        generateSection.style.display = 'block';
+        subtitle.textContent = 'Next describe your vision to bring it to life';
+        
+        // ===== FIXED: Catch both AbortError AND TypeError: Load failed =====
+        let errorMessage = error.message;
+        let isBackendTimeout = false;
+        
+        if (error.name === 'AbortError' || 
+            (error.name === 'TypeError' && error.message.includes('Load failed'))) {
             
-            subtitle.textContent = 'Next describe your vision to bring it to life';
-            
-            let errorMessage = error.message;
-            if (error.name === 'AbortError') {
-                errorMessage = 'Request took too long. Try with fewer images or try again.';
-            }
-            
+            errorMessage = 'Request took too long';
+            isBackendTimeout = true;
+            console.log('🔥 Network timeout detected - backend may still be processing');
+        }
+        
+        // Show appropriate error message
+        if (isMobile && isBackendTimeout) {
+            // Mobile timeout - backend may still be working
+            statusDiv.className = 'status';
+            statusDiv.style.background = 'rgba(74, 222, 128, 0.12)';
+            statusDiv.style.color = '#4ade80';
+            statusDiv.style.border = '1px solid rgba(74, 222, 128, 0.25)';
+            statusDiv.innerHTML = `
+                <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">⏳ Processing in Background</div>
+                <div style="font-size: 13px; opacity: 0.8; line-height: 1.5;">
+                    Your image is being generated and will be emailed to <strong>${userEmail}</strong> in 2-3 minutes.
+                </div>
+            `;
+        } else {
+            // Normal error
             statusDiv.className = 'status error';
-            statusDiv.textContent = `✗ ${errorMessage}`;
-            statusDiv.style.display = 'block';
+            statusDiv.textContent = errorMessage;
+        }
+        
+        statusDiv.style.display = 'block';
         } finally {
             btnGenerate.disabled = false;
             btnGenerate.textContent = 'Generate Image';
