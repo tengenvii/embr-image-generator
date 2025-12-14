@@ -3232,12 +3232,11 @@ btnGenerate.addEventListener('click', async () => {
             
         }, 800);
         
-    } catch (error) {
+        } catch (error) {
         console.error('❌ FETCH ERROR:', error);
         console.error('Error name:', error.name);
         console.error('Error message:', error.message);
         
-        // ===== FIXED: Clear timeout on error =====
         clearTimeout(timeoutId);
         
         isComplete = true;
@@ -3254,13 +3253,18 @@ btnGenerate.addEventListener('click', async () => {
         generateSection.style.display = 'block';
         subtitle.textContent = 'Next describe your vision to bring it to life';
         
-        // ===== FIXED: Better error detection for mobile =====
+        // ===== FIXED: Catch both AbortError AND "Load failed" TypeError =====
         let errorMessage = error.message;
         let isBackendTimeout = false;
         
-        if (error.name === 'AbortError') {
-            errorMessage = 'Request took too long. This often means the backend is still processing.';
+        // Check for timeout/network failure
+        if (error.name === 'AbortError' || 
+            (error.name === 'TypeError' && error.message.includes('Load failed'))) {
+            
+            errorMessage = 'Request took too long';
             isBackendTimeout = true;
+            
+            console.log('🔥 Network timeout detected - backend may still be processing');
         }
         
         // Show appropriate error message
