@@ -3041,9 +3041,15 @@ const fetchOptions = {
 try {
     console.log('🚀 Starting fetch to:', WEBHOOK_URL);
     console.log('📦 FormData size:', selectedFiles.length, 'images');
+    console.log('📋 Fetch options:', JSON.stringify({
+        method: fetchOptions.method,
+        keepalive: fetchOptions.keepalive,
+        mode: fetchOptions.mode,
+        credentials: fetchOptions.credentials
+    }));
     
-    const response = await fetch(WEBHOOK_URL, fetchOptions);  // ✅ NOW USING fetchOptions
-    
+    console.log('⏳ Initiating fetch request...');
+    const response = await fetch(WEBHOOK_URL, fetchOptions);
     console.log('✅ Response received:', response.status);
 
 const responseText = await response.text();
@@ -3064,8 +3070,8 @@ if (data.error) {
     const progressTitle = progressContainer.querySelector('div:first-child');
     if (progressTitle) {
         progressTitle.innerHTML = `
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                ircle cx="12" cy="12" r="10" stroke="rgba(239,68,68,0.8)" stroke-width="2"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        ircle cx="12" cy="12" r="10" stroke="rgba(239,68,68,0.8)" stroke-width="2"/>
                 <path d="M10 8v8M14 8v8" stroke="rgba(239,68,68,0.8)"/>
             </svg>
             <span style="color: #f87171;">Paused - Insufficient Credits</span>
@@ -3285,8 +3291,8 @@ document.querySelector('.container').appendChild(resultContainer);
         const progressTitle = progressContainer.querySelector('div:first-child');
         if (progressTitle) {
             progressTitle.innerHTML = `
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    ircle cx="12" cy="12" r="10" stroke="#4ade80"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        ircle cx="12" cy="12" r="10" stroke="#4ade80"/>
                     <path d="M12 6v6l4 2" stroke="#4ade80"/>
                 </svg>
                 <span style="color: #4ade80;">Processing remotely...</span>
