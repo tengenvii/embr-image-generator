@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>EMBR Image Generator</title>
@@ -2926,48 +2924,8 @@ btnGenerate.addEventListener('click', async () => {
   const formData = new FormData();
   formData.append('email', userEmail);
   formData.append('Image Prompt', promptTextarea.value);
-  // Compress images on mobile before sending
-if (isMobile && selectedFiles.length > 0) {
-    console.log('📱 Mobile detected - compressing images before upload');
-    
-    for (const file of selectedFiles) {
-        try {
-            const compressed = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const maxWidth = 1200; // Larger than credit pack (was 800)
-                        const scale = maxWidth / img.width;
-                        canvas.width = maxWidth;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        canvas.toBlob(resolve, 'image/jpeg', 0.85); // 85% quality
-                    };
-                    img.onerror = () => resolve(file); // Fallback to original
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-            
-            const compressedFile = new File([compressed], file.name, { 
-                type: 'image/jpeg',
-                lastModified: Date.now()
-            });
-            
-            console.log(`✅ Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
-            formData.append('Image', compressedFile);
-        } catch (err) {
-            console.warn('Compression failed, using original:', err);
-            formData.append('Image', file);
-        }
-    }
-} else {
-    // Desktop - no compression needed
-    selectedFiles.forEach(file => formData.append('Image', file));
-}
+  selectedFiles.forEach(file => {
+    formData.append('Image', file);
   });
         
         let progress = 0;
