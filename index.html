@@ -246,35 +246,14 @@ body.result-locked {
         }
 
         .header h1 {
-    font-size: clamp(18px, 4vw, 32px);  /* ✅ REDUCED minimum from 22px to 18px */
+    font-size: clamp(20px, 5vw, 32px);
     font-weight: 700;
     color: #ffffff;
     margin-bottom: 16px;
-    letter-spacing: -0.8px;  /* ✅ TIGHTER spacing */
-    line-height: 1.1;  /* ✅ REDUCED from 1.2 to 1.1 */
+    letter-spacing: -0.5px;
+    line-height: 1.2;
     text-align: center;
-    word-spacing: -0.1em;  /* ✅ ADDED to reduce space between words */
-}
-
-.subtitle {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: clamp(11px, 2.8vw, 18px);  /* ✅ REDUCED minimum from 14px to 11px */
-    font-weight: 400;
-    line-height: 1.4;  /* ✅ REDUCED from 1.5 to 1.4 */
-    letter-spacing: -0.02em;  /* ✅ TIGHTER spacing (was 0.01em) */
-    text-align: center;
-}
-
-/* Mobile specific */
-@media (max-width: 768px) {
-    .header h1 {
-        font-size: clamp(20px, 5vw, 28px);
-        letter-spacing: -0.6px;
-    }
-    
-    .subtitle {
-        font-size: clamp(13px, 3.2vw, 17px);
-    }
+    max-width: 100%;
 }
 
         /* Progress Steps Indicator */
