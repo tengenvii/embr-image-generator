@@ -2884,229 +2884,411 @@ setTimeout(() => {
   }
 }
     
-   // Generate Image Button
+   // ===== MOBILE-OPTIMIZED FETCH SETUP =====
 btnGenerate.addEventListener('click', async () => {
-  // UPDATE PROGRESS TO STEP 3
-  updateProgressStep(3);
-  
-  // Get user email
-  let userEmail;
-  try {
-    userEmail = await getUserEmail();
-  } catch (error) {
-    return; // User cancelled
-  }
-  
-  if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
-            statusDiv.className = 'status error';
-            statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
-            statusDiv.style.display = 'block';
-            return;
+    updateProgressStep(3);
+    
+    // Get user email
+    let userEmail;
+    try {
+        userEmail = await getUserEmail();
+    } catch (error) {
+        return; // User cancelled
+    }
+    
+    // Webhook validation
+    if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = 'ERROR: Please update WEBHOOK_URL in the code';
+        statusDiv.style.display = 'block';
+        return;
+    }
+    
+    // Disable button
+    btnGenerate.disabled = true;
+    btnGenerate.textContent = 'Generating...';
+    statusDiv.style.display = 'none';
+    
+    // Hide sections
+    backButton.style.display = 'none';
+    photoPreviewSection.style.display = 'none';
+    promptSection.style.display = 'none';
+    generateSection.style.display = 'none';
+    
+    // Update subtitle
+    subtitle.textContent = 'Please wait, it will be done shortly...';
+    subtitle.classList.add('screen-2');
+    
+    // Create progress indicator
+    const progressContainer = createProgressIndicator();
+    document.querySelector('.container').appendChild(progressContainer);
+    
+    // Build FormData
+    const formData = new FormData();
+    formData.append('email', userEmail);
+    formData.append('Image Prompt', promptTextarea.value);
+    
+    // ===== IMPROVED IMAGE COMPRESSION WITH TIMEOUT =====
+    if (isMobile && selectedFiles.length > 0) {
+        console.log('📱 Mobile detected - compressing images');
+        
+        for (const file of selectedFiles) {
+            try {
+                // Add 15-second timeout per image
+                const compressed = await Promise.race([
+                    new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        
+                        // ADD: FileReader error handler
+                        reader.onerror = () => {
+                            console.warn('FileReader error for', file.name);
+                            reject(new Error('FileReader failed'));
+                        };
+                        
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            
+                            img.onload = () => {
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    const maxWidth = 1200;
+                                    const scale = maxWidth / img.width;
+                                    canvas.width = maxWidth;
+                                    canvas.height = img.height * scale;
+                                    
+                                    const ctx = canvas.getContext('2d');
+                                    if (!ctx) {
+                                        reject(new Error('Canvas context failed'));
+                                        return;
+                                    }
+                                    
+                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    
+                                    // ADD: toBlob timeout (5 seconds)
+                                    let blobResolved = false;
+                                    const blobTimeout = setTimeout(() => {
+                                        if (!blobResolved) {
+                                            reject(new Error('toBlob timeout'));
+                                        }
+                                    }, 5000);
+                                    
+                                    canvas.toBlob((blob) => {
+                                        blobResolved = true;
+                                        clearTimeout(blobTimeout);
+                                        
+                                        if (blob) {
+                                            resolve(blob);
+                                        } else {
+                                            reject(new Error('toBlob returned null'));
+                                        }
+                                    }, 'image/jpeg', 0.85);
+                                    
+                                } catch (canvasError) {
+                                    reject(canvasError);
+                                }
+                            };
+                            
+                            img.onerror = () => {
+                                reject(new Error('Image load failed'));
+                            };
+                            
+                            img.src = e.target.result;
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }),
+                    
+                    // Overall 15-second timeout
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Compression timeout')), 15000)
+                    )
+                ]);
+                
+                const compressedFile = new File([compressed], file.name, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+                
+                console.log(`✅ Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+                formData.append('Image', compressedFile);
+                
+            } catch (err) {
+                console.warn(`⚠️ Compression failed for ${file.name}:`, err.message, '- using original');
+                formData.append('Image', file);
+            }
+        }
+    } else {
+        // Desktop - no compression
+        selectedFiles.forEach(file => formData.append('Image', file));
+    }
+    
+    // ===== IMPROVED FETCH WITH PROPER TIMEOUT HANDLING =====
+    let progress = 0;
+    let progressInterval;
+    
+    // Dynamic timeout based on image count
+    const estimatedTime = selectedFiles.length === 0 
+        ? 50  // Text-only: 50s
+        : 72 + (selectedFiles.length - 1) * 25; // First image 72s, +25s each
+    
+    const fetchTimeout = estimatedTime * 1.5 * 1000; // 1.5x safety margin in ms
+    console.log(`⏱️ Setting fetch timeout to ${fetchTimeout / 1000}s`);
+    
+    let elapsedTime = 0;
+    let isComplete = false;
+    
+    const startProgress = () => {
+        progressInterval = setInterval(() => {
+            if (isComplete) return;
+            
+            elapsedTime += 0.1;
+            
+            // Slower progress ramp
+            if (progress < 90) {
+                progress += 90 / estimatedTime / 10;
+            } else if (progress < 95) {
+                progress += 0.02;
+            }
+            
+            progress = Math.min(progress, 95);
+            updateProgress(progress, elapsedTime, estimatedTime);
+        }, 100);
+    };
+    
+    const finishProgress = () => {
+        isComplete = true;
+        clearInterval(progressInterval);
+        
+        let finalProgress = progress;
+        const speedUp = setInterval(() => {
+            finalProgress += 3;
+            if (finalProgress >= 100) {
+                finalProgress = 100;
+                clearInterval(speedUp);
+                updateProgress(100, elapsedTime, estimatedTime);
+                
+                setTimeout(() => {
+                    progressContainer.style.opacity = '0';
+                    setTimeout(() => progressContainer.remove(), 300);
+                }, 500);
+            } else {
+                updateProgress(finalProgress, elapsedTime, estimatedTime);
+            }
+        }, 30);
+    };
+    
+    startProgress();
+    
+    // ===== FIXED: Proper AbortController cleanup =====
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        console.warn('⏱️ Fetch timeout reached');
+        controller.abort();
+    }, fetchTimeout);
+    
+    // ===== FIXED: Remove keepalive (doesn't work with large bodies) =====
+    const fetchOptions = {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+        // REMOVED: keepalive: true (doesn't work with >64KB bodies)
+        mode: 'cors',
+        credentials: 'omit'
+    };
+    
+    try {
+        console.log('🚀 Starting fetch to', WEBHOOK_URL);
+        const response = await fetch(WEBHOOK_URL, fetchOptions);
+        
+        // ===== FIXED: Clear timeout on success =====
+        clearTimeout(timeoutId);
+        
+        console.log('✅ Response received:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
         }
         
-        btnGenerate.disabled = true;
-        btnGenerate.textContent = 'Generating...';
-        statusDiv.style.display = 'none';
-        
-        // Hide sections
-        backButton.style.display = 'none';
-        photoPreviewSection.style.display = 'none';
-        promptSection.style.display = 'none';
-        generateSection.style.display = 'none';
-        
-        // Update subtitle during generation
-        subtitle.textContent = 'Please wait, it will be done shortly...';
-        subtitle.classList.add('screen-2');
-        
-        // Create progress indicator
-        const progressContainer = createProgressIndicator();
-        document.querySelector('.container').appendChild(progressContainer);
-        
-          // Build FormData
-  const formData = new FormData();
-  formData.append('email', userEmail);
-  formData.append('Image Prompt', promptTextarea.value);
-  // Compress images on mobile before sending
-if (isMobile && selectedFiles.length > 0) {
-    console.log('📱 Mobile detected - compressing images before upload');
-    
-    for (const file of selectedFiles) {
+        const responseText = await response.text();
+        let data;
         try {
-            const compressed = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const maxWidth = 1200; // Larger than credit pack (was 800)
-                        const scale = maxWidth / img.width;
-                        canvas.width = maxWidth;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        canvas.toBlob(resolve, 'image/jpeg', 0.85); // 85% quality
-                    };
-                    img.onerror = () => resolve(file); // Fallback to original
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-            
-            const compressedFile = new File([compressed], file.name, { 
-                type: 'image/jpeg',
-                lastModified: Date.now()
-            });
-            
-            console.log(`✅ Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
-            formData.append('Image', compressedFile);
-        } catch (err) {
-            console.warn('Compression failed, using original:', err);
-            formData.append('Image', file);
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            throw new Error('Invalid response from server');
         }
-    }
-} else {
-    // Desktop - no compression needed
-    selectedFiles.forEach(file => formData.append('Image', file));
-}
         
-        let progress = 0;
-let progressInterval;
-// Dynamic time based on number of images
-// Text-only: 50s
-// With images: 72s for first image (1.2min) + 25s for each additional
-let estimatedTime;
-if (selectedFiles.length === 0) {
-    estimatedTime = 50; // Text-only: 50 seconds
-} else if (selectedFiles.length === 1) {
-    estimatedTime = 72; // 1 image: 1.2 minutes (72 seconds)
-} else {
-    estimatedTime = 72 + ((selectedFiles.length - 1) * 25); // First image 72s + 25s per additional
-}
-let elapsedTime = 0;
-let isComplete = false;
+        if (!data || !data.imageUrl) {
+            throw new Error('No image URL in response');
+        }
         
-        const startProgress = () => {
-            progressInterval = setInterval(() => {
-                if (isComplete) return;
-                
-                elapsedTime += 0.1;
-                
-                if (progress < 90) {
-                    progress += (90 / (estimatedTime * 10));
-                } else if (progress < 95) {
-                    progress += 0.02;
-                }
-                
-                progress = Math.min(progress, 95);
-                updateProgress(progress, elapsedTime, estimatedTime);
-            }, 100);
-        };
+        generatedImageUrl = data.imageUrl;
         
-        const finishProgress = () => {
-            isComplete = true;
-            clearInterval(progressInterval);
+        // Refresh credits
+        await fetchAndDisplayCredits();
+        
+        finishProgress();
+        
+        // Show success toast
+        setTimeout(() => {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            const isMobileToast = window.innerWidth <= 768;
+            const toastText = isMobileToast ? 'Image ready!' : 'Image generated successfully!';
             
-            let finalProgress = progress;
-            const speedUp = setInterval(() => {
-                finalProgress += 3;
-                if (finalProgress >= 100) {
-                    finalProgress = 100;
-                    clearInterval(speedUp);
-                    updateProgress(100, elapsedTime, estimatedTime);
-                    setTimeout(() => {
-                        progressContainer.style.opacity = '0';
-                        setTimeout(() => progressContainer.remove(), 300);
-                    }, 500);
-                } else {
-                    updateProgress(finalProgress, elapsedTime, estimatedTime);
-                }
-            }, 30);
-        };
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <span>${toastText}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+            
+            // Display result
+            const resultContainer = document.createElement('div');
+            resultContainer.id = 'resultContainer';
+            resultContainer.style.cssText = `
+                margin-top: 24px;
+                animation: slideUp 0.5s ease;
+            `;
+            
+            const title = document.createElement('div');
+            title.style.cssText = `
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 24px;
+                font-weight: 700;
+                margin-bottom: 16px;
+                text-align: center;
+            `;
+            title.textContent = 'Your Reality';
+            resultContainer.appendChild(title);
+            
+            const imageWrapper = document.createElement('div');
+            imageWrapper.style.cssText = `
+                border-radius: 12px;
+                overflow: hidden;
+                margin-bottom: 16px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            `;
+            
+            const img = document.createElement('img');
+            img.src = data.imageUrl;
+            img.alt = 'Generated image';
+            img.style.cssText = `
+                display: block;
+                max-width: 100%;
+                max-height: 350px;
+                object-fit: contain;
+                cursor: pointer;
+            `;
+            
+            imageWrapper.appendChild(img);
+            imageWrapper.addEventListener('click', () => {
+                modalImage.src = data.imageUrl;
+                modal.classList.add('active');
+            });
+            
+            resultContainer.appendChild(imageWrapper);
+            
+            // Action buttons
+            const buttonRow = document.createElement('div');
+            buttonRow.className = 'result-actions';
+            
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn-edit';
+            editBtn.textContent = 'Edit';
+            editBtn.onclick = () => editImage(data.imageUrl);
+            
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn-download';
+            saveBtn.textContent = isMobile ? 'Save Image' : 'Download';
+            saveBtn.onclick = () => saveImageSmart(data.imageUrl, 'embr-generated-image.png');
+            
+            const newBtn = document.createElement('button');
+            newBtn.className = 'btn-new';
+            newBtn.textContent = 'Create New';
+            newBtn.onclick = () => {
+                updateProgressStep(1);
+                setTimeout(() => location.reload(), 100);
+            };
+            
+            buttonRow.appendChild(editBtn);
+            buttonRow.appendChild(saveBtn);
+            buttonRow.appendChild(newBtn);
+            resultContainer.appendChild(buttonRow);
+            
+            document.querySelector('.container').classList.add('has-result');
+            document.querySelector('.container').appendChild(resultContainer);
+            
+            // Lock body scroll
+            document.body.classList.add('result-locked');
+            
+        }, 800);
         
-        startProgress();
+    } catch (error) {
+        console.error('❌ FETCH ERROR:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
         
-        const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes
-
-// Add keepalive to prevent early termination
-const fetchOptions = {
-    method: 'POST',
-    body: formData,
-    signal: controller.signal,
-    keepalive: true, // ✅ Prevents browser from killing request
-    mode: 'cors',
-    credentials: 'omit'
-};
-
-try {
-    console.log('🚀 Starting fetch to:', WEBHOOK_URL);
-    console.log('📦 FormData size:', selectedFiles.length, 'images');
-    console.log('📋 Fetch options:', JSON.stringify({
-        method: fetchOptions.method,
-        keepalive: fetchOptions.keepalive,
-        mode: fetchOptions.mode,
-        credentials: fetchOptions.credentials
-    }));
-    
-    console.log('⏳ Initiating fetch request...');
-    const response = await fetch(WEBHOOK_URL, fetchOptions);
-    console.log('✅ Response received:', response.status);
-
-const responseText = await response.text();
-let data;
-try {
-    data = JSON.parse(responseText);
-} catch (parseError) {
-    throw new Error('Invalid response from server');
-}
-
-// Check for error in the JSON body (insufficient credits)
-if (data.error) {
-    // Stop the progress animation
-    isComplete = true;
-    clearInterval(progressInterval);
-    
-    // Update progress to paused state and keep it visible
-    const progressTitle = progressContainer.querySelector('div:first-child');
-    if (progressTitle) {
-        progressTitle.innerHTML = `
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        ircle cx="12" cy="12" r="10" stroke="rgba(239,68,68,0.8)" stroke-width="2"/>
-                <path d="M10 8v8M14 8v8" stroke="rgba(239,68,68,0.8)"/>
-            </svg>
-            <span style="color: #f87171;">Paused - Insufficient Credits</span>
-        `;
+        // ===== FIXED: Clear timeout on error =====
+        clearTimeout(timeoutId);
+        
+        isComplete = true;
+        clearInterval(progressInterval);
+        progressContainer.remove();
+        
+        // Remove spacing class on error
+        document.querySelector('.container').classList.remove('has-result');
+        
+        // Restore UI
+        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+        photoPreviewSection.style.display = 'block';
+        promptSection.style.display = 'block';
+        generateSection.style.display = 'block';
+        subtitle.textContent = 'Next describe your vision to bring it to life';
+        
+        // ===== FIXED: Better error detection for mobile =====
+        let errorMessage = error.message;
+        let isBackendTimeout = false;
+        
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request took too long. This often means the backend is still processing.';
+            isBackendTimeout = true;
+        }
+        
+        // Show appropriate error message
+        if (isMobile && isBackendTimeout) {
+            // Mobile timeout - backend may still be working
+            statusDiv.className = 'status';
+            statusDiv.style.background = 'rgba(74, 222, 128, 0.12)';
+            statusDiv.style.color = '#4ade80';
+            statusDiv.style.border = '1px solid rgba(74, 222, 128, 0.25)';
+            statusDiv.innerHTML = `
+                <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">⏳ Still Processing</div>
+                <div style="font-size: 13px; opacity: 0.8;">
+                    Your image is being generated. Check your email in a few minutes or try refreshing this page.
+                </div>
+            `;
+        } else {
+            // Normal error
+            statusDiv.className = 'status error';
+            statusDiv.textContent = errorMessage;
+        }
+        
+        statusDiv.style.display = 'block';
+        
+    } finally {
+        btnGenerate.disabled = false;
+        btnGenerate.textContent = 'Generate Image';
     }
-  
-  // Keep progress bar visible permanently (don't fade it out)
-  
-  // HIDE EVERYTHING - create clean slate
-  backButton.style.display = 'none';
-  photoPreviewSection.style.display = 'none';
-  promptSection.style.display = 'none';
-  generateSection.style.display = 'none';
-  
-  // Update subtitle to be action-oriented
-  subtitle.textContent = 'Purchase credits to continue creating';
-  subtitle.classList.add('screen-2');
-  
-  // Show focused error with prominent Buy Credits CTA
-  statusDiv.className = 'status error';
-  statusDiv.innerHTML = `
-    <div style="font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5;">
-      ${data.message || 'You have 0 credits remaining.'}
-    </div>
-    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
-      style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
-      Buy Credits →
-    </button>
-  `;
-  statusDiv.style.display = 'block';
-  statusDiv.style.marginTop = '32px'; // More breathing room
-  
-  // Re-enable button so user can retry after purchase
-  btnGenerate.disabled = false;
-  btnGenerate.textContent = 'Generate Image';
+});
   
   return; // Stop execution
 }
