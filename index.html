@@ -1746,7 +1746,6 @@ body.result-locked {
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/check-credits-generate';
-const GET_CREDITS_URL = 'https://embrsol.app.n8n.cloud/webhook/get-credits';
 const MAX_IMAGES = 3;
 
 // ===== CURRENCY CONVERSION SYSTEM =====
@@ -2053,9 +2052,6 @@ async function checkAndResumeGeneration() {
     generateSection.classList.add('active');
     checkGenerateButton();
     
-    // Refresh credits first
-    await fetchAndDisplayCredits();
-    
     // Auto-click generate after short delay
     setTimeout(() => {
       console.log('🚀 Auto-triggering generation...');
@@ -2068,25 +2064,6 @@ async function checkAndResumeGeneration() {
   } catch (error) {
     console.error('❌ Failed to restore generation:', error);
     localStorage.removeItem('pendingGeneration');
-  }
-}
-
-// Fetch and display credits
-async function fetchAndDisplayCredits() {
-  try {
-    const email = getStoredEmail();
-    if (!email) return;
-    
-    const response = await fetch(`${GET_CREDITS_URL}?email=${encodeURIComponent(email)}`);
-    const data = await response.json();
-    
-    if (data.credits !== undefined) {
-      document.getElementById('creditCount').textContent = data.credits;
-      document.getElementById('creditBadge').style.display = 'flex';
-      document.getElementById('creditDisplay').classList.add('has-credits'); // Show display
-    }
-  } catch (error) {
-    console.error('Failed to fetch credits:', error);
   }
 }
     
@@ -2754,9 +2731,6 @@ window.addEventListener('load', async () => {
   // Convert currency FIRST (before anything else)
   await initializeCurrency();
   
-  // Then fetch credits
-  await fetchAndDisplayCredits();
-  
   // ✅ CHECK FOR PAYMENT RETURN AND AUTO-RESUME
   await checkAndResumeGeneration();
   
@@ -3111,9 +3085,6 @@ if (!response.ok) {
             }
             
                   generatedImageUrl = data.imageUrl; // Store for edit function
-      
-      // Refresh credit display
-      await fetchAndDisplayCredits();
       
       finishProgress();
             
