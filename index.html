@@ -2728,6 +2728,57 @@ let creditModal, creditModalClose, btnBuyCredits;
 
 // Initialize on page load
 window.addEventListener('load', async () => {
+    // 🔥 CHECK FOR PENDING GENERATION FIRST
+    const pending = localStorage.getItem('pendingGeneration');
+    if (pending) {
+        try {
+            const { timestamp } = JSON.parse(pending);
+            const ageMinutes = (Date.now() - timestamp) / 60000;
+            
+            // If generation started within last 3 minutes, show loading state
+            if (ageMinutes < 3) {
+                console.log('📋 Found recent pending generation, checking status...');
+                
+                // Show brief loading message
+                const loadingMsg = document.createElement('div');
+                loadingMsg.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.95);
+                    padding: 24px 32px;
+                    border-radius: 16px;
+                    color: white;
+                    font-size: 15px;
+                    z-index: 10000;
+                    text-align: center;
+                `;
+                loadingMsg.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 8px;">Checking for your image...</div>
+                    <div style="font-size: 13px; opacity: 0.7;">This may take a moment</div>
+                `;
+                document.body.appendChild(loadingMsg);
+                
+                // Wait 2 seconds to allow any webhook to complete
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Remove loading message
+                loadingMsg.remove();
+                
+                // Clear pending state
+                localStorage.removeItem('pendingGeneration');
+                
+                console.log('✅ Pending check complete, proceeding with normal flow');
+            } else {
+                // Too old, clear it
+                localStorage.removeItem('pendingGeneration');
+            }
+        } catch (e) {
+            console.error('Error checking pending:', e);
+            localStorage.removeItem('pendingGeneration');
+        }
+    }
   // Convert currency FIRST (before anything else)
   await initializeCurrency();
   
@@ -3226,35 +3277,120 @@ document.querySelector('.container').appendChild(resultContainer);
     console.error('❌ FETCH ERROR:', error);
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
     
     clearTimeout(timeoutId);
     isComplete = true;
     clearInterval(progressInterval);
-    progressContainer.remove();
     
     // Remove spacing class on error
     document.querySelector('.container').classList.remove('has-result');
     
-    backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
-            photoPreviewSection.style.display = 'block';
-            promptSection.style.display = 'block';
-            generateSection.style.display = 'block';
-            
-            subtitle.textContent = 'Next describe your vision to bring it to life';
-            
-            let errorMessage = error.message;
-            if (error.name === 'AbortError') {
-                errorMessage = 'Request took too long. Try with fewer images or try again.';
+    // Mobile timeout - backend still processing
+    if (error.message === 'Load failed' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+        console.log('📱 Network timeout - saving pending state');
+        
+        // Save pending generation to localStorage
+        const pendingGen = {
+            email: userEmail,
+            prompt: promptTextarea.value,
+            timestamp: Date.now(),
+            isTextOnly: isTextOnlyMode
+        };
+        localStorage.setItem('pendingGeneration', JSON.stringify(pendingGen));
+        
+        // Hide progress container
+        if (progressContainer && progressContainer.parentNode) {
+            progressContainer.remove();
+        }
+        
+        // Show success message with auto-refresh
+        subtitle.textContent = 'Generation in progress';
+        subtitle.classList.add('screen-2');
+        
+        statusDiv.className = 'status success';
+        statusDiv.innerHTML = `
+            <div style="font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #4ade80;">
+                ✓ Processing Your Image
+            </div>
+            <div style="font-size: 15px; margin-bottom: 18px; line-height: 1.6;">
+                Generation takes about 60 seconds.<br>
+                This page will auto-refresh when ready.
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 10px; font-size: 13px; margin-bottom: 16px;">
+                <strong>Time remaining:</strong> <span id="countdown">60</span>s
+            </div>
+            <button onclick="window.location.reload()" style="
+                width: 100%;
+                padding: 14px;
+                background: rgba(255,255,255,0.1);
+                color: white;
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 12px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-top: 8px;
+            ">
+                Refresh Now
+            </button>
+        `;
+        statusDiv.style.display = 'block';
+        
+        // Start 60-second countdown with auto-refresh
+        let secondsLeft = 60;
+        const countdownInterval = setInterval(() => {
+            secondsLeft--;
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) {
+                countdownEl.textContent = secondsLeft;
             }
             
-            statusDiv.className = 'status error';
-            statusDiv.textContent = `✗ ${errorMessage}`;
-            statusDiv.style.display = 'block';
-        } finally {
-            btnGenerate.disabled = false;
-            btnGenerate.textContent = 'Generate Image';
+            if (secondsLeft <= 0) {
+                clearInterval(countdownInterval);
+                console.log('🔄 Auto-refreshing...');
+                window.location.reload();
+            }
+        }, 1000);
+        
+    } else if (error.name === 'AbortError') {
+        // 5-minute hard timeout
+        if (progressContainer && progressContainer.parentNode) {
+            progressContainer.remove();
         }
+        
+        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+        photoPreviewSection.style.display = 'block';
+        promptSection.style.display = 'block';
+        generateSection.style.display = 'block';
+        
+        subtitle.textContent = 'Next describe your vision to bring it to life';
+        
+        statusDiv.className = 'status error';
+        statusDiv.textContent = 'Request timed out. Please try again.';
+        statusDiv.style.display = 'block';
+        
+    } else {
+        // Real network error
+        if (progressContainer && progressContainer.parentNode) {
+            progressContainer.remove();
+        }
+        
+        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+        photoPreviewSection.style.display = 'block';
+        promptSection.style.display = 'block';
+        generateSection.style.display = 'block';
+        
+        subtitle.textContent = 'Next describe your vision to bring it to life';
+        
+        statusDiv.className = 'status error';
+        statusDiv.textContent = 'Network error. Please try again.';
+        statusDiv.style.display = 'block';
+    }
+    
+} finally {
+    btnGenerate.disabled = false;
+    btnGenerate.textContent = 'Generate Image';
+}
     });
     
     function createProgressIndicator() {
