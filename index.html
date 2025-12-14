@@ -1958,41 +1958,72 @@ function addCurrencyNote() {
   }
 }
 
-// Email Storage Functions
+// Safe storage that never crashes
+const safeStorage = {
+    memory: {}, // Fallback for iOS private mode
+    
+    getItem(key) {
+        try {
+            return localStorage.getItem(key);
+        } catch (e) {
+            console.warn('localStorage read failed, using memory:', e.message);
+            return this.memory[key] || null;
+        }
+    },
+    
+    setItem(key, value) {
+        try {
+            localStorage.setItem(key, value);
+        } catch (e) {
+            console.warn('localStorage write failed, using memory:', e.message);
+            this.memory[key] = value;
+        }
+    },
+    
+    removeItem(key) {
+        try {
+            localStorage.removeItem(key);
+        } catch (e) {
+            console.warn('localStorage delete failed, using memory:', e.message);
+            delete this.memory[key];
+        }
+    }
+};
+
 function getStoredEmail() {
-  return localStorage.getItem('userEmail') || '';
+    return safeStorage.getItem('userEmail');
 }
 
 function setStoredEmail(email) {
-  localStorage.setItem('userEmail', email);
+    safeStorage.setItem('userEmail', email);
 }
 
 function clearStoredEmail() {
-  localStorage.removeItem('userEmail');
+    safeStorage.removeItem('userEmail');
 }
 
-// Get or prompt for user email
 async function getUserEmail() {
-  let email = getStoredEmail();
-  
-  if (!email) {
-    email = prompt('Enter your email to get started with 3 free credits:');
+    let email = getStoredEmail();
     
     if (!email) {
-      throw new Error('Email is required');
+        email = prompt('Enter your email to continue:');
+        
+        if (!email) {
+            console.log('❌ User cancelled email prompt');
+            return null;
+        }
+        
+        if (!email.includes('@')) {
+            alert('Please enter a valid email address');
+            return null;
+        }
+        
+        // Save email (won't crash even if storage fails)
+        setStoredEmail(email);
+        console.log('✅ Email saved:', email);
     }
     
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      alert('Please enter a valid email address');
-      return getUserEmail(); // Retry
-    }
-    
-    setStoredEmail(email);
-  }
-  
-  return email;
+    return email;
 }
 
 // Check for return from payment and auto-resume
