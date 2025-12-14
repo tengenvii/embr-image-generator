@@ -2938,9 +2938,10 @@ if (isMobile && selectedFiles.length > 0) {
     console.log(`📱 Mobile detected - compressing images (maxWidth: ${maxWidth}, quality: ${quality}, oldDevice: ${isOldDevice})`);
     
     for (const file of selectedFiles) {
-        try {
-            const compressed = await new Promise((resolve, reject) => { // ← ADD reject
-                const reader = new FileReader();
+                try {
+            const compressed = await Promise.race([
+                new Promise((resolve, reject) => {
+                    const reader = new FileReader();
                 
                 // ADD: Error handler
                 reader.onerror = () => {
