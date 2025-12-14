@@ -1439,26 +1439,21 @@ body.result-locked {
   }
 
   .header h1 {
-    font-size: clamp(20px, 5.2vw, 32px) !important;  /* More aggressive scaling */
-    letter-spacing: -0.7px !important;  /* Tighter for more space */
-    line-height: 1.1 !important;
-    word-spacing: -0.03em !important;  /* Subtle reduction */
+    font-size: clamp(22px, 6.5vw, 34px) !important;  /* Higher vw = bigger on wide screens */
+    letter-spacing: -0.8px !important;
+    line-height: 1.15 !important;
     max-width: 100% !important;
     padding: 0 6px !important;
-    white-space: nowrap !important;  /* FORCE one line */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;  /* Safety fallback */
+    /* NO white-space: nowrap - let it naturally fit */
 }
 
 .subtitle {
-    font-size: clamp(14px, 3.5vw, 18px) !important;  /* More aggressive scaling */
-    letter-spacing: -0.03em !important;  /* Tighter */
-    line-height: 1.35 !important;
+    font-size: clamp(15px, 4.2vw, 19px) !important;  /* Higher vw = bigger on wide screens */
+    letter-spacing: -0.02em !important;
+    line-height: 1.4 !important;
     max-width: 100% !important;
     padding: 0 6px !important;
-    white-space: nowrap !important;  /* FORCE one line */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;  /* Safety fallback */
+    /* NO white-space: nowrap - let it naturally fit */
 }
   
   .subtitle.screen-2 {
