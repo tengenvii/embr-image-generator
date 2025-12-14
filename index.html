@@ -428,6 +428,39 @@ body.result-locked {
   margin-bottom: 20px;
 }
 
+/* Credit Display */
+.credit-display {
+  display: none; /* Always visible */
+  align-items: center;
+  justify-content: flex-end; /* Right-align button when badge is hidden */
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: transparent; /* Transparent until badge shows */
+  border: none; /* No border until badge shows */
+  border-radius: 12px;
+  animation: slideDown 0.5s ease;
+}
+
+.credit-display.has-credits {
+  display: flex; /* Only show when credits loaded */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between;
+}
+
+.credit-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.credit-badge svg {
+  color: #4ade80;
+}
+
 .btn-buy-credits {
   padding: 8px 16px;
   background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(34, 197, 94, 0.12) 100%);
@@ -1427,7 +1460,7 @@ body.result-locked {
 }
   
   .subtitle.screen-2 {
-    max-width: 100%
+    max-width: 100%;
   }
 
   textarea {
@@ -1606,6 +1639,16 @@ body.result-locked {
             <div class="step-label">Create</div>
         </div>
     </div>
+        
+        <!-- Credit Display -->
+        <div class="credit-display" id="creditDisplay">
+  <div class="credit-badge" id="creditBadge" style="display: none;">
+    <svg>...</svg>
+    <span id="creditCount">-</span> credits
+  </div>
+  <button class="btn-buy-credits" id="btnBuyCredits">Buy Credits</button>
+</div>
+      </div>
 
         <!-- Initial Upload Buttons -->
         <div class="upload-section" id="uploadSection">
@@ -1703,6 +1746,7 @@ body.result-locked {
     
     <script>
     const WEBHOOK_URL = 'https://embrsol.app.n8n.cloud/webhook/check-credits-generate';
+const GET_CREDITS_URL = 'https://embrsol.app.n8n.cloud/webhook/get-credits';
 const MAX_IMAGES = 3;
 
 // ===== CURRENCY CONVERSION SYSTEM =====
@@ -1914,72 +1958,41 @@ function addCurrencyNote() {
   }
 }
 
-// Safe storage that never crashes
-const safeStorage = {
-    memory: {}, // Fallback for iOS private mode
-    
-    getItem(key) {
-        try {
-            return localStorage.getItem(key);
-        } catch (e) {
-            console.warn('localStorage read failed, using memory:', e.message);
-            return this.memory[key] || null;
-        }
-    },
-    
-    setItem(key, value) {
-        try {
-            localStorage.setItem(key, value);
-        } catch (e) {
-            console.warn('localStorage write failed, using memory:', e.message);
-            this.memory[key] = value;
-        }
-    },
-    
-    removeItem(key) {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            console.warn('localStorage delete failed, using memory:', e.message);
-            delete this.memory[key];
-        }
-    }
-};
-
+// Email Storage Functions
 function getStoredEmail() {
-    return safeStorage.getItem('userEmail');
+  return localStorage.getItem('userEmail') || '';
 }
 
 function setStoredEmail(email) {
-    safeStorage.setItem('userEmail', email);
+  localStorage.setItem('userEmail', email);
 }
 
 function clearStoredEmail() {
-    safeStorage.removeItem('userEmail');
+  localStorage.removeItem('userEmail');
 }
 
+// Get or prompt for user email
 async function getUserEmail() {
-    let email = getStoredEmail();
+  let email = getStoredEmail();
+  
+  if (!email) {
+    email = prompt('Enter your email to get started with 3 free credits:');
     
     if (!email) {
-        email = prompt('Enter your email to continue:');
-        
-        if (!email) {
-            console.log('❌ User cancelled email prompt');
-            return null;
-        }
-        
-        if (!email.includes('@')) {
-            alert('Please enter a valid email address');
-            return null;
-        }
-        
-        // Save email (won't crash even if storage fails)
-        setStoredEmail(email);
-        console.log('✅ Email saved:', email);
+      throw new Error('Email is required');
     }
     
-    return email;
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address');
+      return getUserEmail(); // Retry
+    }
+    
+    setStoredEmail(email);
+  }
+  
+  return email;
 }
 
 // Check for return from payment and auto-resume
@@ -2040,6 +2053,9 @@ async function checkAndResumeGeneration() {
     generateSection.classList.add('active');
     checkGenerateButton();
     
+    // Refresh credits first
+    await fetchAndDisplayCredits();
+    
     // Auto-click generate after short delay
     setTimeout(() => {
       console.log('🚀 Auto-triggering generation...');
@@ -2052,6 +2068,25 @@ async function checkAndResumeGeneration() {
   } catch (error) {
     console.error('❌ Failed to restore generation:', error);
     localStorage.removeItem('pendingGeneration');
+  }
+}
+
+// Fetch and display credits
+async function fetchAndDisplayCredits() {
+  try {
+    const email = getStoredEmail();
+    if (!email) return;
+    
+    const response = await fetch(`${GET_CREDITS_URL}?email=${encodeURIComponent(email)}`);
+    const data = await response.json();
+    
+    if (data.credits !== undefined) {
+      document.getElementById('creditCount').textContent = data.credits;
+      document.getElementById('creditBadge').style.display = 'flex';
+      document.getElementById('creditDisplay').classList.add('has-credits'); // Show display
+    }
+  } catch (error) {
+    console.error('Failed to fetch credits:', error);
   }
 }
     
@@ -2719,6 +2754,9 @@ window.addEventListener('load', async () => {
   // Convert currency FIRST (before anything else)
   await initializeCurrency();
   
+  // Then fetch credits
+  await fetchAndDisplayCredits();
+  
   // ✅ CHECK FOR PAYMENT RETURN AND AUTO-RESUME
   await checkAndResumeGeneration();
   
@@ -3012,33 +3050,55 @@ try {
   throw new Error("Invalid response from server");
 }
 
-// Check for error in response
+// Check for error in the JSON body (not just HTTP status)
 if (data.error) {
-    isComplete = true;
-    clearInterval(progressInterval);
-    if (progressContainer) progressContainer.remove();
-    
-    backButton.style.display = 'none';
-    photoPreviewSection.style.display = 'none';
-    promptSection.style.display = 'none';
-    generateSection.style.display = 'none';
-    
-    subtitle.textContent = 'Purchase credits to continue';
-    subtitle.classList.add('screen-2');
-    
-    statusDiv.className = 'status error';
-    statusDiv.innerHTML = `
-        <div style="margin-bottom: 16px;">${data.message || 'Insufficient credits'}</div>
-        <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
-                style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 14px;">
-            Buy Credits
-        </button>
+  // Stop the progress animation
+  isComplete = true;
+  clearInterval(progressInterval);
+  
+  // Update progress to paused state and keep it visible
+  const progressTitle = progressContainer.querySelector('div:first-child');
+  if (progressTitle) {
+    progressTitle.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" stroke="rgba(239,68,68,0.8)" stroke-width="2"/>
+        <path d="M10 8v8M14 8v8" stroke="rgba(239,68,68,0.8)"/>
+      </svg>
+      <span style="color: #f87171;">Paused - Insufficient Credits</span>
     `;
-    statusDiv.style.display = 'block';
-    
-    btnGenerate.disabled = false;
-    btnGenerate.textContent = 'Generate Image';
-    return;
+  }
+  
+  // Keep progress bar visible permanently (don't fade it out)
+  
+  // HIDE EVERYTHING - create clean slate
+  backButton.style.display = 'none';
+  photoPreviewSection.style.display = 'none';
+  promptSection.style.display = 'none';
+  generateSection.style.display = 'none';
+  
+  // Update subtitle to be action-oriented
+  subtitle.textContent = 'Purchase credits to continue creating';
+  subtitle.classList.add('screen-2');
+  
+  // Show focused error with prominent Buy Credits CTA
+  statusDiv.className = 'status error';
+  statusDiv.innerHTML = `
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5;">
+      ${data.message || 'You have 0 credits remaining.'}
+    </div>
+    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
+      style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
+      Buy Credits →
+    </button>
+  `;
+  statusDiv.style.display = 'block';
+  statusDiv.style.marginTop = '32px'; // More breathing room
+  
+  // Re-enable button so user can retry after purchase
+  btnGenerate.disabled = false;
+  btnGenerate.textContent = 'Generate Image';
+  
+  return; // Stop execution
 }
 
 if (!response.ok) {
@@ -3051,6 +3111,9 @@ if (!response.ok) {
             }
             
                   generatedImageUrl = data.imageUrl; // Store for edit function
+      
+      // Refresh credit display
+      await fetchAndDisplayCredits();
       
       finishProgress();
             
@@ -3189,63 +3252,38 @@ document.querySelector('.container').appendChild(resultContainer);
             }, 800);
             
         } catch (error) {
-    console.error('Generation error:', error.message);
+    console.error('❌ FETCH ERROR:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     
     clearTimeout(timeoutId);
     isComplete = true;
     clearInterval(progressInterval);
+    progressContainer.remove();
     
-    if (progressContainer && progressContainer.parentNode) {
-        progressContainer.remove();
-    }
-    
+    // Remove spacing class on error
     document.querySelector('.container').classList.remove('has-result');
     
-    // Mobile timeout - backend still processing
-    if (error.message === 'Load failed' || error.message.includes('Failed to fetch')) {
-        subtitle.textContent = 'Generation in progress';
-        subtitle.classList.add('screen-2');
-        
-        statusDiv.className = 'status success';
-        statusDiv.innerHTML = `
-            <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">
-                Processing your image
-            </div>
-            <div style="font-size: 14px; margin-bottom: 16px;">
-                Wait 1 minute, then refresh this page
-            </div>
-            <button onclick="window.location.reload()" style="
-                width: 100%;
-                padding: 14px;
-                background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
-                border: none;
-                border-radius: 12px;
-                font-size: 15px;
-                font-weight: 600;
-                cursor: pointer;
-            ">
-                Refresh Now
-            </button>
-        `;
-        statusDiv.style.display = 'block';
-    } 
-    // Real error
-    else {
-        backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
-        photoPreviewSection.style.display = 'block';
-        promptSection.style.display = 'block';
-        generateSection.style.display = 'block';
-        subtitle.textContent = 'Next describe your vision to bring it to life';
-        
-        statusDiv.className = 'status error';
-        statusDiv.textContent = 'Generation failed. Please retry.';
-        statusDiv.style.display = 'block';
-    }
-    
-} finally {
-    btnGenerate.disabled = false;
-    btnGenerate.textContent = 'Generate Image';
-}
+    backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+            photoPreviewSection.style.display = 'block';
+            promptSection.style.display = 'block';
+            generateSection.style.display = 'block';
+            
+            subtitle.textContent = 'Next describe your vision to bring it to life';
+            
+            let errorMessage = error.message;
+            if (error.name === 'AbortError') {
+                errorMessage = 'Request took too long. Try with fewer images or try again.';
+            }
+            
+            statusDiv.className = 'status error';
+            statusDiv.textContent = `✗ ${errorMessage}`;
+            statusDiv.style.display = 'block';
+        } finally {
+            btnGenerate.disabled = false;
+            btnGenerate.textContent = 'Generate Image';
+        }
     });
     
     function createProgressIndicator() {
