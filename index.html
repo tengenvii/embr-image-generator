@@ -2069,6 +2069,60 @@ async function checkAndResumeGeneration() {
     // Detect if mobile
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+// File size validation helper
+function validateFile(file) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxDimensions = 8000; // 8000px
+    
+    // Check file size
+    if (file.size > maxSize) {
+        return {
+            valid: false,
+            error: `"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum file size is 10MB.`
+        };
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+        return {
+            valid: false,
+            error: `"${file.name}" is not an image file.`
+        };
+    }
+    
+    return { valid: true };
+}
+
+// Async dimension validation
+async function validateImageDimensions(file) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            if (img.width > 8000 || img.height > 8000) {
+                resolve({
+                    valid: false,
+                    error: `"${file.name}" resolution is too high (${img.width}x${img.height}px). Maximum is 8000x8000px.`
+                });
+            } else {
+                resolve({ valid: true });
+            }
+        };
+        
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve({
+                valid: false,
+                error: `"${file.name}" could not be loaded.`
+            });
+        };
+        
+        img.src = url;
+    });
+}
+
 // Smart save function for desktop download vs mobile share
 async function saveImageSmart(url, filename = 'embr-generated-image.png') {
   // Desktop: Simple direct download
@@ -2470,7 +2524,7 @@ btnClearAll.addEventListener('click', () => {
     cameraInput.addEventListener('change', handleFileSelect);
     galleryInput.addEventListener('change', handleFileSelect);
     
-    function handleFileSelect(e) {
+    async function handleFileSelect(e) {
     const files = Array.from(e.target.files);
     
     if (files.length === 0) {
@@ -2478,9 +2532,10 @@ btnClearAll.addEventListener('click', () => {
         return;
     }
     
+    // Check total file limit
     if (selectedFiles.length + files.length > MAX_IMAGES) {
         statusDiv.className = 'status error';
-        statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed`;
+        statusDiv.textContent = `Maximum ${MAX_IMAGES} images allowed`;
         statusDiv.style.display = 'block';
         
         setTimeout(() => {
@@ -2495,6 +2550,48 @@ btnClearAll.addEventListener('click', () => {
         return;
     }
     
+    // VALIDATE FILES BEFORE PROCESSING
+    for (const file of files) {
+        // Basic validation (size + type)
+        const basicCheck = validateFile(file);
+        if (!basicCheck.valid) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = basicCheck.error;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.classList.add('fade-out');
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    statusDiv.classList.remove('fade-out');
+                }, 300);
+            }, 4000);
+            
+            e.target.value = '';
+            return;
+        }
+        
+        // Dimension validation (async)
+        const dimensionCheck = await validateImageDimensions(file);
+        if (!dimensionCheck.valid) {
+            statusDiv.className = 'status error';
+            statusDiv.textContent = dimensionCheck.error;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.classList.add('fade-out');
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    statusDiv.classList.remove('fade-out');
+                }, 300);
+            }, 4000);
+            
+            e.target.value = '';
+            return;
+        }
+    }
+    
+    // All files valid - proceed
     files.forEach(file => {
         if (file.type.startsWith('image/')) {
             selectedFiles.push(file);
@@ -2506,14 +2603,16 @@ btnClearAll.addEventListener('click', () => {
     if (selectedFiles.length > 0) {
         isTextOnlyMode = false;
         
-        // ✅ UPDATE PROGRESS FIRST (before showing sections)
+        // UPDATE PROGRESS FIRST before showing sections
         updateProgressStep(2);
         
         showPromptSection(false);
         updatePreviews();
-
-        // Unlock body scroll
-        document.body.classList.remove('result-locked');
+        
+        // Focus the textarea so user can start typing
+        setTimeout(() => {
+            promptTextarea.focus();
+        }, 100);
     }
 }
     
@@ -2687,19 +2786,27 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
     
     // ✅ SAVE TO LOCALSTORAGE (synchronous after await above)
     try {
-      localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
-      console.log('💾 Saved pending generation:', pendingGeneration);
-    } catch (err) {
-      console.error('❌ Failed to save to localStorage:', err);
-      // Try without images
-      delete pendingGeneration.images;
-      try {
-        localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
-        console.log('💾 Saved pending generation (no images):', pendingGeneration);
-      } catch (finalErr) {
-        console.error('❌ Could not save even without images');
-      }
+    localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
+    console.log('✓ Saved pending generation:', pendingGeneration);
+} catch (err) {
+    if (err.name === 'QuotaExceededError') {
+        console.warn('⚠️ localStorage quota exceeded, clearing and retrying...');
+        
+        // Clear old data and try again without images
+        localStorage.clear();
+        delete pendingGeneration.images;
+        
+        try {
+            localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
+            console.log('✓ Saved without images after quota exceeded');
+        } catch (finalErr) {
+            console.error('❌ Could not save even after clearing:', finalErr);
+            alert('Storage full. Please clear browser data or use fewer images.');
+        }
+    } else {
+        console.error('❌ Failed to save to localStorage:', err);
     }
+}
     
     // ✅ NOW REDIRECT (after everything is saved)
     const paymentLinks = {
