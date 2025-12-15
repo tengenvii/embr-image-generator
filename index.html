@@ -3235,71 +3235,53 @@ document.querySelector('.container').appendChild(resultContainer);
     document.querySelector('.container').classList.remove('has-result');
     
     // Mobile timeout - backend still processing
-    if (error.message === 'Load failed' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-        console.log('📱 Network timeout - saving pending state');
-        
-        // Save pending generation to localStorage
-        const pendingGen = {
-            email: userEmail,
-            prompt: promptTextarea.value,
-            timestamp: Date.now(),
-            isTextOnly: isTextOnlyMode
-        };
-        localStorage.setItem('pendingGeneration', JSON.stringify(pendingGen));
-        
-        // Hide progress container
-        if (progressContainer && progressContainer.parentNode) {
-            progressContainer.remove();
-        }
-        
-        // Show success message with auto-refresh
-        subtitle.textContent = 'Generation in progress';
-        subtitle.classList.add('screen-2');
-        
-        statusDiv.className = 'status success';
-        statusDiv.innerHTML = `
-            <div style="font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #4ade80;">
-                ✓ Processing Your Image
-            </div>
-            <div style="font-size: 15px; margin-bottom: 18px; line-height: 1.6;">
-                Generation takes about 60 seconds.<br>
-                This page will auto-refresh when ready.
-            </div>
-            <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 10px; font-size: 13px; margin-bottom: 16px;">
-                <strong>Time remaining:</strong> <span id="countdown">60</span>s
-            </div>
-            <button onclick="window.location.reload()" style="
-                width: 100%;
-                padding: 14px;
-                background: rgba(255,255,255,0.1);
-                color: white;
-                border: 1px solid rgba(255,255,255,0.2);
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                margin-top: 8px;
-            ">
-                Refresh Now
-            </button>
-        `;
-        statusDiv.style.display = 'block';
-        
-        // Start 60-second countdown with auto-refresh
-        let secondsLeft = 60;
-        const countdownInterval = setInterval(() => {
-            secondsLeft--;
-            const countdownEl = document.getElementById('countdown');
-            if (countdownEl) {
-                countdownEl.textContent = secondsLeft;
-            }
-            
-            if (secondsLeft <= 0) {
-                clearInterval(countdownInterval);
-                console.log('🔄 Auto-refreshing...');
-                window.location.reload();
-            }
-        }, 1000);
+if (error.message === 'Load failed' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+    console.log('📱 Network timeout - image will be emailed');
+    
+    clearTimeout(timeoutId);
+    isComplete = true;
+    clearInterval(progressInterval);
+    
+    // Hide progress container
+    if (progressContainer && progressContainer.parentNode) {
+        progressContainer.remove();
+    }
+    
+    // Reset UI to initial state
+    backButton.style.display = isTextOnlyMode ? 'flex' : 'none';
+    photoPreviewSection.style.display = 'block';
+    promptSection.style.display = 'block';
+    generateSection.style.display = 'block';
+    subtitle.textContent = 'Next describe your vision to bring it to life';
+    
+    document.querySelector('.container').classList.remove('has-result');
+    
+    // Show email delivery message
+    statusDiv.className = 'status success';
+    statusDiv.innerHTML = `
+        <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #4ade80;">
+            ✓ Image Generation Started
+        </div>
+        <div style="font-size: 15px; margin-bottom: 8px; line-height: 1.6;">
+            Your image is being created and will be emailed to:
+        </div>
+        <div style="font-size: 14px; font-weight: 600; color: #4ade80; margin-bottom: 16px;">
+            ${userEmail}
+        </div>
+        <div style="background: rgba(74, 222, 128, 0.1); padding: 12px; border-radius: 10px; font-size: 13px; color: rgba(255,255,255,0.8);">
+            📧 Check your inbox in about 60 seconds
+        </div>
+    `;
+    statusDiv.style.display = 'block';
+    
+    // Auto-hide message after 10 seconds
+    setTimeout(() => {
+        statusDiv.style.opacity = '0';
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+            statusDiv.style.opacity = '1';
+        }, 300);
+    }, 10000);
         
     } else if (error.name === 'AbortError') {
         // 5-minute hard timeout
