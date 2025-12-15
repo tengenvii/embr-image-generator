@@ -364,120 +364,6 @@ body.result-locked {
   width: 100%;
 }
 
-/* Example Gallery */
-.example-gallery {
-    margin: 24px 0 20px 0;
-    padding: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    animation: slideDown 0.5s ease;
-}
-
-.example-label {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 12px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-}
-
-.example-grid {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 2px; /* Prevent shadow clipping */
-}
-
-.example-grid::-webkit-scrollbar {
-    display: none;
-}
-
-.example-item {
-    flex-shrink: 0;
-    position: relative;
-}
-
-.example-thumb {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 10px;
-    opacity: 0.6;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.example-thumb:hover {
-    opacity: 1;
-    transform: scale(1.08) translateY(-2px);
-    border-color: rgba(74, 222, 128, 0.4);
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.3),
-        0 0 20px rgba(74, 222, 128, 0.15);
-    z-index: 10;
-}
-
-.example-thumb:active {
-    transform: scale(1.05);
-}
-
-.view-gallery-link {
-    display: block;
-    text-align: center;
-    font-size: 13px;
-    color: #4ade80;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    padding: 4px 0;
-}
-
-.view-gallery-link:hover {
-    color: #22c55e;
-    text-decoration: underline;
-}
-
-/* Hide gallery on subsequent screens */
-.example-gallery.hidden {
-    display: none;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-    .example-gallery {
-        margin: 16px 0 16px 0;
-        padding: 12px;
-    }
-    
-    .example-label {
-        font-size: 11px;
-        margin-bottom: 10px;
-    }
-    
-    .example-thumb {
-        width: 90px;
-        height: 90px;
-    }
-    
-    .example-grid {
-        gap: 8px;
-    }
-    
-    .view-gallery-link {
-        font-size: 12px;
-    }
-}
-
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .progress-steps {
@@ -1754,23 +1640,6 @@ body.result-locked {
             <div class="step-label">Create</div>
         </div>
     </div>
-
-        <!-- ⭐ EXAMPLE GALLERY -->
-    <div class="example-gallery" id="exampleGallery">
-        <div class="example-label">See what's possible ✨</div>
-        <div class="example-grid">
-            <div class="example-item">
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop" alt="Example 1" class="example-thumb" loading="lazy">
-            </div>
-            <div class="example-item">
-                <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=200&h=200&fit=crop" alt="Example 2" class="example-thumb" loading="lazy">
-            </div>
-            <div class="example-item">
-                <img src="https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=200&h=200&fit=crop" alt="Example 3" class="example-thumb" loading="lazy">
-            </div>
-        </div>
-        <a href="#" class="view-gallery-link" id="viewGalleryLink">View prompt gallery →</a>
-    </div>
         
         <!-- Credit Display -->
         <div class="credit-display" id="creditDisplay">
@@ -2654,8 +2523,6 @@ window.addEventListener('load', () => {
     const btnUploadGallery = document.getElementById('btnUploadGallery');
     const textOnlyLink = document.getElementById('textOnlyLink');
     const backButton = document.getElementById('backButton');
-    const exampleGallery = document.getElementById('exampleGallery');
-    const viewGalleryLink = document.getElementById('viewGalleryLink');
     const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
     const uploadSection = document.getElementById('uploadSection');
@@ -2816,52 +2683,9 @@ textOnlyLink.addEventListener('click', (e) => {
     
     showPromptSection(true);
 });
-
-    // Example Gallery - View Gallery Link
-viewGalleryLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Simple alert for now - replace with modal later
-    alert('Prompt Gallery Coming Soon!\n\nFor now, try these prompts:\n\n• "Professional headshot with studio lighting"\n• "Cozy coffee shop at golden hour"\n• "Futuristic city skyline at night"\n• "Product photo on marble surface"');
-    
-    // TODO: Build full gallery modal with prompt library
-});
-
-// Example Gallery - Click thumbnails to pre-fill prompts
-document.querySelectorAll('.example-thumb').forEach((thumb, index) => {
-    thumb.addEventListener('click', () => {
-        const examplePrompts = [
-            "Transform into professional studio portrait with dramatic lighting",
-            "Cyberpunk style with neon colors and futuristic aesthetic",
-            "Vintage film photography with warm tones and grain"
-        ];
-        
-        // Skip to text input with pre-filled prompt
-        if (selectedFiles.length > 0 || confirm('Start with this example prompt?')) {
-            // Hide gallery
-            exampleGallery.classList.add('hidden');
-            
-            // Update progress
-            updateProgressStep(2);
-            
-            // Show prompt section
-            showPromptSection(false);
-            
-            // Fill prompt
-            promptTextarea.value = examplePrompts[index] || examplePrompts[0];
-            promptTextarea.dispatchEvent(new Event('input')); // Trigger validation
-            
-            // Focus textarea
-            setTimeout(() => promptTextarea.focus(), 100);
-        }
-    });
-});
     
     // Back Button - Goes to home
 backButton.addEventListener('click', () => {
-    // ⭐ SHOW GALLERY when going back to screen 1
-    exampleGallery.classList.remove('hidden');
-    
     location.reload();
 });
 backButton.addEventListener('touchend', (e) => {
@@ -2884,9 +2708,7 @@ btnClearAll.addEventListener('click', () => {
     promptTextarea.value = '';
     generatedImageUrl = null;
     
-    // ⭐ SHOW GALLERY on reset
-    exampleGallery.classList.remove('hidden');
-    
+    // Remove result class
     document.querySelector('.container').classList.remove('has-result');
     
     uploadSection.style.display = 'block';
@@ -2895,7 +2717,7 @@ btnClearAll.addEventListener('click', () => {
     generateSection.classList.remove('active');
     backButton.classList.remove('active');
     
-    subtitle.textContent = "First upload a photo or reference images";
+    subtitle.textContent = 'First upload a photo or reference images';
     subtitle.classList.remove('screen-2');
     
     statusDiv.style.display = 'none';
@@ -2999,11 +2821,8 @@ btnClearAll.addEventListener('click', () => {
 }
     
     function showPromptSection(textOnly) {
-    subtitle.textContent = "Next describe your vision to bring it to life";
+    subtitle.textContent = 'Next describe your vision to bring it to life';
     subtitle.classList.add('screen-2');
-    
-    // ⭐ HIDE GALLERY when moving to screen 2
-    exampleGallery.classList.add('hidden');
     
     uploadSection.style.display = 'none';
     
