@@ -309,7 +309,7 @@ body.result-locked {
 }
 
 .step.completed .step-dot::after {
-  content: '✓';
+  content: 'âœ“';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1598,7 +1598,7 @@ body.result-locked {
     <div id="loadingScreen">
         <div class="loading-content">
             <div class="loading-text">INITIALISING</div>
-            <div class="crypto-loader" id="cryptoLoader">█▓▒░</div>
+            <div class="crypto-loader" id="cryptoLoader">â–ˆâ–“â–’â–‘</div>
         </div>
     </div>
 
@@ -1654,10 +1654,10 @@ body.result-locked {
         <div class="upload-section" id="uploadSection">
             <div class="upload-buttons">
                 <button type="button" class="btn-photo" id="btnTakePhoto">
-                    📸 Take Photo
+                    ðŸ“¸ Take Photo
                 </button>
                 <button type="button" class="btn-gallery" id="btnUploadGallery">
-                    📤 Upload from Gallery
+                    ðŸ“¤ Upload from Gallery
                 </button>
             </div>
             <div class="text-only-link">
@@ -1707,13 +1707,13 @@ body.result-locked {
 
       <!-- Modal for enlarged image -->
   <div class="modal" id="imageModal">
-    <div class="modal-close" id="modalClose">×</div>
+    <div class="modal-close" id="modalClose">Ã—</div>
     <img class="modal-content" id="modalImage" src="" alt="Enlarged preview">
   </div>
 
   <!-- Credit Purchase Modal -->
   <div class="modal" id="creditModal">
-    <div class="modal-close" id="creditModalClose">×</div>
+    <div class="modal-close" id="creditModalClose">Ã—</div>
     <div class="credit-modal-content">
       <h2>Buy Credits</h2>
       <p class="credit-modal-subtitle">Choose a credit pack to continue creating</p>
@@ -1727,7 +1727,7 @@ body.result-locked {
   </div>
   
   <div class="credit-pack popular" data-credits="40">
-    <div class="popular-badge">⭐ BEST VALUE</div>
+    <div class="popular-badge">â­ BEST VALUE</div>
     <div class="pack-credits">40 Credits</div>
     <div class="pack-price">$15</div>
     <div class="pack-savings">SAVE 25%</div>
@@ -1753,23 +1753,23 @@ const MAX_IMAGES = 3;
 const REGIONAL_PRICING = {
   'GBP': { '10': 3.99, '40': 11.99, '120': 31.99 }, // Native currency
   'USD': { '10': 5.49, '40': 15.49, '120': 41.99 }, // Actual: $5.12, $15.39, $41.04
-  'EUR': { '10': 4.99, '40': 14.99, '120': 39.99 }, // Actual: €4.83, €14.51, €38.69
+  'EUR': { '10': 4.99, '40': 14.99, '120': 39.99 }, // Actual: â‚¬4.83, â‚¬14.51, â‚¬38.69
   'CAD': { '10': 7.49, '40': 21.99, '120': 58.99 }, // Actual: C$7.14, C$21.45, C$57.21
   'AUD': { '10': 8.49, '40': 24.99, '120': 66.99 }, // Actual: A$8.20, A$24.65, A$65.74
-  'JPY': { '10': 850, '40': 2500, '120': 6700 },    // Actual: ¥830, ¥2495, ¥6650
-  'INR': { '10': 450, '40': 1350, '120': 3600 },    // Actual: ₹440, ₹1322, ₹3526
+  'JPY': { '10': 850, '40': 2500, '120': 6700 },    // Actual: Â¥830, Â¥2495, Â¥6650
+  'INR': { '10': 450, '40': 1350, '120': 3600 },    // Actual: â‚¹440, â‚¹1322, â‚¹3526
   'BRL': { '10': 32.90, '40': 98.90, '120': 263.90 }, // Actual: R$31.85, R$95.70, R$255.20
   'MXN': { '10': 109, '40': 329, '120': 879 },      // Actual: MX$105, MX$317, MX$845
   'SEK': { '10': 59, '40': 179, '120': 479 },       // Actual: kr57.5, kr172.8, kr460.8
   'NOK': { '10': 59, '40': 179, '120': 479 },       // Actual: kr58.1, kr174.6, kr465.7
   'DKK': { '10': 39, '40': 119, '120': 319 },       // Actual: kr38.2, kr114.8, kr306.1
   'CHF': { '10': 4.99, '40': 14.99, '120': 39.99 }, // Actual: CHF4.81, CHF14.46, CHF38.55
-  'PLN': { '10': 22.99, '40': 68.99, '120': 184.99 }, // Actual: zł22.1, zł66.4, zł177.1
+  'PLN': { '10': 22.99, '40': 68.99, '120': 184.99 }, // Actual: zÅ‚22.1, zÅ‚66.4, zÅ‚177.1
   'SGD': { '10': 7.49, '40': 22.49, '120': 59.99 }, // Actual: S$7.21, S$21.68, S$57.81
   'HKD': { '10': 42, '40': 126, '120': 336 },       // Actual: HK$40.8, HK$122.6, HK$326.7
   'NZD': { '10': 9.49, '40': 28.49, '120': 75.99 }, // Actual: NZ$9.12, NZ$27.41, NZ$73.09
   'ZAR': { '10': 99, '40': 299, '120': 799 },       // Actual: R97, R291, R776
-  'TRY': { '10': 189, '40': 569, '120': 1519 }      // Actual: ₺182, ₺547, ₺1459
+  'TRY': { '10': 189, '40': 569, '120': 1519 }      // Actual: â‚º182, â‚º547, â‚º1459
 };
 
 let userCurrency = 'USD';
@@ -1777,22 +1777,22 @@ let currencySymbol = '$';
 
 // Currency symbols map
 const CURRENCY_SYMBOLS = {
-  'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'AUD': 'A$', 'CAD': 'C$',
-  'CHF': 'CHF', 'CNY': '¥', 'SEK': 'kr', 'NZD': 'NZ$', 'MXN': 'MX$',
-  'SGD': 'S$', 'HKD': 'HK$', 'NOK': 'kr', 'KRW': '₩', 'TRY': '₺',
-  'INR': '₹', 'RUB': '₽', 'BRL': 'R$', 'ZAR': 'R', 'DKK': 'kr',
-  'PLN': 'zł', 'THB': '฿', 'IDR': 'Rp', 'HUF': 'Ft', 'CZK': 'Kč',
-  'ILS': '₪', 'CLP': 'CLP', 'PHP': '₱', 'AED': 'AED', 'COP': 'COP',
+  'USD': '$', 'EUR': 'â‚¬', 'GBP': 'Â£', 'JPY': 'Â¥', 'AUD': 'A$', 'CAD': 'C$',
+  'CHF': 'CHF', 'CNY': 'Â¥', 'SEK': 'kr', 'NZD': 'NZ$', 'MXN': 'MX$',
+  'SGD': 'S$', 'HKD': 'HK$', 'NOK': 'kr', 'KRW': 'â‚©', 'TRY': 'â‚º',
+  'INR': 'â‚¹', 'RUB': 'â‚½', 'BRL': 'R$', 'ZAR': 'R', 'DKK': 'kr',
+  'PLN': 'zÅ‚', 'THB': 'à¸¿', 'IDR': 'Rp', 'HUF': 'Ft', 'CZK': 'KÄ',
+  'ILS': 'â‚ª', 'CLP': 'CLP', 'PHP': 'â‚±', 'AED': 'AED', 'COP': 'COP',
   'SAR': 'SAR', 'MYR': 'RM', 'RON': 'lei', 'ARS': 'ARS'
 };
 
 // Detect user's currency and get exchange rate
 async function initializeCurrency() {
-  console.log('🌍 initializeCurrency started');
+  console.log('ðŸŒ initializeCurrency started');
   
   try {
     // Get user's location
-    console.log('📍 Fetching location...');
+    console.log('ðŸ“ Fetching location...');
     const geoResponse = await fetch('https://ipapi.co/json/');
     
     if (!geoResponse.ok) {
@@ -1800,27 +1800,27 @@ async function initializeCurrency() {
     }
     
     const geoData = await geoResponse.json();
-    console.log('📍 Location data:', geoData);
+    console.log('ðŸ“ Location data:', geoData);
     
     const detectedCurrency = geoData.currency || 'USD';
-    console.log('💰 Detected currency:', detectedCurrency);
+    console.log('ðŸ’° Detected currency:', detectedCurrency);
     
     // Check if we have regional pricing for this currency
     if (REGIONAL_PRICING[detectedCurrency]) {
       userCurrency = detectedCurrency;
       currencySymbol = CURRENCY_SYMBOLS[detectedCurrency] || detectedCurrency;
-      console.log(`✅ Currency set: ${userCurrency}, Symbol: ${currencySymbol}`);
+      console.log(`âœ… Currency set: ${userCurrency}, Symbol: ${currencySymbol}`);
     } else {
       // Fallback to USD if we don't have pricing for this currency
       userCurrency = 'USD';
       currencySymbol = '$';
-      console.log(`⚠️ No regional pricing for ${detectedCurrency}, using USD`);
+      console.log(`âš ï¸ No regional pricing for ${detectedCurrency}, using USD`);
     }
     
     updatePricingDisplay();
   } catch (error) {
-    console.error('❌ Currency detection failed:', error);
-    console.log('⚠️ Falling back to USD');
+    console.error('âŒ Currency detection failed:', error);
+    console.log('âš ï¸ Falling back to USD');
     
     // Fallback to USD
     userCurrency = 'USD';
@@ -1882,14 +1882,14 @@ function formatPerImagePrice(usdPrice, credits) {
 
 // Update all pricing displays on the page
 function updatePricingDisplay() {
-  console.log('💰 updatePricingDisplay called');
+  console.log('ðŸ’° updatePricingDisplay called');
   console.log('Currency:', userCurrency, 'Symbol:', currencySymbol);
   
   const packs = document.querySelectorAll('.credit-pack');
   console.log('Found packs:', packs.length);
   
   if (packs.length === 0) {
-    console.error('❌ No credit packs found! Modal may not be rendered yet.');
+    console.error('âŒ No credit packs found! Modal may not be rendered yet.');
     return;
   }
   
@@ -1903,31 +1903,31 @@ function updatePricingDisplay() {
       const priceElement = pack.querySelector('.pack-price');
       if (priceElement) {
         const newPrice = formatPrice(usdPrice);
-        console.log('✅ Updating price from', priceElement.textContent, 'to', newPrice);
+        console.log('âœ… Updating price from', priceElement.textContent, 'to', newPrice);
         priceElement.textContent = newPrice;
       } else {
-        console.error('❌ Could not find .pack-price element');
+        console.error('âŒ Could not find .pack-price element');
       }
       
       // Update per-image price
       const perImageElement = pack.querySelector('.pack-per-image');
       if (perImageElement) {
         const newPerImage = `${formatPerImagePrice(usdPrice, credits)} per image`;
-        console.log('✅ Updating per-image to:', newPerImage);
+        console.log('âœ… Updating per-image to:', newPerImage);
         perImageElement.textContent = newPerImage;
       } else {
-        console.error('❌ Could not find .pack-per-image element');
+        console.error('âŒ Could not find .pack-per-image element');
       }
     }
   });
   
   // Add currency note if not USD
   if (userCurrency !== 'USD') {
-    console.log('💳 Adding currency note for', userCurrency);
+    console.log('ðŸ’³ Adding currency note for', userCurrency);
     addCurrencyNote();
   }
   
-  console.log('✅ Price update complete!');
+  console.log('âœ… Price update complete!');
 }
 
 // Add a subtle note about currency conversion
@@ -1952,7 +1952,7 @@ function addCurrencyNote() {
       font-size: 12px;
       color: rgba(255, 255, 255, 0.5);
     `;
-    note.innerHTML = `💳 Prices shown in ${userCurrency}. Charged in GBP at checkout.`;
+    note.innerHTML = `ðŸ’³ Prices shown in ${userCurrency}. Charged in GBP at checkout.`;
     modalContent.appendChild(note);
   }
 }
@@ -2001,14 +2001,14 @@ async function checkAndResumeGeneration() {
   
   if (!purchaseSuccess) return;
   
-  console.log('🎉 Detected return from payment!');
+  console.log('ðŸŽ‰ Detected return from payment!');
   
   // Clean URL (remove query params)
   window.history.replaceState({}, document.title, window.location.pathname);
   
   const pendingData = localStorage.getItem('pendingGeneration');
   if (!pendingData) {
-    console.log('⚠️ No pending generation found');
+    console.log('âš ï¸ No pending generation found');
     return;
   }
   
@@ -2017,12 +2017,12 @@ async function checkAndResumeGeneration() {
     
     // Check if pending generation is less than 1 hour old
     if (Date.now() - pending.timestamp > 3600000) {
-      console.log('⚠️ Pending generation expired (>1 hour)');
+      console.log('âš ï¸ Pending generation expired (>1 hour)');
       localStorage.removeItem('pendingGeneration');
       return;
     }
     
-    console.log('✅ Restoring generation state:', pending);
+    console.log('âœ… Restoring generation state:', pending);
     
     // Restore UI state
     isTextOnlyMode = pending.isTextOnly;
@@ -2054,7 +2054,7 @@ async function checkAndResumeGeneration() {
     
     // Auto-click generate after short delay
     setTimeout(() => {
-      console.log('🚀 Auto-triggering generation...');
+      console.log('ðŸš€ Auto-triggering generation...');
       btnGenerate.click();
       
       // Clear pending data after successful trigger
@@ -2062,7 +2062,7 @@ async function checkAndResumeGeneration() {
     }, 1000);
     
   } catch (error) {
-    console.error('❌ Failed to restore generation:', error);
+    console.error('âŒ Failed to restore generation:', error);
     localStorage.removeItem('pendingGeneration');
   }
 }
@@ -2099,10 +2099,10 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       
       if (response.ok) {
         blob = await response.blob();
-        console.log('✅ Fetch successful, blob size:', blob.size);
+        console.log('âœ… Fetch successful, blob size:', blob.size);
       }
     } catch (fetchErr) {
-      console.log('❌ Fetch failed:', fetchErr.message);
+      console.log('âŒ Fetch failed:', fetchErr.message);
     }
     
     // Method 2: If fetch failed, try loading via img element (no crossOrigin)
@@ -2117,13 +2117,13 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
         
         img.onload = () => {
           clearTimeout(timeout);
-          console.log('✅ Image loaded:', img.width, 'x', img.height);
+          console.log('âœ… Image loaded:', img.width, 'x', img.height);
           resolve();
         };
         
         img.onerror = (err) => {
           clearTimeout(timeout);
-          console.log('❌ Image load error:', err);
+          console.log('âŒ Image load error:', err);
           reject(new Error('Image load failed'));
         };
         
@@ -2142,22 +2142,22 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       // Try drawing (this will work since we didn't set crossOrigin)
       try {
         ctx.drawImage(img, 0, 0);
-        console.log('✅ Canvas draw successful');
+        console.log('âœ… Canvas draw successful');
         
         // Convert to blob
         blob = await new Promise((resolve, reject) => {
           canvas.toBlob((result) => {
             if (result) {
-              console.log('✅ Blob created, size:', result.size);
+              console.log('âœ… Blob created, size:', result.size);
               resolve(result);
             } else {
-              console.log('❌ Blob creation failed');
+              console.log('âŒ Blob creation failed');
               reject(new Error('Blob creation failed'));
             }
           }, 'image/png', 1.0);
         });
       } catch (drawErr) {
-        console.log('❌ Canvas draw failed:', drawErr.message);
+        console.log('âŒ Canvas draw failed:', drawErr.message);
         throw drawErr;
       }
     }
@@ -2166,7 +2166,7 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       throw new Error('Could not create blob from image');
     }
     
-    console.log('📦 Final blob ready, size:', blob.size);
+    console.log('ðŸ“¦ Final blob ready, size:', blob.size);
     
     // Create File object
     const file = new File([blob], filename, {
@@ -2174,11 +2174,11 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       lastModified: Date.now()
     });
     
-    console.log('📄 File object created:', file.name, file.type, file.size);
+    console.log('ðŸ“„ File object created:', file.name, file.type, file.size);
     
     // Try iOS/Android Share API
     if (navigator.share) {
-      console.log('📱 Web Share API available');
+      console.log('ðŸ“± Web Share API available');
       
       // Check if files are supported
       const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
@@ -2186,26 +2186,26 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
       
       if (canShareFiles) {
         try {
-          console.log('🚀 Triggering share sheet...');
+          console.log('ðŸš€ Triggering share sheet...');
           await navigator.share({
             files: [file],
             title: 'Generated Image'
           });
-          console.log('✅ Share completed successfully!');
+          console.log('âœ… Share completed successfully!');
           return;
         } catch (shareErr) {
           if (shareErr.name === 'AbortError') {
-            console.log('ℹ️ User cancelled share');
+            console.log('â„¹ï¸ User cancelled share');
             return; // User cancelled - don't show error
           }
-          console.log('❌ Share failed:', shareErr.message);
+          console.log('âŒ Share failed:', shareErr.message);
           // Continue to fallback
         }
       } else {
-        console.log('❌ File sharing not supported');
+        console.log('âŒ File sharing not supported');
       }
     } else {
-      console.log('❌ Web Share API not available');
+      console.log('âŒ Web Share API not available');
     }
     
     // Fallback: Download via blob URL
@@ -2218,7 +2218,7 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     document.body.appendChild(a);
     a.click();
     
-    console.log('✅ Download triggered');
+    console.log('âœ… Download triggered');
     
     // Cleanup
     setTimeout(() => {
@@ -2227,7 +2227,7 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
     }, 100);
     
   } catch (err) {
-    console.error('❌ All save methods failed:', err);
+    console.error('âŒ All save methods failed:', err);
     
     // Last resort: Open in new tab (like your old screenshot)
     console.log('Opening in new tab as last resort');
@@ -2239,7 +2239,7 @@ async function saveImageSmart(url, filename = 'embr-generated-image.png') {
 const loadingScreen = document.getElementById('loadingScreen');
 const cryptoLoader = document.getElementById('cryptoLoader');
 
-const cryptoSymbols = ['𓀂', '𓀇', '𓀉', '𓀍', '𓀠', '𓁀', '𓁂', '𓀱', '𓁉', '𓀿', '𓀪', '𓁶', '𓂧', '𓂮', '𓂫', '𓃺', '𓃳', '𓄜', '𓄲', '𓄓', '𓅆', '𓅢', '𓅼', '𓆀', '𓆾', '𓈀', '𓉒', '𓉼', '𓊪', '𓋜', '𓋒', '𓍳', '𓎳'];
+const cryptoSymbols = ['ð“€‚', 'ð“€‡', 'ð“€‰', 'ð“€', 'ð“€ ', 'ð“€', 'ð“‚', 'ð“€±', 'ð“‰', 'ð“€¿', 'ð“€ª', 'ð“¶', 'ð“‚§', 'ð“‚®', 'ð“‚«', 'ð“ƒº', 'ð“ƒ³', 'ð“„œ', 'ð“„²', 'ð“„“', 'ð“…†', 'ð“…¢', 'ð“…¼', 'ð“†€', 'ð“†¾', 'ð“ˆ€', 'ð“‰’', 'ð“‰¼', 'ð“Šª', 'ð“‹œ', 'ð“‹’', 'ð“³', 'ð“Ž³'];
 let cryptoInterval;
 
 function rotateCryptoSymbols() {
@@ -2481,7 +2481,7 @@ btnClearAll.addEventListener('click', () => {
     
     if (selectedFiles.length + files.length > MAX_IMAGES) {
         statusDiv.className = 'status error';
-        statusDiv.textContent = `⚠️ Maximum ${MAX_IMAGES} images allowed`;
+        statusDiv.textContent = `âš ï¸ Maximum ${MAX_IMAGES} images allowed`;
         statusDiv.style.display = 'block';
         
         setTimeout(() => {
@@ -2507,7 +2507,7 @@ btnClearAll.addEventListener('click', () => {
     if (selectedFiles.length > 0) {
         isTextOnlyMode = false;
         
-        // ✅ UPDATE PROGRESS FIRST (before showing sections)
+        // âœ… UPDATE PROGRESS FIRST (before showing sections)
         updateProgressStep(2);
         
         showPromptSection(false);
@@ -2534,7 +2534,7 @@ btnClearAll.addEventListener('click', () => {
     
     promptSection.classList.add('active');
     
-    // ✅ Reset generate section - button only appears when user types
+    // âœ… Reset generate section - button only appears when user types
     generateSection.classList.remove('active');
     generateSection.style.display = ''; // Clear inline style (let CSS handle it)
     
@@ -2570,7 +2570,7 @@ btnClearAll.addEventListener('click', () => {
                 
                 const removeBtn = document.createElement('div');
                 removeBtn.className = 'preview-remove';
-                removeBtn.innerHTML = '×';
+                removeBtn.innerHTML = 'Ã—';
                 removeBtn.addEventListener('click', (event) => {
                     event.stopPropagation();
                     removeImage(index);
@@ -2636,7 +2636,7 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       return;
     }
     
-    // ✅ SAVE STATE FIRST (before any redirect)
+    // âœ… SAVE STATE FIRST (before any redirect)
     const pendingGeneration = {
       prompt: promptTextarea.value.trim(),
       hasImages: selectedFiles.length > 0,
@@ -2645,7 +2645,7 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
       isTextOnly: isTextOnlyMode
     };
     
-    // ✅ COMPRESS AND SAVE IMAGES (wait for completion on mobile)
+    // âœ… COMPRESS AND SAVE IMAGES (wait for completion on mobile)
     if (selectedFiles.length > 0) {
       try {
         const imagePromises = selectedFiles.map(file => {
@@ -2677,32 +2677,32 @@ document.querySelectorAll('.credit-pack').forEach(pack => {
         
         const testData = JSON.stringify(pendingGeneration);
         if (testData.length > 4500000) {
-          console.warn('⚠️ Images too large, saving without images');
+          console.warn('âš ï¸ Images too large, saving without images');
           delete pendingGeneration.images;
         }
       } catch (err) {
-        console.warn('⚠️ Failed to compress images:', err);
+        console.warn('âš ï¸ Failed to compress images:', err);
         delete pendingGeneration.images;
       }
     }
     
-    // ✅ SAVE TO LOCALSTORAGE (synchronous after await above)
+    // âœ… SAVE TO LOCALSTORAGE (synchronous after await above)
     try {
       localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
-      console.log('💾 Saved pending generation:', pendingGeneration);
+      console.log('ðŸ’¾ Saved pending generation:', pendingGeneration);
     } catch (err) {
-      console.error('❌ Failed to save to localStorage:', err);
+      console.error('âŒ Failed to save to localStorage:', err);
       // Try without images
       delete pendingGeneration.images;
       try {
         localStorage.setItem('pendingGeneration', JSON.stringify(pendingGeneration));
-        console.log('💾 Saved pending generation (no images):', pendingGeneration);
+        console.log('ðŸ’¾ Saved pending generation (no images):', pendingGeneration);
       } catch (finalErr) {
-        console.error('❌ Could not save even without images');
+        console.error('âŒ Could not save even without images');
       }
     }
     
-    // ✅ NOW REDIRECT (after everything is saved)
+    // âœ… NOW REDIRECT (after everything is saved)
     const paymentLinks = {
       '10': 'https://buy.stripe.com/test_fZudRaflr2Hn2335Fv2Ji01',
       '40': 'https://buy.stripe.com/test_3cI4gAa170zf233fg52Ji02',
@@ -2728,7 +2728,7 @@ let creditModal, creditModalClose, btnBuyCredits;
 
 // Initialize on page load
 window.addEventListener('load', async () => {
-    // 🔥 CHECK FOR PENDING GENERATION FIRST
+    // ðŸ”¥ CHECK FOR PENDING GENERATION FIRST
     const pending = localStorage.getItem('pendingGeneration');
     if (pending) {
         try {
@@ -2737,7 +2737,7 @@ window.addEventListener('load', async () => {
             
             // If generation started within last 3 minutes, show loading state
             if (ageMinutes < 3) {
-                console.log('📋 Found recent pending generation, checking status...');
+                console.log('ðŸ“‹ Found recent pending generation, checking status...');
                 
                 // Show brief loading message
                 const loadingMsg = document.createElement('div');
@@ -2769,7 +2769,7 @@ window.addEventListener('load', async () => {
                 // Clear pending state
                 localStorage.removeItem('pendingGeneration');
                 
-                console.log('✅ Pending check complete, proceeding with normal flow');
+                console.log('âœ… Pending check complete, proceeding with normal flow');
             } else {
                 // Too old, clear it
                 localStorage.removeItem('pendingGeneration');
@@ -2782,7 +2782,7 @@ window.addEventListener('load', async () => {
   // Convert currency FIRST (before anything else)
   await initializeCurrency();
   
-  // ✅ CHECK FOR PAYMENT RETURN AND AUTO-RESUME
+  // âœ… CHECK FOR PAYMENT RETURN AND AUTO-RESUME
   await checkAndResumeGeneration();
   
   // Setup modal handlers
@@ -2841,7 +2841,7 @@ promptSection.style.display = 'block';
 
 // Reset generate section - button will only appear when user types
 generateSection.classList.remove('active');
-generateSection.style.display = ''; // ✅ Clear inline style (let CSS handle it)
+generateSection.style.display = ''; // âœ… Clear inline style (let CSS handle it)
 
 // Clear prompt
 promptTextarea.value = '';
@@ -2924,7 +2924,7 @@ btnGenerate.addEventListener('click', async () => {
   
   if (WEBHOOK_URL.includes('your-n8n') || WEBHOOK_URL.includes('xxxxx')) {
             statusDiv.className = 'status error';
-            statusDiv.textContent = '⚠️ ERROR: Please update WEBHOOK_URL in the code';
+            statusDiv.textContent = 'âš ï¸ ERROR: Please update WEBHOOK_URL in the code';
             statusDiv.style.display = 'block';
             return;
         }
@@ -2953,7 +2953,7 @@ btnGenerate.addEventListener('click', async () => {
   formData.append('Image Prompt', promptTextarea.value);
   // Compress images on mobile before sending
 if (isMobile && selectedFiles.length > 0) {
-    console.log('📱 Mobile detected - compressing images before upload');
+    console.log('ðŸ“± Mobile detected - compressing images before upload');
     
     for (const file of selectedFiles) {
         try {
@@ -2982,7 +2982,7 @@ if (isMobile && selectedFiles.length > 0) {
                 lastModified: Date.now()
             });
             
-            console.log(`✅ Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+            console.log(`âœ… Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB â†’ ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
             formData.append('Image', compressedFile);
         } catch (err) {
             console.warn('Compression failed, using original:', err);
@@ -3056,8 +3056,8 @@ let isComplete = false;
         }, 300000);
         
         try {
-    console.log('🚀 Starting fetch to:', WEBHOOK_URL);
-    console.log('📦 FormData size:', selectedFiles.length, 'images');
+    console.log('ðŸš€ Starting fetch to:', WEBHOOK_URL);
+    console.log('ðŸ“¦ FormData size:', selectedFiles.length, 'images');
     
     const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -3065,7 +3065,7 @@ let isComplete = false;
         signal: controller.signal
     });
     
-    console.log('✅ Response received:', response.status);
+    console.log('âœ… Response received:', response.status);
 
 const responseText = await response.text();
 let data;
@@ -3113,7 +3113,7 @@ if (data.error) {
     </div>
     <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
       style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
-      Buy Credits →
+      Buy Credits â†’
     </button>
   `;
   statusDiv.style.display = 'block';
@@ -3183,8 +3183,8 @@ if (isMobile) {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(255, 255, 255, 0.05) inset;
     opacity: 0;
     animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    overflow: visible;  /* ← ADD THIS */
-    text-align: center;  /* ← ADD THIS LINE */
+    overflow: visible;  /* â† ADD THIS */
+    text-align: center;  /* â† ADD THIS LINE */
 `;
                 
                 const title = document.createElement('div');
@@ -3234,7 +3234,7 @@ img.addEventListener('click', () => {
                 
                 img.onerror = () => {
                     statusDiv.className = 'status error';
-                    statusDiv.textContent = '✗ Image URL is invalid or inaccessible';
+                    statusDiv.textContent = 'âœ— Image URL is invalid or inaccessible';
                 };
                 
                 resultContainer.appendChild(imageWrapper);
@@ -3274,7 +3274,7 @@ document.querySelector('.container').appendChild(resultContainer);
             }, 800);
             
         } catch (error) {
-    console.error('❌ FETCH ERROR:', error);
+    console.error('âŒ FETCH ERROR:', error);
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
     
@@ -3287,7 +3287,7 @@ document.querySelector('.container').appendChild(resultContainer);
     
     // Mobile timeout - backend still processing
     if (error.message === 'Load failed' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-        console.log('📱 Network timeout - saving pending state');
+        console.log('ðŸ“± Network timeout - saving pending state');
         
         // Save pending generation to localStorage
         const pendingGen = {
@@ -3310,7 +3310,7 @@ document.querySelector('.container').appendChild(resultContainer);
         statusDiv.className = 'status success';
         statusDiv.innerHTML = `
             <div style="font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #4ade80;">
-                ✓ Processing Your Image
+                âœ“ Processing Your Image
             </div>
             <div style="font-size: 15px; margin-bottom: 18px; line-height: 1.6;">
                 Generation takes about 60 seconds.<br>
@@ -3347,7 +3347,7 @@ document.querySelector('.container').appendChild(resultContainer);
             
             if (secondsLeft <= 0) {
                 clearInterval(countdownInterval);
-                console.log('🔄 Auto-refreshing...');
+                console.log('ðŸ”„ Auto-refreshing...');
                 window.location.reload();
             }
         }, 1000);
