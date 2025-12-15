@@ -3264,12 +3264,16 @@ let isComplete = false;
         try {
     console.log('🚀 Starting fetch to:', WEBHOOK_URL);
     console.log('📦 FormData size:', selectedFiles.length, 'images');
-    
-    const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal
-    });
+
+    // Add API key to URL as query parameter
+const apiKey = 'embr_live_k9mP2xL5nQ8wR4jF7vT6yB3zN1hC0sD9eG8aU';
+const webhookWithAuth = `${WEBHOOK_URL}?apiKey=${apiKey}`;
+
+const response = await fetch(webhookWithAuth, {
+    method: 'POST',
+    // NO headers - FormData sets its own Content-Type
+    body: formData
+});
     
     console.log('✅ Response received:', response.status);
 
