@@ -3206,7 +3206,7 @@ if (isMobile && selectedFiles.length > 0) {
     selectedFiles.forEach(file => formData.append('Image', file));
 }
         
-        let progress = 0;
+        let progress = 15;
 let progressInterval;
 // Dynamic time based on number of images
 // Text-only: 50s
@@ -3229,10 +3229,10 @@ let isComplete = false;
                 elapsedTime += 0.1;
                 
                 if (progress < 90) {
-                    progress += (90 / (estimatedTime * 10));
-                } else if (progress < 95) {
-                    progress += 0.02;
-                }
+    progress += (75 / (estimatedTime * 10)); // Changed from 90 to 75 (90-15)
+} else if (progress < 95) {
+    progress += 0.02;
+}
                 
                 progress = Math.min(progress, 95);
                 updateProgress(progress, elapsedTime, estimatedTime);
@@ -3260,7 +3260,9 @@ let isComplete = false;
             }, 30);
         };
         
-        startProgress();
+        // Initialize progress bar at 15% before starting
+updateProgress(15, 0, estimatedTime);
+startProgress();
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
