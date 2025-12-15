@@ -2129,88 +2129,94 @@ async function getUserEmail() {
 
 // Check for return from payment and auto-resume
 async function checkAndResumeGeneration() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const purchaseSuccess = urlParams.get('purchase_success');
-  
-  if (!purchaseSuccess) return;
-  
-  console.log('🎉 Detected return from payment!');
-  
-  // Clean URL (remove query params)
-  window.history.replaceState({}, document.title, window.location.pathname);
-  
-  const pendingData = localStorage.getItem('pendingGeneration');
-  if (!pendingData) {
-    console.log('⚠️ No pending generation found');
-    return;
-  }
-  
-  try {
-    const pending = JSON.parse(pendingData);
+    const urlParams = new URLSearchParams(window.location.search);
+    const purchaseSuccess = urlParams.get('purchase');
     
-    // Check if pending generation is less than 1 hour old
-    if (Date.now() - pending.timestamp > 3600000) {
-      console.log('⚠️ Pending generation expired (>1 hour)');
-      localStorage.removeItem('pendingGeneration');
-      return;
+    if (!purchaseSuccess) return;
+    
+    console.log('✅ Detected return from payment!');
+    
+    // Clean URL (remove query params)
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // Use Storage.getItem to check IndexedDB first, then localStorage
+    const pendingData = await Storage.getItem('pendingGeneration');
+    
+    if (!pendingData) {
+        console.log('⚠️ No pending generation found');
+        return;
     }
     
-    console.log('✅ Restoring generation state:', pending);
-    
-    // Restore UI state
-    isTextOnlyMode = pending.isTextOnly;
-    promptTextarea.value = pending.prompt;
-    
-    // Restore images if any
-if (pending.imageCount > 0) {
-    console.log(`Restoring ${pending.imageCount} images...`);
-    
-    const filePromises = [];
-    for (let i = 1; i <= pending.imageCount; i++) {
-        const imageData = await Storage.getImage(i);
+    try {
+        // Parse data (might be object from IndexedDB or JSON string from localStorage)
+        const pending = typeof pendingData === 'string' 
+            ? JSON.parse(pendingData) 
+            : pendingData;
         
-        if (imageData) {
-            if (imageData instanceof Blob) {
-                // IndexedDB: already a Blob
-                filePromises.push(new File([imageData], `restored-${i}.jpg`, { type: 'image/jpeg' }));
-            } else if (typeof imageData === 'string') {
-                // localStorage fallback: base64 string
-                const response = await fetch(imageData);
-                const blob = await response.blob();
-                filePromises.push(new File([blob], `restored-${i}.jpg`, { type: 'image/jpeg' }));
-            }
+        // Check if pending generation is less than 1 hour old
+        if (Date.now() - pending.timestamp > 3600000) {
+            console.log('⏰ Pending generation expired (>1 hour)');
+            await Storage.removeItem('pendingGeneration');
+            return;
         }
+        
+        console.log('📦 Restoring generation state:', pending);
+        
+        // Restore UI state
+        isTextOnlyMode = pending.isTextOnly;
+        promptTextarea.value = pending.prompt;
+        
+        // Restore images if any
+        if (pending.imageCount > 0) {
+            console.log(`🖼️ Restoring ${pending.imageCount} images...`);
+            
+            const restoredFiles = [];
+            
+            for (let i = 1; i <= pending.imageCount; i++) {
+                const imageData = await Storage.getImage(i);
+                
+                if (imageData) {
+                    if (imageData instanceof Blob) {
+                        // IndexedDB: already a Blob
+                        restoredFiles.push(new File([imageData], `restored-${i}.jpg`, { type: 'image/jpeg' }));
+                    } else if (typeof imageData === 'string') {
+                        // localStorage fallback: base64 string
+                        const response = await fetch(imageData);
+                        const blob = await response.blob();
+                        restoredFiles.push(new File([blob], `restored-${i}.jpg`, { type: 'image/jpeg' }));
+                    }
+                }
+            }
+            
+            selectedFiles = restoredFiles;
+            console.log(`✅ Restored ${selectedFiles.length} images`);
+            
+            // Show photo preview section
+            showPromptSection(false);
+            updatePreviews();
+        } else {
+            // Text-only mode
+            showPromptSection(true);
+        }
+        
+        // Show sections
+        promptSection.classList.add('active');
+        generateSection.classList.add('active');
+        checkGenerateButton();
+        
+        // Auto-click generate after short delay
+        setTimeout(() => {
+            console.log('🚀 Auto-triggering generation...');
+            btnGenerate.click();
+            
+            // Clear pending data after successful trigger
+            Storage.removeItem('pendingGeneration');
+        }, 1500); // Increased to 1.5s for safety
+        
+    } catch (error) {
+        console.error('❌ Failed to restore generation:', error);
+        await Storage.removeItem('pendingGeneration');
     }
-    
-    selectedFiles = await Promise.all(filePromises);
-    console.log(`✓ Restored ${selectedFiles.length} images`);
-      
-      // Show photo preview section
-      showPromptSection(false);
-      updatePreviews();
-    } else {
-      // Text-only mode
-      showPromptSection(true);
-    }
-    
-    // Show sections
-    promptSection.classList.add('active');
-    generateSection.classList.add('active');
-    checkGenerateButton();
-    
-    // Auto-click generate after short delay
-    setTimeout(() => {
-      console.log('🚀 Auto-triggering generation...');
-      btnGenerate.click();
-      
-      // Clear pending data after successful trigger
-      localStorage.removeItem('pendingGeneration');
-    }, 1000);
-    
-  } catch (error) {
-    console.error('❌ Failed to restore generation:', error);
-    localStorage.removeItem('pendingGeneration');
-  }
 }
     
     // Detect if mobile
