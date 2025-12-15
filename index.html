@@ -3295,21 +3295,31 @@ try {
 
 // Check for error in the JSON body (not just HTTP status)
 if (data.error) {
-  // Stop the progress animation
-  isComplete = true;
-  clearInterval(progressInterval);
-  
-  // Update progress to paused state and keep it visible
-  const progressTitle = progressContainer.querySelector('div:first-child');
-  if (progressTitle) {
-    progressTitle.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10" stroke="rgba(239,68,68,0.8)" stroke-width="2"/>
-        <path d="M10 8v8M14 8v8" stroke="rgba(239,68,68,0.8)"/>
-      </svg>
-      <span style="color: #f87171;">Paused - Insufficient Credits</span>
-    `;
-  }
+    // Stop the progress animation
+    isComplete = true;
+    clearInterval(progressInterval);
+    
+    // ⭐ REFRAME AS OPPORTUNITY (not failure)
+    // Set progress to 95% to show "almost there"
+    updateProgress(95, elapsedTime, estimatedTime);
+    
+    // Change progress bar color to amber
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) {
+        progressFill.style.background = 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)';
+    }
+    
+    // Update progress to paused state with AMBER styling
+    const progressTitle = progressContainer.querySelector('div:first-child');
+    if (progressTitle) {
+        progressTitle.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" stroke="rgba(251,191,36,0.8)" stroke-width="2" />
+                <path d="M10 8v8M14 8v8" stroke="rgba(251,191,36,0.8)" />
+            </svg>
+            <span style="color: #fbbf24;">Almost There - Add Credits to Continue</span>
+        `;
+    }
   
   // Keep progress bar visible permanently (don't fade it out)
   
@@ -3323,19 +3333,25 @@ if (data.error) {
   subtitle.textContent = 'Purchase credits to continue creating';
   subtitle.classList.add('screen-2');
   
-  // Show focused error with prominent Buy Credits CTA
-  statusDiv.className = 'status error';
-  statusDiv.innerHTML = `
-    <div style="font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5;">
-      ${data.message || 'You have 0 credits remaining.'}
+  // ⭐ Show OPPORTUNITY message (not error)
+statusDiv.className = 'status'; // Remove 'error' class
+statusDiv.style.background = 'rgba(251, 191, 36, 0.12)'; // Amber
+statusDiv.style.color = '#fbbf24';
+statusDiv.style.borderColor = 'rgba(251, 191, 36, 0.3)';
+statusDiv.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;">🎨</span>
+        <div>
+            <div style="font-weight:700;font-size:16px;margin-bottom:6px;">Your image is 95% complete!</div>
+            <div style="font-size:14px;opacity:0.9;">Add 1 credit to unlock your creation</div>
+        </div>
     </div>
-    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" 
-      style="margin: 0 auto; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
-      Buy Credits →
+    <button class="btn-buy-credits" onclick="document.getElementById('creditModal').classList.add('active')" style="margin: 16px auto 0; display: block; width: 100%; max-width: 300px; padding: 16px 32px; font-size: 16px; font-weight: 700;">
+        Unlock Now →
     </button>
-  `;
-  statusDiv.style.display = 'block';
-  statusDiv.style.marginTop = '32px'; // More breathing room
+`;
+statusDiv.style.display = 'block';
+statusDiv.style.marginTop = '24px';
   
   // Re-enable button so user can retry after purchase
   btnGenerate.disabled = false;
