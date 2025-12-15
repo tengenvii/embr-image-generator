@@ -2130,7 +2130,7 @@ async function getUserEmail() {
 // Check for return from payment and auto-resume
 async function checkAndResumeGeneration() {
     const urlParams = new URLSearchParams(window.location.search);
-    const purchaseSuccess = urlParams.get('purchase');
+    const purchaseSuccess = urlParams.get('purchase_success');
     
     if (!purchaseSuccess) return;
     
