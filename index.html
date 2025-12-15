@@ -1278,10 +1278,12 @@ body.result-locked {
 /* Gentle pulse for Best Value */
 @keyframes gentlePulse {
   0%, 100% { 
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.15); 
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.15);
+    transform: translateZ(0) scale(1.03);
   }
   50% { 
-    box-shadow: 0 0 40px rgba(74, 222, 128, 0.25); 
+    box-shadow: 0 0 40px rgba(74, 222, 128, 0.25);
+    transform: translateZ(0) scale(1.05); /* Slightly bigger on pulse */
   }
 }
 
