@@ -928,26 +928,6 @@ body.result-locked {
   max-width: 100%; /* ADD THIS */
   box-sizing: border-box; /* ADD THIS */
 }
-
-/* Mobile adjustments for status message */
-@media (max-width: 768px) {
-  .status {
-    font-size: 13px;
-    padding: 12px 14px;
-    margin-top: 14px;
-  }
-  
-  /* Specific fix for "95% complete" message */
-  .status > div {
-    font-size: 14px !important; /* Override inline styles */
-  }
-  
-  .status button {
-    font-size: 14px !important;
-    padding: 12px 24px !important;
-    white-space: normal !important; /* Allow wrapping if needed */
-    line-height: 1.3 !important;
-  }
         
         .status.success {
             background: rgba(34, 197, 94, 0.12);
@@ -966,6 +946,27 @@ body.result-locked {
         .status.error.fade-out {
             animation: fadeOut 0.3s ease forwards;
         }
+
+        /* Mobile adjustments for status message */
+@media (max-width: 768px) {
+  .status {
+    font-size: 13px;
+    padding: 12px 14px;
+    margin-top: 14px;
+  }
+  
+  /* Specific fix for "95% complete" message */
+  .status > div {
+    font-size: 14px !important; /* Override inline styles */
+  }
+  
+  .status button {
+    font-size: 14px !important;
+    padding: 12px 24px !important;
+    white-space: normal !important; /* Allow wrapping if needed */
+    line-height: 1.3 !important;
+  }
+}
         /* Toast Notification */
 .toast-notification {
     position: fixed;
