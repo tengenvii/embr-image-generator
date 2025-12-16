@@ -307,6 +307,76 @@ body.result-locked {
   overflow: hidden; /* ADD THIS */
 }
 
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.step.active {
+  opacity: 1;
+}
+
+.step.completed {
+  opacity: 0.7;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.step.active .step-dot {
+  width: 14px;
+  height: 14px;
+  background: #4ade80;
+  border-color: #4ade80;
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
+}
+
+.step.completed .step-dot {
+  background: #4ade80;
+  border-color: #4ade80;
+}
+
+.step.completed .step-dot::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.step-label {
+  font-size: 11px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.step.active .step-label {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.step.completed .step-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .step-line {
   width: 40px;
   height: 2px;
@@ -1090,7 +1160,6 @@ body.result-locked {
 }
 
 /* Footer - Desktop default */
-/* Footer - Desktop default */
 .footer {
   position: fixed;
   bottom: 20px;
@@ -1153,40 +1222,6 @@ body.result-locked {
     font-size: 12px;
     bottom: 12px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 16px;
-  }
-  
-  .social-proof-badge {
-    font-size: 11px;
-    gap: 6px;
-    padding-left: 0;
-  }
-  
-  .footer-divider {
-    margin: 8px 0;
-  }
-}
-
-@keyframes countPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.social-proof-badge span.pulse {
-  animation: countPulse 0.4s ease;
-}
-
-/* MOBILE ONLY - footer becomes centered */
-@media (max-width: 768px) {
-  .footer {
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 12px;
-    bottom: 12px;
-    display: flex; /* ONLY on mobile */
     flex-direction: column;
     align-items: center;
     padding: 0 16px;
