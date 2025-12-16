@@ -388,40 +388,28 @@ body.result-locked {
 @media (max-width: 768px) {
   .progress-steps {
     margin: 16px 0 12px 0;
-    padding: 0 5px; /* Reduced from 10px */
+    padding: 0 10px;
   }
   
   .step-dot {
-    width: 9px; /* Smaller */
-    height: 9px;
+    width: 10px;
+    height: 10px;
   }
   
   .step.active .step-dot {
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
   }
   
   .step-label {
-    font-size: 9px; /* Smaller */
+    font-size: 10px;
     margin-top: 4px;
   }
   
   .step-line {
-    width: 20px; /* Reduced from 30px */
-    margin: 0 4px; /* Reduced from 6px */
+    width: 30px;
+    margin: 0 6px;
     margin-bottom: 16px;
-  }
-}
-
-/* Extra small screens - critical fix */
-@media (max-width: 360px) {
-  .step-label {
-    display: none; /* Hide labels on very narrow screens */
-  }
-  
-  .step-line {
-    width: 15px;
-    margin: 0 3px;
   }
 }
 
@@ -1530,31 +1518,22 @@ body.result-locked {
   }
   
   .container {
-    padding: 28px 18px !important; /* Reduced from 32px 24px */
+    padding: 32px 24px;
     margin: 0;
     max-height: calc(100vh - 100px);
     max-height: calc(100dvh - 100px);
   }
   
-  /* Result screen */
+  /* Adaptive spacing for result screen - works on all screen sizes */
   .container.has-result {
-    margin-top: 8vh !important;
-    padding: 18px 16px !important; /* More compact */
+    margin-top: 8vh !important; /* Percentage-based */
+    padding: 20px !important;
     max-height: calc(100vh - 140px) !important;
     max-height: calc(100dvh - 140px) !important;
+    overflow-y: auto !important; /* Allow minimal scroll */
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
   }
-}
-
-/* Extra small screens (iPhone SE, small Androids) */
-@media (max-width: 360px) {
-  .container {
-    padding: 24px 14px !important;
-  }
-  
-  .container.has-result {
-    padding: 16px 12px !important;
-  }
-}
   
   /* Dynamic image height */
   #resultContainer img {
@@ -1562,28 +1541,27 @@ body.result-locked {
   }
 
   .header h1 {
-  font-size: clamp(18px, 6vw, 32px) !important; /* Reduced min from 22px */
-  letter-spacing: -0.5px !important;
-  line-height: 1.2 !important;
-  max-width: 100% !important;
-  padding: 0 4px !important; /* Reduced from 6px */
-  word-wrap: break-word;
+    font-size: clamp(22px, 6.5vw, 34px) !important;  /* Higher vw = bigger on wide screens */
+    letter-spacing: -0.8px !important;
+    line-height: 1.15 !important;
+    max-width: 100% !important;
+    padding: 0 6px !important;
+    /* NO white-space: nowrap - let it naturally fit */
 }
 
 .subtitle {
-  font-size: clamp(13px, 3.8vw, 18px) !important; /* Reduced from 4.1vw */
-  letter-spacing: -0.01em !important;
-  line-height: 1.45 !important;
-  max-width: 100% !important;
-  padding: 0 4px !important;
-  margin-bottom: 28px !important; /* Reduced from 35px */
-  word-wrap: break-word;
+    font-size: clamp(15px, 4.1vw, 19px) !important;  /* Higher vw = bigger on wide screens */
+    letter-spacing: -0.02em !important;
+    line-height: 1.4 !important;
+    max-width: 100% !important;
+    padding: 0 6px !important;
+    margin-bottom: 35px !important;
+    /* NO white-space: nowrap - let it naturally fit */
 }
-
-.subtitle.screen-2 {
-  font-size: clamp(14px, 3.8vw, 17px) !important;
-  margin-bottom: 18px !important;
-}
+  
+  .subtitle.screen-2 {
+    max-width: 100%;
+  }
 
   textarea {
     min-height: 90px;
